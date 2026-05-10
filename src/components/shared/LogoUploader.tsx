@@ -1,43 +1,78 @@
 import { useRef, useState, useCallback } from 'react';
 import { Upload, Trash2 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+
+interface Labels {
+  dropHint: string;
+  choose: string;
+  remove: string;
+  errorType: string;
+  errorSize: string;
+  errorDimensions?: string;
+}
 
 interface Props {
   value: string;
   onChange: (dataUrl: string) => void;
+  labels: Labels;
+  maxSizeBytes?: number;
+  minDimensions?: { width: number; height: number };
+  accept?: readonly string[];
 }
 
-const MAX_SIZE = 1024 * 1024;
-const ACCEPT = ['image/png', 'image/svg+xml', 'image/jpeg'];
+const DEFAULT_ACCEPT = ['image/png', 'image/svg+xml', 'image/jpeg'] as const;
+const ONE_MB = 1024 * 1024;
 
-export function LogoUploader({ value, onChange }: Props) {
-  const { t } = useTranslation();
+export function LogoUploader({
+  value,
+  onChange,
+  labels,
+  maxSizeBytes = ONE_MB,
+  minDimensions,
+  accept = DEFAULT_ACCEPT,
+}: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
   const handleFile = useCallback(
     (file: File) => {
-      if (!ACCEPT.includes(file.type)) {
-        setError(t('onboarding.errors.logoType'));
+      if (!accept.includes(file.type)) {
+        setError(labels.errorType);
         return;
       }
-      if (file.size > MAX_SIZE) {
-        setError(t('onboarding.errors.logoSize'));
+      if (file.size > maxSizeBytes) {
+        setError(labels.errorSize);
         return;
       }
       const reader = new FileReader();
       reader.onload = () => {
-        if (typeof reader.result === 'string') {
-          onChange(reader.result);
+        if (typeof reader.result !== 'string') return;
+        const dataUrl = reader.result;
+        if (minDimensions && file.type !== 'image/svg+xml') {
+          const probe = new Image();
+          probe.onload = () => {
+            if (
+              probe.naturalWidth < minDimensions.width ||
+              probe.naturalHeight < minDimensions.height
+            ) {
+              setError(labels.errorDimensions ?? labels.errorSize);
+              return;
+            }
+            onChange(dataUrl);
+            setError(null);
+          };
+          probe.onerror = () => setError(labels.errorType);
+          probe.src = dataUrl;
+        } else {
+          onChange(dataUrl);
           setError(null);
         }
       };
       reader.readAsDataURL(file);
     },
-    [onChange, t]
+    [accept, labels, maxSizeBytes, minDimensions, onChange]
   );
 
   return (
@@ -61,7 +96,7 @@ export function LogoUploader({ value, onChange }: Props) {
       >
         {value ? (
           <>
-            <img src={value} alt="Logo preview" className="size-32 rounded-lg object-contain" />
+            <img src={value} alt="" className="size-32 rounded-lg object-contain" />
             <Button
               type="button"
               variant="ghost"
@@ -72,27 +107,25 @@ export function LogoUploader({ value, onChange }: Props) {
               }}
             >
               <Trash2 className="size-4" aria-hidden />
-              {t('onboarding.logoRemove')}
+              {labels.remove}
             </Button>
           </>
         ) : (
           <>
             <Upload className="size-8 text-muted-foreground" aria-hidden />
-            <div className="text-center text-sm text-muted-foreground">
-              {t('onboarding.logoDropHint')}
-            </div>
+            <div className="text-center text-sm text-muted-foreground">{labels.dropHint}</div>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => inputRef.current?.click()}
             >
-              {t('onboarding.logoChoose')}
+              {labels.choose}
             </Button>
             <input
               ref={inputRef}
               type="file"
-              accept={ACCEPT.join(',')}
+              accept={accept.join(',')}
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];

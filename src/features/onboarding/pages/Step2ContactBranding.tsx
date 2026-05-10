@@ -27,9 +27,9 @@ import { useSession } from '@/lib/auth';
 import { OnboardingLayout } from '../components/OnboardingLayout';
 import { StepActionBar } from '../components/StepActionBar';
 import { PhoneInput } from '../components/PhoneInput';
-import { ColorPicker } from '../components/ColorPicker';
-import { LogoUploader } from '../components/LogoUploader';
-import { ReceiptPreview } from '../components/ReceiptPreview';
+import { ColorPicker } from '@/components/shared/ColorPicker';
+import { LogoUploader } from '@/components/shared/LogoUploader';
+import { ReceiptPreview } from '@/components/shared/ReceiptPreview';
 import { step2Schema, type Step2Values } from '../schemas';
 import { useOnboarding } from '../context/OnboardingContext';
 import { useSaveOnboardingDraft } from '../hooks/useOnboardingDraft';
@@ -144,7 +144,17 @@ export function Step2ContactBranding(): React.JSX.Element {
                 <FormItem>
                   <FormLabel>{t('onboarding.step2.logoLabel')}</FormLabel>
                   <FormControl>
-                    <LogoUploader value={field.value ?? ''} onChange={field.onChange} />
+                    <LogoUploader
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      labels={{
+                        dropHint: t('onboarding.logoDropHint'),
+                        choose: t('onboarding.logoChoose'),
+                        remove: t('onboarding.logoRemove'),
+                        errorType: t('onboarding.errors.logoType'),
+                        errorSize: t('onboarding.errors.logoSize'),
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -198,7 +208,7 @@ export function Step2ContactBranding(): React.JSX.Element {
                 </SheetTrigger>
                 <SheetContent side="bottom" className="h-[80vh]">
                   <SheetHeader>
-                    <SheetTitle>{t('onboarding.receipt.previewLabel')}</SheetTitle>
+                    <SheetTitle>{t('common.receipt.previewLabel')}</SheetTitle>
                   </SheetHeader>
                   <div className="mt-4">
                     <ReceiptPreview

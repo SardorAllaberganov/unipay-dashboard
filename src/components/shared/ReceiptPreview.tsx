@@ -19,7 +19,7 @@ export function ReceiptPreview({
   return (
     <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
       <div className="mb-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
-        {t('onboarding.receipt.previewLabel')}
+        {t('common.receipt.previewLabel')}
       </div>
       <div className="space-y-3 text-sm">
         <div
@@ -29,19 +29,21 @@ export function ReceiptPreview({
           {logoDataUrl ? (
             <img src={logoDataUrl} alt="" className="size-8 rounded object-contain" />
           ) : null}
-          <div className="font-semibold">{orgName || t('onboarding.receipt.placeholderOrg')}</div>
+          <div className="font-semibold">
+            {orgName || t('common.receipt.placeholderOrg')}
+          </div>
         </div>
         <div className="tabular space-y-1">
           <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('onboarding.receipt.studentLabel')}</span>
-            <span>{t('onboarding.receipt.studentSample')}</span>
+            <span className="text-muted-foreground">{t('common.receipt.studentLabel')}</span>
+            <span>{t('common.receipt.studentSample')}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-muted-foreground">{t('onboarding.receipt.periodLabel')}</span>
-            <span>{t('onboarding.receipt.periodSample')}</span>
+            <span className="text-muted-foreground">{t('common.receipt.periodLabel')}</span>
+            <span>{t('common.receipt.periodSample')}</span>
           </div>
           <div className="flex justify-between border-t border-border pt-2 font-medium">
-            <span>{t('onboarding.receipt.totalLabel')}</span>
+            <span>{t('common.receipt.totalLabel')}</span>
             <span>4 200 000 UZS</span>
           </div>
         </div>
