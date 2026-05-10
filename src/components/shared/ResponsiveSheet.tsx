@@ -14,6 +14,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-breakpoint';
+import { cn } from '@/lib/utils';
 
 interface Props {
   open: boolean;
@@ -39,13 +40,20 @@ export function ResponsiveSheet({
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className={contentClassName}>
-          <SheetHeader>
+        <SheetContent
+          side="bottom"
+          className={cn('flex max-h-[90dvh] flex-col', contentClassName)}
+        >
+          <SheetHeader className="shrink-0">
             <SheetTitle>{title}</SheetTitle>
             {description ? <SheetDescription>{description}</SheetDescription> : null}
           </SheetHeader>
-          <div className="mt-4">{children}</div>
-          {footer ? <div className="mt-4">{footer}</div> : null}
+          <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1 py-2">{children}</div>
+          {footer ? (
+            <div className="flex shrink-0 flex-wrap justify-end gap-2 border-t border-border pt-3">
+              {footer}
+            </div>
+          ) : null}
         </SheetContent>
       </Sheet>
     );
@@ -53,13 +61,15 @@ export function ResponsiveSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={contentClassName}>
-        <DialogHeader>
+      <DialogContent className={cn('flex max-h-[85vh] flex-col', contentClassName)}>
+        <DialogHeader className="shrink-0">
           <DialogTitle>{title}</DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}
         </DialogHeader>
-        <div>{children}</div>
-        {footer ? <div className="flex justify-end gap-2">{footer}</div> : null}
+        <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1 py-1">{children}</div>
+        {footer ? (
+          <div className="flex shrink-0 justify-end gap-2 pt-2">{footer}</div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );
