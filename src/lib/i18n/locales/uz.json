@@ -509,6 +509,7 @@
       "verificationFailed": "Tasdiqlanmadi",
       "usdComingSoon": "Tez orada",
       "immutableNote": "Hisob rekvizitlarini o'zgartirib bo'lmaydi — o'chirib, yangisini qo'shing.",
+      "copyErrorToast": "Nusxalab bo'lmadi — qayta urinib ko'ring",
       "createdToast": "Hisob qo'shildi. Bank tasdig'ini kutmoqdamiz.",
       "savedToast": "O'zgarishlar saqlandi",
       "saveErrorToast": "Hisobni saqlab bo'lmadi",
