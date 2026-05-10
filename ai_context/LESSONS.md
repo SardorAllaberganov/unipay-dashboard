@@ -6,6 +6,22 @@ Review at session start (or via `/start_task`). Most recent on top.
 
 ---
 
+## 2026-05-11 · Tap-to-copy rows — canonical pattern (haptic + icon-swap + sr-only live region + fallback)
+
+**Rule.** Any "tap to copy" affordance — bank details, transaction IDs, reference codes, API keys, etc. — follows this pattern:
+- **Element**: `<button>` (not a `<div role="button">`) so keyboard + screen-reader behavior is built-in.
+- **Clipboard write**: `await navigator.clipboard.writeText(value)`; on failure or when `navigator.clipboard` is undefined (non-secure context), fall back to a hidden `<textarea>` + `document.execCommand('copy')` so the feature works on `http://localhost` and inside legacy WebViews.
+- **Haptic**: `if (typeof navigator.vibrate === 'function') navigator.vibrate(10)` — feature-detected so desktop / unsupported mobile silently skip.
+- **Visual feedback**: trailing icon swaps `Copy → Check` (use `text-success-700`) for **1500ms**. Store the timer in a `useRef` and clear it on unmount and on subsequent copies.
+- **Toast**: sonner `toast.success(t('common.actions.copied'))`. Don't invent a new key — `common.actions.copy` / `common.actions.copied` already exist in both RU + UZ.
+- **Screen reader**: `aria-label` on the button combines verb + label + value, e.g. `Скопировать: МФО, 00440`. Add an inline `<span className="sr-only" role="status" aria-live="polite">{copied ? t('common.actions.copied') : ''}</span>` so the success state is announced after the click.
+
+**Why.** Built once, copy-paste-able everywhere. The fallback matters for dev/preview environments where the secure-context check fails. The 1500ms timer beats both a flash-and-gone (too quick to read) and a sticky check (confuses the next interaction). The aria-live announcement is what turns a silent-success animation into something a screen-reader user actually perceives.
+
+**How to apply.** Reference implementation: [`BankAccountFormParts.tsx`](../src/features/organization/components/BankAccountFormParts.tsx) → `CopyableRow`. When the next feature needs a copyable identifier (Transaction ID, Payout reference, API key fingerprint), copy that component or promote it to `src/components/shared/` first — DO NOT re-derive the pattern from scratch.
+
+---
+
 ## 2026-05-11 · `overflow-y-auto` clips the input focus ring on the horizontal axis — outset the scroll wrapper with `-mx-1 px-1`
 
 **Rule.** Any scroll container that wraps form inputs must carry `-mx-1 px-1` (and `-my-1 py-1` if vertical edges are also at the clip line). The negative margin pulls the scroll boundary 4px past the parent's content edge while the inner padding restores the visual content position. Without this, inputs whose `focus-visible:ring-2 ring-offset-2` halo sits 4px outside the input box get their ring clipped along whichever container edge is nearest.

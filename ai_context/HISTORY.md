@@ -4,6 +4,23 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-11 — Bank Edit Sheet — tap-to-copy rows for immutable details
+
+**Summary.** Restructured `BankImmutableSummary` (the read-only summary card at the top of the Bank Account Edit Sheet) from a horizontal 2-column `dl grid` (label-left / value-right) to stacked groups — each row now has its label on top (`text-xs uppercase tracking-wider` definition-label, §0.2 allow-listed) and value below (`text-sm font-medium`, with `tabular break-all` on numeric fields so a 20-digit account number wraps cleanly inside narrow sheets). Each row is now a `<button>` that copies the value on tap: `navigator.clipboard.writeText` with a hidden-textarea + `execCommand('copy')` fallback for non-secure contexts; `navigator.vibrate?.(10)` haptic on mobile (feature-detected, gracefully skipped on desktop); trailing icon swaps `Copy → Check (success-700)` for 1500ms; sonner toast using existing `common.actions.copied` key; `sr-only role="status" aria-live="polite"` span for screen readers. `aria-label` combines `Скопировать: {label}, {value}` so screen readers announce context + value on focus.
+
+**Files written.**
+- Modified: [`src/features/organization/components/BankAccountFormParts.tsx`](../src/features/organization/components/BankAccountFormParts.tsx) — `BankImmutableSummary` rebuilt with stacked rows + local `CopyableRow` button component (handles clipboard + haptic + 1500ms icon-swap timer + cleanup on unmount). Header band kept (lock icon + immutable note, `border-b bg-muted/40`).
+- Modified: [`src/lib/i18n/locales/{ru,uz}.json`](../src/lib/i18n/locales/) — new `organization.bankAccounts.copyErrorToast` key for the rare clipboard-write failure path.
+
+**Semantics note.** A `<button>` can't be a direct child of `<dl>`, so the markup switched from `<dl>` → `<dt>` → `<dd>` to `<ul>` → `<li>` → `<button>` with internal label/value `<span>`s. The "term + description" semantic is now carried by the button's `aria-label` rather than DOM-native dl/dt/dd.
+
+**Verifications.** typecheck · `eslint --max-warnings 0` — clean.
+
+**Lessons (appended to LESSONS.md).**
+- Tap-to-copy rows need: feature-detected `navigator.vibrate?.(10)` haptic, `Copy → Check` icon swap on a 1500ms timer cleared on unmount, sonner toast, `sr-only role="status" aria-live="polite"` announcement, and a hidden-textarea + `execCommand('copy')` fallback for non-HTTPS contexts. `aria-label` should combine action verb + label + value so screen readers announce both context and what's being copied.
+
+---
+
 ## 2026-05-11 — Prompt 4 (Organization module) + mobile fixes + addition pages refactor
 
 **Summary.** Full Organization module — 4 sub-routes (Profile / Departments / Bank Accounts / Branding) under `/organization/*` via nested `<OrganizationLayout />` + horizontal-scroll `OrgTabsNav`. MSW handler with 16 endpoints and a 111-node fixture tree (3 faculties × 4 departments × 2 years × 3 groups = 72 leaves + 39 inner). Departments page uses `@dnd-kit/core` for drag-drop reparent with cycle prevention, reparent-confirm requiring reason ≥20 when affected students > 50, cascade-delete with reason ≥20 when children exist. Bank Accounts page has optimistic create + 5s server-side verification flip + exclusive default. Branding page applies the saved primary color inline on the receipt preview only (never `:root`). `LogoUploader` / `ColorPicker` / `ReceiptPreview` promoted from onboarding to `src/components/shared/`. Followed by two mid-session refactors: (1) mobile fixes — hidden action icons on mobile (44px tap targets via the row itself), delay-based touch activation for dnd-kit, `min-h-0` chain so `overflow-y-auto` actually engages, focus-ring outset (`-mx-1 px-1`) on every scroll wrapper since `overflow-y-auto` implicitly forces `overflow-x: auto` per CSS spec and clips `ring-offset-2`; (2) addition pages refactor — `<BankAccountForm>` add mode and `<AddDepartmentDialog>` retired in favor of standalone routes `/organization/bank-accounts/new` and `/organization/departments/new[?parentId=X]`, registered as siblings of `<OrganizationLayout>` so they render full-bleed without tabs. Both use §0.5 Pattern A (back link + page title + fixed-bottom action bar).
