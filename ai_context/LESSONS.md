@@ -6,6 +6,16 @@ Review at session start (or via `/start_task`). Most recent on top.
 
 ---
 
+## 2026-05-10 · Never run `git add` / `git commit` / `git push` without an explicit `/commit` invocation
+
+**Rule.** Write file changes, run verifications (typecheck, lint, build, audit), and stop. Do not stage, commit, or push until the user runs `/commit` or explicitly says "commit and push." This holds even after small follow-up fixes that feel obviously safe to land.
+
+**Why.** The user wants to review every batch of changes before they hit the remote. Self-driving the commit pipeline removes the review step and produces commits the user didn't sign off on. They flagged this directly after a sequence where I committed and pushed three follow-up changes (tsconfig fix → vite base + workflow → README) without being asked.
+
+**How to apply.** After any code change, end the turn at "verifications clean, ready to commit when you run `/commit`." Never chain `git add`/`git commit`/`git push` into the same response as the file edits unless the user has just invoked `/commit` or said the word "commit." If unsure, ask.
+
+---
+
 ## 2026-05-10 · Active sidebar items keep `font-medium` (500) — never escalate to `font-semibold` on active
 
 **Rule.** A sidebar nav-link's active state is signalled by `bg-brand-50` + `text-brand-700` + the 2px `before:` accent stripe. Font-weight stays at `font-medium` (500) for both resting and active items.
