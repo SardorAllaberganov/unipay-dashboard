@@ -4,7 +4,7 @@
 > Source-of-truth files (always trust over this snapshot): [`STYLE_DISCIPLINE.md`](../STYLE_DISCIPLINE.md), [`src/types/domain.ts`](../src/types/domain.ts), [`docs/product_states.md`](../docs/product_states.md).
 
 ## Last updated
-2026-05-10 — chrome polish (favicon, notifications bell, radius bump, Pages CI fix)
+2026-05-11 — Prompt 1 (Auth) — sign-in / forgot / reset feature module + lg+ brand panel split + async signIn through MSW
 
 ## What this app is
 **UNIPAY** — merchant dashboard for Uzbek educational institutions (universities, schools, kindergartens) to manage tuition payments. Locale: RU primary, UZ secondary (Latin). Currency: UZS (space separator). Timezone: Asia/Tashkent.
@@ -52,7 +52,14 @@ src/
 │   ├── tone.ts                   # tone-to-class map (single source of truth)
 │   ├── format.ts                 # bigint-aware formatMoney, masking
 │   └── i18n/locales/{ru,uz}.json
-├── pages/                        # SignIn, Dashboard, Placeholder
+├── pages/                        # Dashboard, Placeholder
+├── features/
+│   └── auth/                     # SignIn / ForgotPassword / ResetPassword
+│       ├── pages/                # SignInPage, ForgotPasswordPage, ResetPasswordPage
+│       ├── components/           # SignInForm, PasswordField, LockedAlert, DevRoleSwitcher
+│       ├── hooks/                # useFailedAttempts, useForgotPassword, useResetPassword
+│       ├── api.ts                # forgot + reset fetch wrappers (signIn lives in lib/auth.ts)
+│       └── schemas.ts            # Zod schemas as t-aware factories
 ├── providers/ThemeProvider.tsx
 ├── styles/globals.css
 ├── types/domain.ts               # Role finance_manager · Money bigint · Tone · Locale · StatusDomain
@@ -60,16 +67,18 @@ src/
 ```
 
 ## Module-level state stores (§0.12)
-All three use `useSyncExternalStore` with module-level cache + listener set + `storage` event cross-tab sync:
+All four use `useSyncExternalStore` with module-level cache + listener set + `storage` event cross-tab sync (where relevant):
 - [`lib/preferences.ts`](../src/lib/preferences.ts) — theme/density/language/timezone/date_format/time_format/tabular_numerals. DOM side effects on `<html>`. Boot: `bootPreferences()` from `App.tsx`.
 - [`lib/maintenanceState.ts`](../src/lib/maintenanceState.ts) — `{ active, startedAt, estimatedEndAt }`. URL boot via `bootMaintenanceFromUrl()` reads `?maintenance=on|off`, applies, strips param.
-- [`lib/auth.ts`](../src/lib/auth.ts) — placeholder session backed by `sessionStorage`. `useIdleTimeout()` returns `'idle'` after 30 min of mousedown/keydown/scroll/touchstart silence. `useSession()`, `signIn`, `signInAsRole`, `signOut`.
+- [`lib/auth.ts`](../src/lib/auth.ts) — session backed by `sessionStorage` (`unipay-session`). `signIn(email, password)` is now **async**: hits `/api/auth/sign-in` via MSW, parses user + JWT-shaped token, sets session. `signInAsRole(role)` stays sync for the dev role switcher. `signOut({ reason })` writes a `unipay-signout-reason` flag that `SignInPage` reads + clears to surface the expired banner. `useIdleTimeout()` returns `'idle'` after 30 min of mousedown/keydown/scroll/touchstart silence.
+- [`features/auth/hooks/useFailedAttempts.ts`](../src/features/auth/hooks/useFailedAttempts.ts) — `{ count, firstFailureAt }` in `sessionStorage` (`unipay-auth-failed-attempts`). 5-attempt / 15-min sliding window. `recordFailure` / `recordSuccess` mutate; `isLockedOut(state)` and `getLockoutRemainingMs(state)` derive in consumers. `LockedAlert` ticks 1s while inside a window.
 
 ## Routing
 HashRouter so the app deploys to any static host without a 404.html shim.
 - `MaintenanceGate` outermost — `?maintenance=on` flips it; `/system/preview/*` bypasses.
-- `PathAwareAuthGuard` — unknown deep-link before sign-in → full-bleed 404; known → redirect to `/sign-in?next=…`.
-- `AuthGuard` wraps everything in `<AppShell>`; idle → `signOut(reason: 'session_expired')`.
+- Auth pages live **outside** `<AppShell>` as siblings of the catch-all guard: `/sign-in`, `/forgot-password`, `/reset-password`. All wrap in `<AuthLayout>`.
+- `PathAwareAuthGuard` — unknown deep-link before sign-in → full-bleed 404; known → redirect to `/sign-in?next=…`. `isKnownPath` whitelists `/`, `/sign-in`, `/forgot-password`, `/reset-password`, plus the in-shell route prefixes.
+- `AuthGuard` wraps everything in `<AppShell>`; idle → `signOut({ reason: 'session_expired' })`. The reason is read by `SignInPage` (sessionStorage flag) to show the expired banner; `?expired=1` is also honored.
 - `SystemErrorBoundary` wraps `<AppRoutes>`; thrown errors land on `<ServerErrorState>` with copy-on-click reference id.
 - Preview routes for QA: `/system/preview/{404,500,403,offline,maintenance}`.
 
@@ -112,13 +121,24 @@ HashRouter so the app deploys to any static host without a 404.html shim.
 - `WriteButton` disables when `useNetworkState() === false` and shows a tooltip.
 - `KeyboardHint` re-exports the canonical Kbd primitive.
 
+## Auth feature module
+- [`features/auth/`](../src/features/auth/) — sign-in, forgot-password, reset-password.
+- `signIn` flow: form (RHF + Zod factory schema, `t`-aware) → `signIn(email, password)` async → MSW `POST /api/auth/sign-in` → role picked by email-prefix dev fixture or domain hint (`@admin.` / `@finance.` / `@operator.` / `@viewer.`, default `finance_manager`) → session in `sessionStorage` → redirect to `?next=` (must start with `/`) or `/`.
+- Failed-attempts lockout: 5 fails / 15-min window via [`useFailedAttempts.ts`](../src/features/auth/hooks/useFailedAttempts.ts). `LockedAlert` shows live `M:SS` countdown.
+- `PasswordField` is `Input` + `Eye`/`EyeOff` toggle (36×36, deviation in DECISIONS); `autoComplete` forwards from caller (`current-password` on sign-in, `new-password` on reset).
+- `DevRoleSwitcher` (DEV-only): 4 buttons, `signInAsRole(role)` bypasses MSW for fast role swapping.
+- `forgot-password`: always-200 MSW (no enumeration leak); success view replaces form with `<Alert variant="success">` confirming the email.
+- `reset-password`: token from `?token=`. Missing → toast + redirect. Submit → MSW (must start `valid-`). On success → success toast + redirect. On reject → error toast + redirect.
+- AuthLayout has lg+ brand panel split (left: `bg-brand-600` + radial gradient + logo + tagline; right: form column with logo hidden, ThemeToggle visible).
+
 ## Open work / not yet done
-- Real auth wiring (currently sessionStorage placeholder).
-- Real i18n keys for every screen — only foundation keys seeded.
-- Feature pages 1–12: dashboard widgets, students, transactions, payouts, reports, settings — placeholders only.
+- Real backend auth (currently sessionStorage placeholder + MSW). The `lib/auth.ts` `signIn` is now async-shaped, swapping to a real backend is a fetch URL change.
+- Real i18n keys for feature screens 2-12 (auth keys done in this prompt).
+- Feature pages 2–12: dashboard widgets, students, transactions, payouts, reports, settings — placeholders only.
 - Chord listener implementation (`g d` etc.) — registry exists, dispatcher doesn't.
 - Theme toggle wired but dark-mode token coverage not yet QA'd in every component.
 - Sidebar role-aware filtering (uses `roles?: Role[]`) — registry doesn't carry roles yet.
+- "Remember me" checkbox is wired visually only — no longer-lived persistence layer behind it yet.
 
 ## Verification status
 - `npm run typecheck` — clean

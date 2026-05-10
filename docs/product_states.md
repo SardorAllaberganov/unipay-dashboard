@@ -29,6 +29,9 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 | Branded favicon + `theme-color` meta | ✅ | `public/favicon.svg`, brand-600 UP mark |
 | GitHub Pages Jekyll bypass | ✅ | `.nojekyll` at repo root + `public/.nojekyll` (lands in `dist/`) |
 | Radius bump (Card 12px / controls 8px) | ✅ | Card → `rounded-xl`; Button / Input / Select / Textarea / Toggle / Topbar search → `rounded-lg` |
+| Auth feature module (`src/features/auth/`) | ✅ | `signIn`/`forgot`/`reset` pages, schemas, `useFailedAttempts` store, `DevRoleSwitcher`, `PasswordField`, `LockedAlert`, MSW endpoints |
+| AuthLayout lg+ brand panel split | ✅ | `bg-brand-600` left half with logo + tagline + radial gradient; form column right with ThemeToggle |
+| `signIn` async via MSW | ✅ | `POST /api/auth/sign-in` returns user + JWT-shaped token; role by email-prefix or domain hint |
 
 ## App shell
 
@@ -64,7 +67,9 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 
 | Page | Status | Notes |
 |---|---|---|
-| `/sign-in` | 🚧 | Form + dev-shortcut role buttons; placeholder auth |
+| `/sign-in` | ✅ | RHF + Zod, password show/hide, rememberMe (visual), `?next=` + `?expired=1`, lockout (5/15min), DevRoleSwitcher, async `signIn` via MSW |
+| `/forgot-password` | ✅ | Email form → success view (always 200, no enumeration leak); ArrowLeft "Назад ко входу" |
+| `/reset-password` | ✅ | `?token=` required (must start `valid-`); password 8+ letter+digit, confirm; toast + redirect on success/reject |
 | `/` Dashboard | 🚧 | KPI cards stubbed with fixed values; widgets pending |
 | `/organization` | ❌ | Placeholder |
 | `/staff` | ❌ | Placeholder |

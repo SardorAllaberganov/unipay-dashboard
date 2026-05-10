@@ -4,6 +4,28 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-11 — Prompt 1 (Auth) — sign-in / forgot / reset
+
+**Summary.** First feature module on top of the v2.0 foundation. Sign-in becomes async (hits MSW), gets a 5/15-min lockout via a fourth `useSyncExternalStore` store, gets a `PasswordField` with show/hide, gets a DevRoleSwitcher behind `import.meta.env.DEV`, and lives at `/sign-in` under a new `src/features/auth/` module. Forgot- and reset-password flows ship alongside it. AuthLayout grows a lg+ brand panel split.
+
+**Files written.**
+- New module: [`src/features/auth/`](../src/features/auth/) — `schemas.ts`, `api.ts`, `hooks/{useFailedAttempts,useForgotPassword,useResetPassword}.ts`, `components/{SignInForm,DevRoleSwitcher,PasswordField,LockedAlert}.tsx`, `pages/{SignInPage,ForgotPasswordPage,ResetPasswordPage}.tsx`.
+- Modified: [`src/lib/auth.ts`](../src/lib/auth.ts) (async `signIn` via MSW; `unipay-signout-reason` flag), [`src/mocks/handlers/auth.ts`](../src/mocks/handlers/auth.ts) (sign-in / sign-out / forgot-password / reset-password endpoints; role by email prefix or domain hint), [`src/router.tsx`](../src/router.tsx) (registered `/forgot-password` + `/reset-password`; switched SignIn import; extended `isKnownPath`), [`src/components/auth/AuthLayout.tsx`](../src/components/auth/AuthLayout.tsx) (lg+ brand panel split: `bg-brand-600` + radial gradient + logo + tagline on left, form column on right), [`src/lib/i18n/locales/{ru,uz}.json`](../src/lib/i18n/locales/) (new `auth.signIn.*` / `auth.forgot.*` / `auth.reset.*` / `auth.dev.*` namespaces; old flat keys removed), [`docs/DECISIONS.md`](../docs/DECISIONS.md) (two deviations logged).
+- Deleted: `src/pages/SignIn.tsx` (migrated to feature module).
+
+**Verifications.** typecheck · `eslint --max-warnings 0` · `vite build` — all clean. §0.9 audit's `Unicode arrows` regex still has pre-existing UTF-8 byte-collision false positives on Cyrillic + em-dashes in legacy comments; my new files don't add to the false-positive set.
+
+**Deviations logged.**
+- Sign-in success redirects to `/` (not `/dashboard` per prompt) — there is no `/dashboard` route in this build. Logged in DECISIONS with review condition.
+- `PasswordField` show/hide toggle is 36×36 (inside `h-9` Input) — under §0.7's 44×44 target. Standard cross-product pattern; logged.
+
+**Lessons.**
+- Zod schemas as `(t) => z.object(...)` factory functions, memoized via `useMemo([t])` in the consuming form, give clean per-locale validation messages without dragging i18n into every error message at display time.
+- A "session-expired" signal needs a flag the post-redirect page can read because `signOut` itself has no router context; sessionStorage is the right channel since it's session-scoped just like the auth state itself.
+- For full-bleed surfaces wrapping their own `<TooltipProvider>`, lg+ brand panel split is best done as a top-level `lg:flex` with one `<aside>` and one form column — both columns share the provider above.
+
+---
+
 ## 2026-05-10 — Chrome polish (favicon, notifications bell, radius bump, Pages CI fix)
 
 **Summary.** Five small landing changes after the v2.0 foundation: real branded favicon, a polished notifications bell, a softer corner-radius hierarchy on cards and form controls, GitHub Pages Jekyll-bypass, and a fresh i18n group for notification copy.
