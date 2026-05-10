@@ -20,6 +20,13 @@ import ResetPasswordPage from '@/features/auth/pages/ResetPasswordPage';
 import OnboardingPage from '@/features/onboarding/pages/OnboardingPage';
 import { useOnboardingGuard } from '@/features/onboarding/hooks/useOnboardingGuard';
 import DashboardPage from '@/features/dashboard/pages/DashboardPage';
+import OrganizationLayout from '@/features/organization/pages/OrganizationLayout';
+import ProfilePage from '@/features/organization/pages/ProfilePage';
+import DepartmentsPage from '@/features/organization/pages/DepartmentsPage';
+import BankAccountsPage from '@/features/organization/pages/BankAccountsPage';
+import BrandingPage from '@/features/organization/pages/BrandingPage';
+import AddBankAccountPage from '@/features/organization/pages/AddBankAccountPage';
+import AddDepartmentPage from '@/features/organization/pages/AddDepartmentPage';
 import Placeholder from '@/pages/Placeholder';
 
 const KNOWN_PATH_PREFIXES = [
@@ -107,7 +114,21 @@ function AppRoutes() {
         <Routes>
           <Route path="/" element={<DashboardPage />} />
           <Route path="/onboarding/:step" element={<OnboardingPage />} />
-          <Route path="/organization" element={<Placeholder />} />
+          <Route path="/organization" element={<OrganizationLayout />}>
+            <Route index element={<Navigate to="profile" replace />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="departments" element={<DepartmentsPage />} />
+            <Route path="bank-accounts" element={<BankAccountsPage />} />
+            <Route path="branding" element={<BrandingPage />} />
+          </Route>
+          <Route
+            path="/organization/bank-accounts/new"
+            element={<AddBankAccountPage />}
+          />
+          <Route
+            path="/organization/departments/new"
+            element={<AddDepartmentPage />}
+          />
           <Route path="/staff" element={<Placeholder />} />
           <Route path="/students" element={<Placeholder />} />
           <Route path="/students/:id" element={<Placeholder />} />

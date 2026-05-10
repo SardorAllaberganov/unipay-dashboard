@@ -1,12 +1,11 @@
 import { z } from 'zod';
+import { LEGAL_FORMS, ORG_TYPES } from '@/types/domain';
+import type { LegalForm, OrgType } from '@/types/domain';
 
 type Translate = (key: string) => string;
 
-export const ORG_TYPES = ['university', 'school', 'kindergarten', 'college', 'other'] as const;
-export type OrgType = (typeof ORG_TYPES)[number];
-
-export const LEGAL_FORMS = ['llc', 'jsc', 'state', 'private', 'ngo', 'other'] as const;
-export type LegalForm = (typeof LEGAL_FORMS)[number];
+export { LEGAL_FORMS, ORG_TYPES };
+export type { LegalForm, OrgType };
 
 export const TEMPLATE_TYPES = ['university', 'school', 'kindergarten'] as const;
 export type TemplateType = (typeof TEMPLATE_TYPES)[number];

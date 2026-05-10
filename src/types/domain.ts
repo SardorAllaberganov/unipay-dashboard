@@ -38,6 +38,12 @@ export type PayoutStatus = 'settled' | 'pending' | 'failed';
 
 export type BankAccountVerification = 'verified' | 'pending' | 'failed';
 
+export const ORG_TYPES = ['university', 'school', 'kindergarten', 'college', 'other'] as const;
+export type OrgType = (typeof ORG_TYPES)[number];
+
+export const LEGAL_FORMS = ['llc', 'jsc', 'state', 'private', 'ngo', 'other'] as const;
+export type LegalForm = (typeof LEGAL_FORMS)[number];
+
 // Money is stored in MINOR units (UZS in tiyins, USD in cents) as bigint.
 // UI must divide by 100 at display time. Never store, pass, or render floats.
 export interface Money {
@@ -114,6 +120,24 @@ export interface BankAccount {
   label?: string;
   isDefault: boolean;
   verification: BankAccountVerification;
+}
+
+export interface Organization {
+  id: string;
+  name: { ru: string; uz?: string; en?: string };
+  type: OrgType;
+  tin: string;
+  legalForm: LegalForm;
+  region: string;
+  address: string;
+  website: string;
+  foundedYear?: number;
+}
+
+export interface Branding {
+  logoDataUrl: string;
+  primaryColor: string;
+  receiptFooter: string;
 }
 
 export interface Payout {
