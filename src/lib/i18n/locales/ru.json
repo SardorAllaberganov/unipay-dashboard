@@ -40,7 +40,12 @@
       "loading": "Загрузка…",
       "noData": "Нет данных",
       "noResults": "Ничего не найдено",
-      "offlineNote": "Показаны кэшированные данные"
+      "offlineNote": "Показаны кэшированные данные",
+      "errorTitle": "Не удалось загрузить",
+      "errorBody": "Попробуйте обновить.",
+      "partialNote": "Показано {{shown}} из {{total}} — часть элементов не загрузилась.",
+      "slowNote": "Загрузка занимает дольше обычного…",
+      "offlineNoCache": "Нет подключения и нет сохранённых данных."
     },
     "reasonLabel": "Причина (минимум {{count}} символов)",
     "reasonPlaceholder": "Укажите причину для аудита",
@@ -351,6 +356,67 @@
     "studentsTotal": "Всего студентов",
     "studentsActive": "Активных студентов",
     "transactionsToday": "Транзакций сегодня"
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Доброе утро, {{name}}",
+      "day": "Добрый день, {{name}}",
+      "evening": "Добрый вечер, {{name}}"
+    },
+    "subtitle": "{{name}} · {{type}}",
+    "kpi": {
+      "totalReceived": "Всего получено",
+      "pending": "В ожидании",
+      "overdue": "Просрочено",
+      "lastPayout": "Последняя выплата",
+      "pendingSubtitle": "{{count}} студентов с задолженностью",
+      "overdueSubtitle": "Сумма к взысканию",
+      "vsLastPeriod": "к прошлому периоду",
+      "nextPayout": "Следующая выплата: {{when}}",
+      "noPayoutYet": "Выплат ещё не было"
+    },
+    "charts": {
+      "revenue": "Выручка",
+      "statusBreakdown": "Статусы платежей",
+      "byCount": "Количество",
+      "byAmount": "Сумма",
+      "daily": "По дням",
+      "weekly": "По неделям",
+      "monthly": "По месяцам",
+      "totalStudents": "студентов",
+      "legend": {
+        "paid": "Оплачено",
+        "pending": "Ожидает",
+        "overdue": "Просрочено"
+      },
+      "tooltip": {
+        "count": "Платежей",
+        "amount": "Сумма"
+      }
+    },
+    "recent": {
+      "title": "Последние транзакции",
+      "viewAll": "Все платежи"
+    },
+    "unpaid": {
+      "title": "Должники (топ 10)",
+      "viewAll": "Все просроченные",
+      "bulkRemind": "Отправить массовое напоминание",
+      "bulkRemindTitle": "Отправить напоминание {{count}} студентам?",
+      "bulkRemindBody": "Все получатели получат push и SMS. Укажите причину — она попадёт в журнал аудита.",
+      "bulkRemindConfirm": "Отправить",
+      "bulkRemindSuccess": "Напоминание отправлено {{count}} студентам",
+      "bulkRemindReasonLabel": "Причина рассылки (минимум 20 символов)",
+      "bulkRemindReasonPlaceholder": "Например: плановое напоминание о задолженности за апрель",
+      "daysOverdue_one": "{{count}} день просрочки",
+      "daysOverdue_few": "{{count}} дня просрочки",
+      "daysOverdue_many": "{{count}} дней просрочки",
+      "daysOverdue_other": "{{count}} дней просрочки",
+      "reasonLabel": "Причина рассылки"
+    },
+    "empty": {
+      "noData": "Нет данных за выбранный период"
+    }
   },
   "errors": {
     "generic": "Что-то пошло не так. Попробуйте ещё раз."

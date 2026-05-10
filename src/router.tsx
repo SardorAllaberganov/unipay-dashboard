@@ -19,7 +19,7 @@ import ForgotPasswordPage from '@/features/auth/pages/ForgotPasswordPage';
 import ResetPasswordPage from '@/features/auth/pages/ResetPasswordPage';
 import OnboardingPage from '@/features/onboarding/pages/OnboardingPage';
 import { useOnboardingGuard } from '@/features/onboarding/hooks/useOnboardingGuard';
-import Dashboard from '@/pages/Dashboard';
+import DashboardPage from '@/features/dashboard/pages/DashboardPage';
 import Placeholder from '@/pages/Placeholder';
 
 const KNOWN_PATH_PREFIXES = [
@@ -105,7 +105,7 @@ function AppRoutes() {
     <SystemErrorBoundary>
       <OnboardingGuardWrapper>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<DashboardPage />} />
           <Route path="/onboarding/:step" element={<OnboardingPage />} />
           <Route path="/organization" element={<Placeholder />} />
           <Route path="/staff" element={<Placeholder />} />

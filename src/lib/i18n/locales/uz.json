@@ -40,7 +40,12 @@
       "loading": "Yuklanmoqda…",
       "noData": "Ma'lumot yo'q",
       "noResults": "Hech narsa topilmadi",
-      "offlineNote": "Keshlangan ma'lumotlar ko'rsatildi"
+      "offlineNote": "Keshlangan ma'lumotlar ko'rsatildi",
+      "errorTitle": "Yuklanmadi",
+      "errorBody": "Yangilashga urinib ko'ring.",
+      "partialNote": "{{total}} dan {{shown}} ta ko'rsatildi — ba'zi elementlar yuklanmadi.",
+      "slowNote": "Yuklanish odatdagidan ko'proq vaqt olmoqda…",
+      "offlineNoCache": "Ulanish yo'q va saqlangan ma'lumot ham yo'q."
     },
     "reasonLabel": "Sabab (kamida {{count}} belgi)",
     "reasonPlaceholder": "Audit uchun sababni ko'rsating",
@@ -351,6 +356,65 @@
     "studentsTotal": "Jami talabalar",
     "studentsActive": "Faol talabalar",
     "transactionsToday": "Bugungi tranzaksiyalar"
+  },
+  "dashboard": {
+    "greeting": {
+      "morning": "Xayrli tong, {{name}}",
+      "day": "Xayrli kun, {{name}}",
+      "evening": "Xayrli kech, {{name}}"
+    },
+    "subtitle": "{{name}} · {{type}}",
+    "kpi": {
+      "totalReceived": "Jami qabul qilindi",
+      "pending": "Kutilmoqda",
+      "overdue": "Muddati o'tgan",
+      "lastPayout": "So'nggi yechib olish",
+      "pendingSubtitle": "{{count}} ta qarzdor talaba",
+      "overdueSubtitle": "Undirish summasi",
+      "vsLastPeriod": "o'tgan davrga nisbatan",
+      "nextPayout": "Keyingi yechib olish: {{when}}",
+      "noPayoutYet": "Hali yechib olish bo'lmagan"
+    },
+    "charts": {
+      "revenue": "Tushum",
+      "statusBreakdown": "To'lov holatlari",
+      "byCount": "Soni",
+      "byAmount": "Summa",
+      "daily": "Kunlik",
+      "weekly": "Haftalik",
+      "monthly": "Oylik",
+      "totalStudents": "talaba",
+      "legend": {
+        "paid": "To'langan",
+        "pending": "Kutilmoqda",
+        "overdue": "Muddati o'tgan"
+      },
+      "tooltip": {
+        "count": "To'lovlar",
+        "amount": "Summa"
+      }
+    },
+    "recent": {
+      "title": "So'nggi tranzaksiyalar",
+      "viewAll": "Barcha to'lovlar"
+    },
+    "unpaid": {
+      "title": "Qarzdorlar (top 10)",
+      "viewAll": "Barcha muddati o'tganlar",
+      "bulkRemind": "Ommaviy eslatma yuborish",
+      "bulkRemindTitle": "{{count}} ta talabaga eslatma yuborilsinmi?",
+      "bulkRemindBody": "Barcha qabul qiluvchilar push va SMS oladi. Sababni ko'rsating — u audit jurnaliga tushadi.",
+      "bulkRemindConfirm": "Yuborish",
+      "bulkRemindSuccess": "Eslatma {{count}} ta talabaga yuborildi",
+      "bulkRemindReasonLabel": "Yuborish sababi (kamida 20 belgi)",
+      "bulkRemindReasonPlaceholder": "Masalan: aprel oyi uchun qarzdorlik bo'yicha rejali eslatma",
+      "daysOverdue_one": "{{count}} kun kechikish",
+      "daysOverdue_other": "{{count}} kun kechikish",
+      "reasonLabel": "Yuborish sababi"
+    },
+    "empty": {
+      "noData": "Tanlangan davr uchun ma'lumot yo'q"
+    }
   },
   "errors": {
     "generic": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring."

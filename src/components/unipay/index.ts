@@ -15,7 +15,6 @@ export { LoadingChart } from '@/components/shared/LoadingChart';
 export { LoadingCard } from '@/components/shared/LoadingCard';
 export { ErrorState } from '@/components/shared/ErrorState';
 export { OfflineState as OfflineSurface } from '@/components/shared/OfflineState';
-export { Sparkline } from '@/components/shared/Sparkline';
 
 // Layout primitives kept under layout/ for now.
 export { DetailHeader } from '@/components/layout/DetailHeader';
