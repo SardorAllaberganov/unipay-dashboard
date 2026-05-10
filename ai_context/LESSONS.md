@@ -6,6 +6,56 @@ Review at session start (or via `/start_task`). Most recent on top.
 
 ---
 
+## 2026-05-11 · `overflow-y-auto` clips the input focus ring on the horizontal axis — outset the scroll wrapper with `-mx-1 px-1`
+
+**Rule.** Any scroll container that wraps form inputs must carry `-mx-1 px-1` (and `-my-1 py-1` if vertical edges are also at the clip line). The negative margin pulls the scroll boundary 4px past the parent's content edge while the inner padding restores the visual content position. Without this, inputs whose `focus-visible:ring-2 ring-offset-2` halo sits 4px outside the input box get their ring clipped along whichever container edge is nearest.
+
+**Why.** Per the CSS spec, when one of `overflow-x` / `overflow-y` is `auto` and the other is `visible`, the visible axis is computed to `auto`. So a `overflow-y-auto` wrapper implicitly clips horizontally too — even when content doesn't actually overflow horizontally. User flagged this directly: focus rings on inputs inside the Bank Account add Sheet were invisible because the scroll wrapper's horizontal clip line bisected the ring.
+
+**How to apply.** Every internal scroll container — `ResponsiveSheet`'s middle slot, `DepartmentDetailPanel`'s form body, `DepartmentTree`'s tree list, future feature pages with their own scroll — carries `-mx-1 px-1 -my-1 py-1` (or just the horizontal pair if vertical edges are far from any input). 4px on each side covers `ring-2` (2px ring) + `ring-offset-2` (2px gap). Don't bump the input's own ring offset to 0 — that changes the design system; outset the wrapper instead.
+
+---
+
+## 2026-05-11 · Nested flex-col `overflow-y-auto` needs a `min-h-0` chain on every `flex-1` ancestor
+
+**Rule.** When `overflow-y-auto` lives on a `flex-1` child inside a `flex flex-col` parent, every `flex-1` ancestor in the chain back to a definite-height container must also carry `min-h-0`. Without it, flex's default `min-height: auto` lets the child grow to fit its content rather than be constrained to the remaining space — and `overflow-y-auto` never engages because there's nothing to overflow.
+
+**Why.** Flex containers have an automatic minimum size equal to their content size, which means a `flex-1` child can grow past its allocated proportion. The `min-h-0` override lets the child be smaller than its content, which is what triggers the overflow. User reported "not all overflowed elements are scrolling" — root cause was the Sheet's middle wrapper had `flex-1` but the form's scroll container inside couldn't actually scroll because the flex calculation never produced a height constraint.
+
+**How to apply.** Pattern for a Sheet/Dialog with scrollable middle:
+```
+<Container className="flex max-h-[90dvh] flex-col">
+  <Header className="shrink-0" />
+  <ScrollWrapper className="min-h-0 flex-1 overflow-y-auto -mx-1 px-1">
+    {form}
+  </ScrollWrapper>
+  <Footer className="shrink-0" />
+</Container>
+```
+Same pattern for the form itself if it has its own flex-col with a scrollable body (e.g. `DepartmentDetailPanel` has `<form className="flex h-full min-h-0 flex-col">` so its `flex-1 overflow-y-auto` field area engages).
+
+---
+
+## 2026-05-11 · `@dnd-kit` PointerSensor needs `delay`-based activation for touch UX
+
+**Rule.** For drag-drop surfaces that coexist with scrollable content on touch devices, use `useSensor(PointerSensor, { activationConstraint: { delay: 250, tolerance: 8 } })`. Long-press starts the drag; quick taps and scroll gestures don't fire spurious drags.
+
+**Why.** The default `distance`-based activation (e.g. `{ distance: 4 }`) fires the moment a pointer moves 4px in any direction — which is exactly what happens during a finger scroll on touch. Result: every attempt to scroll the Departments tree on mobile triggered a drag instead. `delay`-based activation makes touch scroll the default and explicit long-press the drag affordance.
+
+**How to apply.** Any new dnd-kit surface in this codebase uses the delay-based constraint. `KeyboardSensor` stays default-configured for a11y. `tolerance: 8` allows a small finger jitter during the 250ms hold window without canceling the drag.
+
+---
+
+## 2026-05-11 · Add/Create flows are standalone pages — Sheets/Dialogs reserved for edit + confirm + small-scope pickers
+
+**Rule.** Any user-facing "Add X" / "Create X" / "New X" flow in this app renders as a standalone page route, not a `<Dialog>` / `<Sheet>` / `<ResponsiveSheet>`. Edit flows stay in Sheets (short, contextual, near the row being edited). Confirms stay in `<ConfirmDialog>`. Small pickers (color, date, tree-node) stay in Popovers.
+
+**Why.** Create forms accrete fields over time. A 3-field add-department dialog becomes a 7-field form once "head of staff Combobox" and "payment types Checkbox group" and "notes Textarea" land. Modal layouts with nested scroll degrade UX (focus-ring clipping, sticky-footer fragility, no shareable URL for in-progress state, no browser back). Pages give shareable URLs (e.g. `?parentId=X` for "add child"), browser-native back, and a clean §0.5 Pattern A action bar. User explicitly confirmed this convention after the org module shipped.
+
+**How to apply.** Register the add page as a **sibling** of the parent layout route, not a child — so the layout's chrome (tabs, etc.) doesn't render on the add page. The back link is the only orientation chrome needed. Use §0.5 Pattern A: `<BackLink to="…" pluralName="…" />` row → `text-page-title` heading → form (`max-w-2xl space-y-4`) → fixed-bottom action bar (`fixed inset-x-0 bottom-0 … md:left-[var(--sidebar-width,4rem)]`) with Cancel + WriteButton-Save (full-width `flex-1` on mobile, right-aligned content-sized on `md+`). Page wrapper gets `pb-28` to clear the bar at full scroll.
+
+---
+
 ## 2026-05-10 · Never run `git add` / `git commit` / `git push` without an explicit `/commit` invocation
 
 **Rule.** Write file changes, run verifications (typecheck, lint, build, audit), and stop. Do not stage, commit, or push until the user runs `/commit` or explicitly says "commit and push." This holds even after small follow-up fixes that feel obviously safe to land.

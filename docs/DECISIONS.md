@@ -15,6 +15,22 @@ A deviation that isn't logged here is a bug.
 
 ---
 
+## 2026-05-11 · Organization — add flows are standalone pages, not Dialogs/Sheets
+
+1. **Rule** — The Prompt 4 spec called for "Add account → `<ResponsiveSheet>` form" and "+ Add подразделение → `<AddDepartmentDialog>`". §0.5 doesn't prescribe a default for create flows — it documents detail-page chrome (back link + action bar) for either pattern.
+2. **Reason** — User explicitly requested: "in addition pages in organizations should be separate pages". Create flows tend to grow fields over time (bank account today is 7 fields, departments today is 3 fields; both will accrete more — head-of-staff Combobox once `/staff` exists, payment-types Checkbox group, notes Textarea, etc.). A Sheet/Dialog that grows tall enough to need internal scroll degrades UX (focus-ring clipping, sticky-footer layout fragility, no shareable URL for an in-progress form, no browser back). Promoting create to full pages gives shareable URLs (deep-linkable for "add child under department X" via `?parentId=X`), browser-native back, and clean §0.5 Pattern A action bar without nested-scroll headaches. Edit stays in the Sheet — edit is short, contextual, and benefits from staying near the row being edited.
+3. **Scope** — [`AddBankAccountPage.tsx`](../src/features/organization/pages/AddBankAccountPage.tsx) at `/organization/bank-accounts/new`. [`AddDepartmentPage.tsx`](../src/features/organization/pages/AddDepartmentPage.tsx) at `/organization/departments/new[?parentId=X]`. Both registered as **siblings** of the `<OrganizationLayout>` route (not children) so the tabs strip doesn't render on them — back link is the only orientation chrome. The deleted `AddDepartmentDialog.tsx` is replaced; `BankAccountForm.tsx` simplified to edit-only.
+4. **Review date** — Permanent shift in product convention. Apply the same pattern to future modules' create flows (Students, Refunds, Reports, etc.) — Sheet/Dialog reserved for edit + confirm + small-scope picker flows only. Revisit only if a usability test exposes a regression (e.g. context loss from leaving the list).
+
+## 2026-05-11 · Organization — cross-feature imports of `PanelStates` and `BankCombobox`
+
+1. **Rule** — `.claude/rules/design-system-layers.md` import direction: Components may reference Tokens / Primitives but NOT other Components, Patterns, or Screens (no sideways imports between features).
+2. **Reason** — `<PanelStates>` lives at [`features/dashboard/components/PanelStates.tsx`](../src/features/dashboard/components/PanelStates.tsx) and uses the current `common.states.*` i18n keys; the legacy [`shared/EmptyState`](../src/components/shared/EmptyState.tsx) / [`ErrorState`](../src/components/shared/ErrorState.tsx) / [`OfflineState`](../src/components/shared/OfflineState.tsx) primitives use older keys (`states.errorTitle`, `common.retry`) that don't match the current `common.states.*` namespace. `<BankCombobox>` lives at [`features/onboarding/components/BankCombobox.tsx`](../src/features/onboarding/components/BankCombobox.tsx) and is fully generic but feature-local. Promoting either to `src/components/shared/` requires updating 5 dashboard imports (PanelStates) + 1 onboarding Step 3 import (BankCombobox) + adding the new shared file. Acceptable velocity tradeoff for landing Prompt 4 cleanly; flagged for cleanup.
+3. **Scope** — Organization module's Profile / Departments / Bank Accounts / Branding pages import `PanelStates` directly from `@/features/dashboard/components/PanelStates`. `BankAccountForm.tsx` + `AddBankAccountPage.tsx` import `BankCombobox` from `@/features/onboarding/components/BankCombobox`. Both flagged in [`AI_CONTEXT.md`](../ai_context/AI_CONTEXT.md) "Open work" and [`product_states.md`](./product_states.md) outstanding follow-ups.
+4. **Review date** — Promote both to `src/components/shared/` before the next feature module lands (Prompt 5 — Students). Promoting `PanelStates` also requires reconciling the older `EmptyState`/`ErrorState`/`OfflineState` primitives — likely retire them since they reference dropped i18n keys.
+
+---
+
 ## 2026-05-11 · Dashboard — KPI hero number is `text-2xl md:text-3xl` (responsive, not always `text-3xl`)
 
 1. **Rule** — §0.2 typography lock: `text-3xl` (28px) = "KPI hero numbers".

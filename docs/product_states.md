@@ -40,6 +40,11 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 | Dashboard feature module (`src/features/dashboard/`) | ✅ | Greeting title (Tashkent-aware) + DateRangePicker URL-synced (`?range=&from=&to=`) + 4 KPI cards + RevenueChart (BarChart + D/W/M Tabs + count↔amount Switch) + PaymentStatusChart (donut + center total + legend) + RecentTransactions + UnpaidStudents (bulk-remind → ConfirmDialog ≥20 → toast). All 5 panels render the §0.8 six states. MSW seeds 240 deterministic students; `?_state=partial\|empty\|error` QA hook. |
 | `KpiSparkline` (Recharts AreaChart) | ✅ | Brand-600 stroke + gradient fill; replaces the deleted legacy `shared/Sparkline.tsx` |
 | `lib/greeting.ts` | ✅ | Tashkent-aware `getGreetingKey()` via `Intl.DateTimeFormat`; `setTimeout(msUntilNextHour)` self-re-arms |
+| Organization feature module (`src/features/organization/`) | ✅ | 5 sub-pages + 2 add-pages, 7 components, 8 hooks, schemas, api.ts. Nested route layout with horizontal-scroll tabs. dnd-kit tree with delay-based touch activation + cycle prevention. |
+| MSW handler `mocks/handlers/organization.ts` | ✅ | 16 endpoints, TATU org fixture, 111-node tree (3×4×2×3), 2 bank accounts, server-side `setTimeout(5000)` verification flip. `?_state=partial\|empty\|error` QA override on every GET. |
+| `Organization`, `Branding`, `LegalForm`, `OrgType` domain types | ✅ | Added to `src/types/domain.ts`. `OrgType` and `LegalForm` re-exported from `features/onboarding/schemas.ts` for back-compat. |
+| Shared `LogoUploader` / `ColorPicker` / `ReceiptPreview` | ✅ | Promoted from `features/onboarding/components/` to `src/components/shared/`. `LogoUploader` parameterized with `labels` + `maxSizeBytes` + `minDimensions` + `accept`. Receipt copy moved to `common.receipt.*` namespace. |
+| `@dnd-kit/{core,sortable,utilities}` | ✅ | Departments tree drag/drop. PointerSensor with `delay: 250, tolerance: 8` (touch scroll wins by default; long-press starts drag). |
 
 ## App shell
 
@@ -80,7 +85,13 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 | `/reset-password` | ✅ | `?token=` required (must start `valid-`); password 8+ letter+digit, confirm; toast + redirect on success/reject |
 | `/onboarding/:step` | ✅ | 5 linear steps (org info, contact+branding, bank accounts, departments, invites). Sticky step indicator + fixed action bar (Pattern A). Sidebar nav locked while active. Save & exit + offline queue. Confetti on finish. |
 | `/` Dashboard | ✅ | Greeting header + DateRangePicker (ZhiPay format) + 4 KPI cards (1-col mobile · 2-col `sm:` · 4-col `lg:`) + RevenueChart + PaymentStatusChart + RecentTransactions + UnpaidStudents w/ bulk-remind. Full 6-state coverage per panel via `?_state=` QA hook. |
-| `/organization` | ❌ | Placeholder |
+| `/organization` → `/organization/profile` | ✅ | Index route redirects to `profile`. `<OrganizationLayout>` renders `<PageHeader>` + `<OrgTabsNav>` + `<Outlet />`. Mobile-bleed `overflow-x-auto whitespace-nowrap` tabs strip. |
+| `/organization/profile` | ✅ | 2-col `md:grid-cols-2`. RHF + Zod profile schema. Left = identity fields (RU/UZ/EN names, type read-only, TIN read-only, legalForm, region, address, website, foundedYear). Right = branding preview card + live `<ReceiptPreview>` + "Edit on Branding tab" link. Bottom Save WriteButton. 6 states. |
+| `/organization/departments` | ✅ | 2-pane on `md+` (tree 2fr / detail panel 3fr), mobile = tree + bottom Sheet on tap. Tree: `useDepartments` flat-list + `buildTree` memo, debounced search auto-expands ancestors, `@dnd-kit` drag-drop with `delay:250 tolerance:8` (touch scroll wins by default), cycle-prevention via `descendantIds` banned-set, reparent ConfirmDialog with `requireReason` when affected students > 50. Detail panel form (RU/UZ name, type, headStaffId, paymentTypes checkboxes, notes, read-only studentCount) with Save / Cancel / Delete (cascade-aware ConfirmDialog reason ≥20). 6 states. |
+| `/organization/bank-accounts` | ✅ | Card list, 1 per account (`Card overflow-hidden`). Each row: bank icon + name + `<MaskedAccount>` + label + currency + Default badge + verification `<StatusBadge>`. Actions: Set default / Edit (Sheet) / Delete (ConfirmDialog reason ≥20). MSW seeds 2 verified UZS accounts. 6 states. |
+| `/organization/branding` | ✅ | 2-col. Left = `<LogoUploader>` (2MB / min 256×256) + delete-logo (ConfirmDialog reason ≥20) + `<ColorPicker>` + receipt-footer Textarea (max 200, char counter). Right = live `<ReceiptPreview>`. Brand color does **not** mutate `:root` — applied inline on receipt header only. |
+| `/organization/bank-accounts/new` | ✅ | Standalone page (sibling of OrganizationLayout, no tabs). §0.5 Pattern A: back link → `text-page-title` → form (`max-w-2xl`) → fixed-bottom Cancel/Save action bar. Optimistic create → MSW returns `verification: 'pending'` → server-side `setTimeout(5000)` flips to `'verified'`; client refetch at 5.5s picks it up. |
+| `/organization/departments/new[?parentId=X]` | ✅ | Standalone page (sibling of OrganizationLayout, no tabs). §0.5 Pattern A. Reads `?parentId` query for nested adds; surfaces parent name in subtitle. Defaults `type` to `faculty` when root, `department` when nested. |
 | `/staff` | ❌ | Placeholder |
 | `/students` + `/students/:id` | ❌ | Placeholder |
 | `/payments/transactions` + `/:id` | ❌ | Placeholder |
@@ -118,9 +129,11 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 - Chord listener (`g d`, `g s`, `g p`, `g y`, `g r`, `g ,`) — wire into `useKeyboardShortcuts` or a separate hook.
 - Real auth wiring (currently sessionStorage placeholder; idle timeout works).
 - Dark-mode token coverage QA across every component.
-- `/api/organization` endpoint — Dashboard institution subtitle uses a placeholder constant until this lands.
+- Dashboard institution subtitle still uses placeholder constant `УНИПЭЙ · Университет` — wire to the now-available `GET /api/organization` endpoint.
 - Dashboard date-range filter — MSW handlers accept `?range=&from=&to=` but the seed isn't date-windowed; wire when backend/fixtures need it.
 - Dashboard panel deep-links target `/payments/transactions`, `/payments/pending`, `/payments/pending?tab=overdue` — all resolve to `<Placeholder />` today.
 - Sidebar role-aware filtering registry — decide which items each role sees.
-- Feature pages 4–12 land via subsequent prompts (students, transactions, pending, refunds, reports, payouts, settings).
+- Promote `PanelStates` (currently in `features/dashboard/components/`) and `BankCombobox` (`features/onboarding/components/`) to `src/components/shared/`. Both currently cross-feature-imported by Organization.
+- Department detail panel's `headStaffId` is a plain text Input — swap to a real staff Combobox when `/staff` page exists.
+- Feature pages 5–12 land via subsequent prompts (students, transactions, pending, refunds, reports, payouts, settings).
 - `docs/models.md`, `docs/product_requirements_document.md`, `docs/mermaid_schemas/` — not yet present; spawn when feature work begins.
