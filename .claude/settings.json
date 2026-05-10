@@ -1,0 +1,136 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(src/**)",
+      "Write(src/**)",
+      "Read(tests/**)",
+      "Write(tests/**)",
+      "Read(docs/**)",
+      "Write(docs/**)",
+      "Read(BOOTSTRAP.md)",
+      "Read(package.json)",
+      "Read(package-lock.json)",
+      "Read(.env.example)",
+      "Read(CLAUDE.md)",
+      "Read(HISTORY.md)",
+      "Write(HISTORY.md)",
+      "Read(.claude/rules/**)",
+      "Read(tasks/**)",
+      "Write(tasks/**)",
+      "Bash(git status)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git restore:*)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git remote:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(npm ci)",
+      "Bash(npm ci:*)",
+      "Bash(npm test)",
+      "Bash(npm test:*)",
+      "Bash(npm run *)",
+      "Bash(npm audit:*)",
+      "Bash(npm view:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm fund:*)",
+      "Bash(npm outdated:*)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(rg *)",
+      "Bash(grep *)",
+      "Bash(ls)",
+      "Bash(ls:*)",
+      "Bash(find *)",
+      "Bash(cat *)",
+      "Bash(curl *)",
+      "Bash(wait)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(wc *)",
+      "Bash(echo *)",
+      "Bash(mkdir *)",
+      "Bash(touch *)",
+      "Bash(date:*)",
+      "Bash(date)",
+      "Bash(jq *)",
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(gh *)",
+      "Bash(sed *)",
+      "Bash(awk *)",
+      "Bash(sort *)",
+      "Bash(uniq *)",
+      "Bash(diff *)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:npmjs.com)",
+      "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:expressjs.com)",
+      "WebFetch(domain:sequelize.org)",
+      "WebFetch(domain:mongoosejs.com)"
+    ],
+    "ask": [
+      "Bash(git push:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/*)",
+      "Bash(sudo:*)",
+      "Read(.env)",
+      "Read(.env.*)",
+      "Write(.env)",
+      "Write(.env.*)",
+      "Read(**/.env*)",
+      "Read(**/secrets/**)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(~/.gnupg/**)",
+      "Write(secrets/**)",
+      "Bash(chmod:*)",
+      "Bash(npm publish:*)",
+      "Bash(curl * | bash)",
+      "Bash(curl * | sh)",
+      "Bash(wget * | bash)",
+      "Bash(ssh *)",
+      "Bash(scp *)",
+      "Bash(nc *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write(src/**/*.js)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx eslint --fix $FILEPATH 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Write(tests/**/*.js)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx eslint --fix $FILEPATH 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  }
+}
