@@ -214,6 +214,13 @@
       "next": "Keyingi",
       "finish": "Sozlamani yakunlash"
     },
+    "skipSetup": {
+      "action": "O'tkazib yuborish",
+      "title": "Sozlamani o'tkazib yuborilsinmi?",
+      "body": "Keyinroq «Tashkilot» bo'limida sozlash mumkin.",
+      "confirm": "O'tkazib yuborish",
+      "toast": "Sozlamani keyinroq yakunlash mumkin."
+    },
     "errors": {
       "required": "Majburiy maydon",
       "tinFormat": "STIR 9 ta raqamdan iborat bo`lishi kerak",

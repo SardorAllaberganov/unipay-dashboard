@@ -3,6 +3,7 @@ import { Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useTranslation } from 'react-i18next';
 import { StepIndicator } from './StepIndicator';
+import { SkipSetupButton } from './SkipSetupButton';
 
 interface Props {
   currentStep: number;
@@ -23,8 +24,11 @@ export function OnboardingLayout({
   return (
     <>
       <div className="sticky top-0 z-30 -mx-4 border-b border-border bg-background px-4 py-3 md:-mx-6 md:px-6">
-        <div className="mx-auto max-w-2xl">
-          <StepIndicator current={currentStep} total={totalSteps} />
+        <div className="mx-auto flex max-w-2xl items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <StepIndicator current={currentStep} total={totalSteps} />
+          </div>
+          <SkipSetupButton />
         </div>
       </div>
       <div className="mx-auto max-w-2xl pb-16 pt-6 md:pt-8">
