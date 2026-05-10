@@ -169,7 +169,7 @@ export function TopBar({
       <button
         type="button"
         onClick={onCommandPalette}
-        className="hidden h-9 w-[320px] items-center gap-2 rounded-md border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:flex lg:w-[420px]"
+        className="hidden h-9 w-[320px] items-center gap-2 rounded-lg border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:flex lg:w-[420px]"
         aria-label={t('common.actions.search')}
       >
         <Search className="size-4 opacity-60" aria-hidden />
