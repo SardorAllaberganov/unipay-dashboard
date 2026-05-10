@@ -17,6 +17,8 @@ import { useMaintenanceState } from '@/lib/maintenanceState';
 import SignInPage from '@/features/auth/pages/SignInPage';
 import ForgotPasswordPage from '@/features/auth/pages/ForgotPasswordPage';
 import ResetPasswordPage from '@/features/auth/pages/ResetPasswordPage';
+import OnboardingPage from '@/features/onboarding/pages/OnboardingPage';
+import { useOnboardingGuard } from '@/features/onboarding/hooks/useOnboardingGuard';
 import Dashboard from '@/pages/Dashboard';
 import Placeholder from '@/pages/Placeholder';
 
@@ -28,6 +30,7 @@ const KNOWN_PATH_PREFIXES = [
   '/reports',
   '/payouts',
   '/settings',
+  '/onboarding',
   '/system/',
 ];
 
@@ -92,44 +95,52 @@ export function Router() {
   );
 }
 
+function OnboardingGuardWrapper({ children }: { children: React.ReactNode }) {
+  useOnboardingGuard();
+  return <>{children}</>;
+}
+
 function AppRoutes() {
   return (
     <SystemErrorBoundary>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/organization" element={<Placeholder />} />
-        <Route path="/staff" element={<Placeholder />} />
-        <Route path="/students" element={<Placeholder />} />
-        <Route path="/students/:id" element={<Placeholder />} />
-        <Route path="/payments/transactions" element={<Placeholder />} />
-        <Route path="/payments/transactions/:id" element={<Placeholder />} />
-        <Route path="/payments/pending" element={<Placeholder />} />
-        <Route path="/payments/refunds" element={<Placeholder />} />
-        <Route path="/reports" element={<Placeholder />} />
-        <Route path="/payouts" element={<Placeholder />} />
-        <Route path="/payouts/:id" element={<Placeholder />} />
-        <Route path="/settings" element={<Placeholder />} />
+      <OnboardingGuardWrapper>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/onboarding/:step" element={<OnboardingPage />} />
+          <Route path="/organization" element={<Placeholder />} />
+          <Route path="/staff" element={<Placeholder />} />
+          <Route path="/students" element={<Placeholder />} />
+          <Route path="/students/:id" element={<Placeholder />} />
+          <Route path="/payments/transactions" element={<Placeholder />} />
+          <Route path="/payments/transactions/:id" element={<Placeholder />} />
+          <Route path="/payments/pending" element={<Placeholder />} />
+          <Route path="/payments/refunds" element={<Placeholder />} />
+          <Route path="/reports" element={<Placeholder />} />
+          <Route path="/payouts" element={<Placeholder />} />
+          <Route path="/payouts/:id" element={<Placeholder />} />
+          <Route path="/settings" element={<Placeholder />} />
 
-        {/* System preview routes for QA */}
-        <Route path="/system/preview/404" element={<NotFoundState />} />
-        <Route
-          path="/system/preview/500"
-          element={<ServerErrorState referenceId="8a7c-2f1e" onRetry={() => undefined} />}
-        />
-        <Route path="/system/preview/403" element={<ForbiddenState preview />} />
-        <Route path="/system/preview/offline" element={<OfflineState forceVisible />} />
-        <Route
-          path="/system/preview/maintenance"
-          element={
-            <MaintenanceState
-              startedAtOverride={Date.now() - 600_000}
-              estimatedEndAtOverride={Date.now() + 1_800_000}
-            />
-          }
-        />
+          {/* System preview routes for QA */}
+          <Route path="/system/preview/404" element={<NotFoundState />} />
+          <Route
+            path="/system/preview/500"
+            element={<ServerErrorState referenceId="8a7c-2f1e" onRetry={() => undefined} />}
+          />
+          <Route path="/system/preview/403" element={<ForbiddenState preview />} />
+          <Route path="/system/preview/offline" element={<OfflineState forceVisible />} />
+          <Route
+            path="/system/preview/maintenance"
+            element={
+              <MaintenanceState
+                startedAtOverride={Date.now() - 600_000}
+                estimatedEndAtOverride={Date.now() + 1_800_000}
+              />
+            }
+          />
 
-        <Route path="*" element={<NotFoundState />} />
-      </Routes>
+          <Route path="*" element={<NotFoundState />} />
+        </Routes>
+      </OnboardingGuardWrapper>
     </SystemErrorBoundary>
   );
 }

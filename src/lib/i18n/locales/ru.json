@@ -32,7 +32,9 @@
       "openMenu": "Открыть меню",
       "openSearch": "Открыть поиск",
       "showHelp": "Показать справку",
-      "toggleTheme": "Переключить тему"
+      "toggleTheme": "Переключить тему",
+      "collapse": "Свернуть",
+      "expand": "Развернуть"
     },
     "states": {
       "loading": "Загрузка…",
@@ -176,6 +178,148 @@
       "body": "Сервис временно недоступен. Мы работаем над восстановлением.",
       "estimated": "Ожидаемое окончание: {{time}}",
       "primary": "Обновить"
+    }
+  },
+  "onboarding": {
+    "stepLabel": "Шаг {{current}} из {{total}}",
+    "sidebarLockedTooltip": "Завершите настройку, чтобы продолжить",
+    "completedToast": "Настройка завершена!",
+    "offlineQueued": "Сохранено локально. Загрузим, когда подключение восстановится.",
+    "logoDropHint": "Перетащите файл или выберите вручную",
+    "logoChoose": "Выбрать файл",
+    "logoRemove": "Удалить",
+    "actions": {
+      "back": "Назад",
+      "saveExit": "Сохранить и выйти",
+      "next": "Далее",
+      "finish": "Завершить настройку"
+    },
+    "errors": {
+      "required": "Обязательное поле",
+      "tinFormat": "ИНН должен содержать 9 цифр",
+      "yearRange": "Некорректный год",
+      "urlInvalid": "Некорректный URL",
+      "emailInvalid": "Некорректный email",
+      "phoneFormat": "Некорректный номер телефона",
+      "hexFormat": "Некорректный HEX-цвет",
+      "max200": "Максимум 200 символов",
+      "mfoFormat": "МФО должен содержать 5 цифр",
+      "ibanFormat": "Счёт должен содержать 20 цифр",
+      "atLeastOneAccount": "Добавьте хотя бы один счёт",
+      "exactlyOneDefault": "Выберите один счёт по умолчанию",
+      "treeEmpty": "Структура не может быть пустой",
+      "logoType": "Только PNG, JPG или SVG",
+      "logoSize": "Файл больше 1 МБ",
+      "draftLoadTitle": "Не удалось загрузить черновик",
+      "draftLoadBody": "Попробуйте ещё раз."
+    },
+    "step1": {
+      "title": "Информация об учреждении",
+      "nameRuLabel": "Название (RU)",
+      "nameUzLabel": "Название (UZ)",
+      "typeLabel": "Тип учреждения",
+      "typePlaceholder": "Выберите тип",
+      "legalFormLabel": "Правовая форма",
+      "legalFormPlaceholder": "Выберите форму",
+      "tinLabel": "ИНН",
+      "foundedYearLabel": "Год основания",
+      "regionLabel": "Регион",
+      "regionPlaceholder": "Выберите регион",
+      "addressLabel": "Адрес",
+      "websiteLabel": "Веб-сайт"
+    },
+    "orgTypes": {
+      "university": "Университет",
+      "school": "Школа",
+      "kindergarten": "Детский сад",
+      "college": "Колледж",
+      "other": "Другое"
+    },
+    "legalForms": {
+      "llc": "ООО",
+      "jsc": "АО",
+      "state": "Государственное",
+      "private": "Частное",
+      "ngo": "НКО",
+      "other": "Другое"
+    },
+    "step2": {
+      "title": "Контакты и брендинг",
+      "contactEmailLabel": "Email для связи",
+      "phoneLabel": "Телефон",
+      "logoLabel": "Логотип",
+      "primaryColorLabel": "Основной цвет",
+      "receiptFooterLabel": "Подпись на чеке",
+      "receiptFooterPlaceholder": "Например: Спасибо за оплату!",
+      "previewReceipt": "Посмотреть чек"
+    },
+    "receipt": {
+      "previewLabel": "Предпросмотр чека",
+      "placeholderOrg": "Название учреждения",
+      "studentLabel": "Студент",
+      "studentSample": "Каримов А.",
+      "periodLabel": "Период",
+      "periodSample": "Апрель 2026",
+      "totalLabel": "Итого"
+    },
+    "step3": {
+      "title": "Банковские счета",
+      "addAccount": "Добавить счёт",
+      "testTransferNote": "После настройки UNIPAY отправит тестовый перевод 1 000 UZS для верификации."
+    },
+    "bank": {
+      "accountTitle": "Счёт {{num}}",
+      "selectPlaceholder": "Выберите банк",
+      "searchPlaceholder": "Поиск банка…",
+      "notFound": "Ничего не найдено",
+      "bankNameLabel": "Банк",
+      "mfoLabel": "МФО",
+      "ibanLabel": "Расчётный счёт",
+      "holderLabel": "Получатель",
+      "labelLabel": "Метка",
+      "labelPlaceholder": "Например: основной счёт",
+      "currencyLabel": "Валюта",
+      "usdComingSoon": "Скоро",
+      "isDefault": "Использовать по умолчанию"
+    },
+    "step4": {
+      "title": "Структура подразделений",
+      "modeTemplate": "Использовать шаблон",
+      "modeTemplateHint": "Готовая структура, которую можно адаптировать.",
+      "modeSkip": "Пропустить",
+      "modeSkipHint": "Настроить позже в разделе «Организация».",
+      "pickTemplate": "Выберите шаблон",
+      "templates": {
+        "university": "Университет",
+        "school": "Школа",
+        "kindergarten": "Детский сад"
+      },
+      "emptyHint": "Выберите шаблон, чтобы загрузить структуру.",
+      "emptyTree": "Структура пуста. Добавьте первый узел.",
+      "errorFetch": "Не удалось загрузить шаблон.",
+      "offlineNoCache": "Нет соединения. Откройте позже, когда сеть восстановится.",
+      "offlineCached": "Показана кэшированная структура."
+    },
+    "departments": {
+      "rename": "Переименовать",
+      "addChild": "Добавить вложенный",
+      "remove": "Удалить",
+      "newChild": "Новое подразделение"
+    },
+    "step5": {
+      "title": "Пригласите команду",
+      "subtitle": "Опционально — можно сделать позже в разделе «Сотрудники».",
+      "addFirst": "Добавить приглашение",
+      "addMore": "Добавить ещё",
+      "skip": "Пропустить и завершить"
+    },
+    "invite": {
+      "invitationTitle": "Приглашение {{num}}",
+      "emailLabel": "Email",
+      "roleLabel": "Роль",
+      "rolePlaceholder": "Выберите роль",
+      "noteLabel": "Сообщение (необязательно)",
+      "notePlaceholder": "Например: Добро пожаловать в команду!"
     }
   },
   "notifications": {

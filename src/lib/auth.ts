@@ -11,6 +11,7 @@ export interface ActiveSession {
     email: string;
     displayName: string;
     role: Role;
+    onboardingComplete: boolean;
   };
 }
 
@@ -71,24 +72,28 @@ const DEV_USERS: Record<Role, ActiveSession['profile']> = {
     email: 'owner@unipay.dev',
     displayName: 'Алишер Каримов',
     role: 'owner',
+    onboardingComplete: false,
   },
   finance_manager: {
     id: 'u-finance',
     email: 'finance@unipay.dev',
     displayName: 'Дилнура Юсупова',
     role: 'finance_manager',
+    onboardingComplete: true,
   },
   operator: {
     id: 'u-operator',
     email: 'operator@unipay.dev',
     displayName: 'Шохрух Эргашев',
     role: 'operator',
+    onboardingComplete: true,
   },
   viewer: {
     id: 'u-viewer',
     email: 'viewer@unipay.dev',
     displayName: 'Мадина Тошева',
     role: 'viewer',
+    onboardingComplete: true,
   },
 };
 
@@ -119,6 +124,7 @@ export async function signIn(
         email: u.email,
         displayName: u.fullName,
         role: u.role,
+        onboardingComplete: u.onboardingComplete,
       },
     };
     cached = session;
@@ -137,6 +143,17 @@ export function signInAsRole(role: Role): void {
   cached = session;
   persist(session);
   lastActivityAt = Date.now();
+  notify();
+}
+
+export function updateUser(patch: Partial<ActiveSession['profile']>): void {
+  if (!cached) return;
+  const next: ActiveSession = {
+    ...cached,
+    profile: { ...cached.profile, ...patch },
+  };
+  cached = next;
+  persist(next);
   notify();
 }
 

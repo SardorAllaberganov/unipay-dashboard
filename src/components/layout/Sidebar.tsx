@@ -19,7 +19,9 @@ import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { useAppShell } from './AppShellContext';
 import { UnipayLogo } from './UnipayLogo';
 
 interface NavItem {
@@ -168,8 +170,35 @@ function NavItemView({
   onClick?: () => void;
 }) {
   const { t } = useTranslation();
+  const { onboardingActive } = useAppShell();
   const Icon = item.icon;
   const label = t(item.labelKey);
+
+  if (onboardingActive) {
+    return (
+      <li>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span
+              role="link"
+              aria-disabled="true"
+              tabIndex={0}
+              className={cn(
+                'group relative flex h-9 cursor-not-allowed items-center gap-2.5 rounded-md px-3 text-sm font-medium opacity-50',
+                collapsed && 'justify-center px-0'
+              )}
+            >
+              <Icon className="size-4 shrink-0" aria-hidden />
+              {!collapsed ? <span className="truncate">{label}</span> : null}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {t('onboarding.sidebarLockedTooltip')}
+          </TooltipContent>
+        </Tooltip>
+      </li>
+    );
+  }
 
   return (
     <li>

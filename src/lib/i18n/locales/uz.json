@@ -32,7 +32,9 @@
       "openMenu": "Menyuni ochish",
       "openSearch": "Qidiruvni ochish",
       "showHelp": "Yordam",
-      "toggleTheme": "Mavzuni almashtirish"
+      "toggleTheme": "Mavzuni almashtirish",
+      "collapse": "Yig`ish",
+      "expand": "Yoyish"
     },
     "states": {
       "loading": "Yuklanmoqda…",
@@ -176,6 +178,148 @@
       "body": "Xizmat vaqtinchalik ishlamayapti. Tiklash ustida ishlayapmiz.",
       "estimated": "Taxminiy tugash: {{time}}",
       "primary": "Yangilash"
+    }
+  },
+  "onboarding": {
+    "stepLabel": "Qadam {{current}} / {{total}}",
+    "sidebarLockedTooltip": "Davom etish uchun sozlamani yakunlang",
+    "completedToast": "Sozlama yakunlandi!",
+    "offlineQueued": "Lokal saqlandi. Ulanish tiklanganda yuklaymiz.",
+    "logoDropHint": "Faylni tashlang yoki tanlang",
+    "logoChoose": "Faylni tanlash",
+    "logoRemove": "O`chirish",
+    "actions": {
+      "back": "Orqaga",
+      "saveExit": "Saqlash va chiqish",
+      "next": "Keyingi",
+      "finish": "Sozlamani yakunlash"
+    },
+    "errors": {
+      "required": "Majburiy maydon",
+      "tinFormat": "STIR 9 ta raqamdan iborat bo`lishi kerak",
+      "yearRange": "Noto`g`ri yil",
+      "urlInvalid": "Noto`g`ri URL",
+      "emailInvalid": "Noto`g`ri email",
+      "phoneFormat": "Noto`g`ri telefon raqami",
+      "hexFormat": "Noto`g`ri HEX rang",
+      "max200": "Ko`pi bilan 200 belgi",
+      "mfoFormat": "MFO 5 ta raqamdan iborat bo`lishi kerak",
+      "ibanFormat": "Hisob raqami 20 ta raqamdan iborat bo`lishi kerak",
+      "atLeastOneAccount": "Kamida bitta hisob qo`shing",
+      "exactlyOneDefault": "Standart hisobni tanlang",
+      "treeEmpty": "Tuzilma bo`sh bo`lmasligi kerak",
+      "logoType": "Faqat PNG, JPG yoki SVG",
+      "logoSize": "Fayl 1 MB dan katta",
+      "draftLoadTitle": "Qoralama yuklanmadi",
+      "draftLoadBody": "Qayta urinib ko`ring."
+    },
+    "step1": {
+      "title": "Muassasa haqida ma`lumot",
+      "nameRuLabel": "Nomi (RU)",
+      "nameUzLabel": "Nomi (UZ)",
+      "typeLabel": "Muassasa turi",
+      "typePlaceholder": "Turini tanlang",
+      "legalFormLabel": "Yuridik shakl",
+      "legalFormPlaceholder": "Shaklni tanlang",
+      "tinLabel": "STIR",
+      "foundedYearLabel": "Tashkil etilgan yil",
+      "regionLabel": "Hudud",
+      "regionPlaceholder": "Hududni tanlang",
+      "addressLabel": "Manzil",
+      "websiteLabel": "Veb-sayt"
+    },
+    "orgTypes": {
+      "university": "Universitet",
+      "school": "Maktab",
+      "kindergarten": "Bog`cha",
+      "college": "Kollej",
+      "other": "Boshqa"
+    },
+    "legalForms": {
+      "llc": "MChJ",
+      "jsc": "AJ",
+      "state": "Davlat",
+      "private": "Xususiy",
+      "ngo": "NTT",
+      "other": "Boshqa"
+    },
+    "step2": {
+      "title": "Kontakt va brending",
+      "contactEmailLabel": "Aloqa uchun email",
+      "phoneLabel": "Telefon",
+      "logoLabel": "Logotip",
+      "primaryColorLabel": "Asosiy rang",
+      "receiptFooterLabel": "Chek pastki yozuvi",
+      "receiptFooterPlaceholder": "Masalan: To`lov uchun rahmat!",
+      "previewReceipt": "Chekni ko`rish"
+    },
+    "receipt": {
+      "previewLabel": "Chek namunasi",
+      "placeholderOrg": "Muassasa nomi",
+      "studentLabel": "Talaba",
+      "studentSample": "Karimov A.",
+      "periodLabel": "Davr",
+      "periodSample": "Aprel 2026",
+      "totalLabel": "Jami"
+    },
+    "step3": {
+      "title": "Bank hisoblari",
+      "addAccount": "Hisob qo`shish",
+      "testTransferNote": "Sozlashdan so`ng UNIPAY tekshiruv uchun 1 000 UZS sinov o`tkazmasini yuboradi."
+    },
+    "bank": {
+      "accountTitle": "Hisob {{num}}",
+      "selectPlaceholder": "Bankni tanlang",
+      "searchPlaceholder": "Bankni qidirish…",
+      "notFound": "Topilmadi",
+      "bankNameLabel": "Bank",
+      "mfoLabel": "MFO",
+      "ibanLabel": "Hisob raqami",
+      "holderLabel": "Qabul qiluvchi",
+      "labelLabel": "Yorliq",
+      "labelPlaceholder": "Masalan: asosiy hisob",
+      "currencyLabel": "Valyuta",
+      "usdComingSoon": "Tez orada",
+      "isDefault": "Standart sifatida belgilash"
+    },
+    "step4": {
+      "title": "Bo`linmalar tuzilmasi",
+      "modeTemplate": "Shablondan foydalanish",
+      "modeTemplateHint": "Tayyor tuzilma — moslashtirish mumkin.",
+      "modeSkip": "O`tkazib yuborish",
+      "modeSkipHint": "Keyinroq «Tashkilot» bo`limida sozlash mumkin.",
+      "pickTemplate": "Shablonni tanlang",
+      "templates": {
+        "university": "Universitet",
+        "school": "Maktab",
+        "kindergarten": "Bog`cha"
+      },
+      "emptyHint": "Tuzilmani yuklash uchun shablonni tanlang.",
+      "emptyTree": "Tuzilma bo`sh. Birinchi tugunni qo`shing.",
+      "errorFetch": "Shablon yuklanmadi.",
+      "offlineNoCache": "Internet yo`q. Ulanish tiklangach qayta oching.",
+      "offlineCached": "Keshlangan tuzilma ko`rsatilmoqda."
+    },
+    "departments": {
+      "rename": "Nomini o`zgartirish",
+      "addChild": "Ichki tugun qo`shish",
+      "remove": "O`chirish",
+      "newChild": "Yangi bo`linma"
+    },
+    "step5": {
+      "title": "Jamoangizni taklif qiling",
+      "subtitle": "Ixtiyoriy — keyin «Xodimlar» bo`limida bajarish mumkin.",
+      "addFirst": "Taklif qo`shish",
+      "addMore": "Yana qo`shish",
+      "skip": "O`tkazib yuborish va yakunlash"
+    },
+    "invite": {
+      "invitationTitle": "Taklif {{num}}",
+      "emailLabel": "Email",
+      "roleLabel": "Rol",
+      "rolePlaceholder": "Rolni tanlang",
+      "noteLabel": "Xabar (ixtiyoriy)",
+      "notePlaceholder": "Masalan: Jamoamizga xush kelibsiz!"
     }
   },
   "notifications": {

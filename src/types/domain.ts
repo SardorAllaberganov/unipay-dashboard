@@ -54,6 +54,7 @@ export interface User {
   organizationId: string;
   status: AccountStatus;
   createdAt: Date;
+  onboardingComplete: boolean;
 }
 
 export interface Department {

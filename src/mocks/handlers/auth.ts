@@ -4,7 +4,13 @@ import type { Role, User } from '@/types/domain';
 const ORG_ID = 'org-unipay-dev';
 const NOW = new Date();
 
-function user(id: string, email: string, fullName: string, role: Role): User {
+function user(
+  id: string,
+  email: string,
+  fullName: string,
+  role: Role,
+  onboardingComplete: boolean
+): User {
   return {
     id,
     email,
@@ -14,14 +20,15 @@ function user(id: string, email: string, fullName: string, role: Role): User {
     organizationId: ORG_ID,
     status: 'active',
     createdAt: NOW,
+    onboardingComplete,
   };
 }
 
 const FAKE_USERS: Record<Role, User> = {
-  owner: user('u-owner', 'owner@unipay.dev', 'Алишер Каримов', 'owner'),
-  finance_manager: user('u-finance', 'finance@unipay.dev', 'Дилнура Юсупова', 'finance_manager'),
-  operator: user('u-operator', 'operator@unipay.dev', 'Шохрух Эргашев', 'operator'),
-  viewer: user('u-viewer', 'viewer@unipay.dev', 'Мадина Тошева', 'viewer'),
+  owner: user('u-owner', 'owner@unipay.dev', 'Алишер Каримов', 'owner', false),
+  finance_manager: user('u-finance', 'finance@unipay.dev', 'Дилнура Юсупова', 'finance_manager', true),
+  operator: user('u-operator', 'operator@unipay.dev', 'Шохрух Эргашев', 'operator', true),
+  viewer: user('u-viewer', 'viewer@unipay.dev', 'Мадина Тошева', 'viewer', true),
 };
 
 function pickRole(email: string): Role {

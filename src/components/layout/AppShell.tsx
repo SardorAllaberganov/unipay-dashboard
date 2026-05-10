@@ -28,6 +28,7 @@ export function AppShell({ children }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [onboardingActive, setOnboardingActive] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
 
   // Auto-collapse on tablet
@@ -56,8 +57,8 @@ export function AppShell({ children }: Props) {
   const openCommandPalette = useCallback(() => setPaletteOpen(true), []);
   const openHelp = useCallback(() => setHelpOpen(true), []);
   const shellActions = useMemo<AppShellActions>(
-    () => ({ openCommandPalette, openHelp }),
-    [openCommandPalette, openHelp]
+    () => ({ openCommandPalette, openHelp, onboardingActive, setOnboardingActive }),
+    [openCommandPalette, openHelp, onboardingActive]
   );
 
   return (
@@ -101,7 +102,12 @@ export function AppShell({ children }: Props) {
             <main
               id="main-content"
               tabIndex={-1}
-              className={cn('flex-1 overflow-y-auto p-4 outline-none md:p-6')}
+              className={cn(
+                'flex-1 overflow-y-auto outline-none',
+                onboardingActive
+                  ? 'px-4 pb-4 md:px-6 md:pb-6'
+                  : 'p-4 md:p-6'
+              )}
             >
               {children}
             </main>
