@@ -32,6 +32,10 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 | Auth feature module (`src/features/auth/`) | ✅ | `signIn`/`forgot`/`reset` pages, schemas, `useFailedAttempts` store, `DevRoleSwitcher`, `PasswordField`, `LockedAlert`, MSW endpoints |
 | AuthLayout lg+ brand panel split | ✅ | `bg-brand-600` left half with logo + tagline + radial gradient; form column right with ThemeToggle |
 | `signIn` async via MSW | ✅ | `POST /api/auth/sign-in` returns user + JWT-shaped token; role by email-prefix or domain hint |
+| Onboarding feature module (`src/features/onboarding/`) | ✅ | 5 step pages, components (Layout, Indicator, ActionBar, PhoneInput, ColorPicker, LogoUploader, ReceiptPreview, BankCombobox, BankAccountFields, DepartmentTreeEditor, InviteStaffFields), Context, hooks, fixtures, MSW endpoints |
+| `AppShellContext.onboardingActive` flag | ✅ | Set by `OnboardingPage` mount/unmount; consumed by Sidebar (locks nav) and AppShell (drops `<main>` top padding) |
+| `User.onboardingComplete` + `updateUser(patch)` | ✅ | Domain field + auth-store patcher; DEV owner defaults `false` to trigger wizard, other DEV roles `true` |
+| `canvas-confetti` (dynamic import) | ✅ | Bundled to its own ~4.3 KB gzipped chunk via `import()` in Step 5 finish flow |
 
 ## App shell
 
@@ -70,6 +74,7 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 | `/sign-in` | ✅ | RHF + Zod, password show/hide, rememberMe (visual), `?next=` + `?expired=1`, lockout (5/15min), DevRoleSwitcher, async `signIn` via MSW |
 | `/forgot-password` | ✅ | Email form → success view (always 200, no enumeration leak); ArrowLeft "Назад ко входу" |
 | `/reset-password` | ✅ | `?token=` required (must start `valid-`); password 8+ letter+digit, confirm; toast + redirect on success/reject |
+| `/onboarding/:step` | ✅ | 5 linear steps (org info, contact+branding, bank accounts, departments, invites). Sticky step indicator + fixed action bar (Pattern A). Sidebar nav locked while active. Save & exit + offline queue. Confetti on finish. |
 | `/` Dashboard | 🚧 | KPI cards stubbed with fixed values; widgets pending |
 | `/organization` | ❌ | Placeholder |
 | `/staff` | ❌ | Placeholder |

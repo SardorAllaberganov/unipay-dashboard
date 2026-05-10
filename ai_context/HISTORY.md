@@ -4,6 +4,29 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-11 — Prompt 2 (Onboarding) — 5-step wizard
+
+**Summary.** Linear 5-step onboarding wizard for new institution accounts. Triggered when `user.onboardingComplete === false`. Lives at `/onboarding/:step` inside `<AppShell>`, with the sidebar nav locked, mobile bottom tab nav (none today) suppressed in spirit, and `<main>`'s top padding dropped so the wizard's sticky step indicator butts directly against TopBar.
+
+**Files written.**
+- New module: [`src/features/onboarding/`](../src/features/onboarding/) — `schemas.ts`, `api.ts`, `context/OnboardingContext.tsx`, `fixtures/{uzBanks,uzRegions}.ts`, four hooks (`useOnboardingDraft`, `useOnboardingComplete`, `useOnboardingGuard`, `useOfflineDraftQueue`), eleven components (`OnboardingLayout`, `StepIndicator`, `StepActionBar`, `PhoneInput`, `ColorPicker`, `LogoUploader`, `ReceiptPreview`, `BankCombobox`, `BankAccountFields`, `DepartmentTreeEditor`, `InviteStaffFields`), six pages (`OnboardingPage`, `Step1OrgInfo`..`Step5InviteStaff`).
+- New MSW: [`src/mocks/handlers/onboarding.ts`](../src/mocks/handlers/onboarding.ts) — in-memory draft + university/school/kindergarten template fixtures. Registered in [`src/mocks/handlers/index.ts`](../src/mocks/handlers/index.ts).
+- Modified: [`src/types/domain.ts`](../src/types/domain.ts) (added `User.onboardingComplete`), [`src/lib/auth.ts`](../src/lib/auth.ts) (added `updateUser(patch)`; profile carries `onboardingComplete`; DEV owner defaults `false`, other DEV roles `true`), [`src/mocks/handlers/auth.ts`](../src/mocks/handlers/auth.ts) (fake users carry `onboardingComplete`), [`src/components/layout/AppShellContext.tsx`](../src/components/layout/AppShellContext.tsx) (added `onboardingActive` + setter), [`src/components/layout/AppShell.tsx`](../src/components/layout/AppShell.tsx) (state + `<main>` padding conditional), [`src/components/layout/Sidebar.tsx`](../src/components/layout/Sidebar.tsx) (nav links → disabled `<span>` + Tooltip when active), [`src/router.tsx`](../src/router.tsx) (registered `/onboarding/:step`; `OnboardingGuardWrapper` wraps `<Routes>`; extended `KNOWN_PATH_PREFIXES`), [`src/lib/i18n/locales/{ru,uz}.json`](../src/lib/i18n/locales/) (full `onboarding.*` namespace + `common.actions.{collapse,expand}`).
+
+**Install.** `canvas-confetti@^1.9.4`, `@types/canvas-confetti@^1.9.0` — dynamic-imported in Step 5's finish flow so it ships as its own ~4.3 KB gzipped chunk.
+
+**Layout fixes that landed late.** The sticky step indicator inside `<main>` (a scroll container with `overflow-y-auto`) needed `top-0` (relative to `<main>`, not the viewport) — initial pass used `top-[var(--app-header-h,3.5rem)]` which left a permanent gap above the indicator. A second pass tried `-mt-4 md:-mt-6` to butt the indicator against TopBar, but with the parent's `overflow-y: auto`, the negative margin pushed the indicator above the scroll viewport's clip line and it disappeared on scroll. Final fix: AppShell drops `<main>`'s top padding when `onboardingActive`, indicator stays at simple `top-0`, no negative top margin. Content's bottom padding tightened from `pb-32` (8rem) to `pb-16` (4rem) per user feedback.
+
+**Verifications.** typecheck · `eslint --max-warnings 0` · `vite build` — all clean.
+
+**Lessons.**
+- `position: sticky` inside an `overflow: auto` parent uses `top` relative to **the parent**, not the viewport. If `<main>` is the scroll container, `top-0` sticks at `<main>`'s padding edge. The viewport-offset pattern only works if scrolling happens at the document level.
+- Negative top margin on a sticky child of an `overflow-y: auto` parent will clip the child above the scroll viewport on any scroll. Don't try to use `-mt-*` to defeat parent padding for sticky elements — instead, drop the parent's padding conditionally.
+- For "lock the chrome while a modal-flow is active," `AppShellContext` flag + reader components (Sidebar reads, AppShell reads) is cleaner than threading props through every nav consumer.
+- Dynamic-import `canvas-confetti` at the call site keeps it out of the main bundle; build chunked it to ~4.3 KB gzipped without any rollupOptions config.
+
+---
+
 ## 2026-05-11 — Prompt 1 (Auth) — sign-in / forgot / reset
 
 **Summary.** First feature module on top of the v2.0 foundation. Sign-in becomes async (hits MSW), gets a 5/15-min lockout via a fourth `useSyncExternalStore` store, gets a `PasswordField` with show/hide, gets a DevRoleSwitcher behind `import.meta.env.DEV`, and lives at `/sign-in` under a new `src/features/auth/` module. Forgot- and reset-password flows ship alongside it. AuthLayout grows a lg+ brand panel split.
