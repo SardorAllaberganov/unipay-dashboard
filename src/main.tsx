@@ -5,9 +5,11 @@ import './lib/i18n';
 import App from './App';
 
 async function enableMocks() {
-  if (!import.meta.env.DEV) return;
   const { worker } = await import('./mocks/browser');
-  await worker.start({ onUnhandledRequest: 'bypass' });
+  await worker.start({
+    serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
+    onUnhandledRequest: 'bypass',
+  });
 }
 
 void enableMocks().then(() => {

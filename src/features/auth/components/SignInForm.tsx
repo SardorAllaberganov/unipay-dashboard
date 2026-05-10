@@ -41,9 +41,7 @@ export function SignInForm(): React.JSX.Element {
 
   const form = useForm<SignInValues>({
     resolver: zodResolver(schema),
-    defaultValues: import.meta.env.DEV
-      ? { email: 'owner@unipay.dev', password: 'demo1234', rememberMe: false }
-      : { email: '', password: '', rememberMe: false },
+    defaultValues: { email: 'owner@unipay.dev', password: 'demo1234', rememberMe: false },
   });
 
   const next = params.get('next');
