@@ -26,6 +26,9 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 | `STYLE_DISCIPLINE.md` v2.0 | ✅ | Full §0.1-§0.12 + audit greps |
 | `docs/DECISIONS.md` log | ✅ | Empty stub |
 | `ai_context/AI_CONTEXT.md` + `HISTORY.md` | ✅ | This pass |
+| Branded favicon + `theme-color` meta | ✅ | `public/favicon.svg`, brand-600 UP mark |
+| GitHub Pages Jekyll bypass | ✅ | `.nojekyll` at repo root + `public/.nojekyll` (lands in `dist/`) |
+| Radius bump (Card 12px / controls 8px) | ✅ | Card → `rounded-xl`; Button / Input / Select / Textarea / Toggle / Topbar search → `rounded-lg` |
 
 ## App shell
 
@@ -36,7 +39,7 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 | `TopBar` (breadcrumbs, ⌘K search button, kbd hint) | ✅ | Smart `lg-` hide for non-leaf crumbs |
 | `UserMenu` (avatar trigger + dropdown) | ✅ | Sign-out + settings + shortcuts entry |
 | `ThemeToggle` (light / dark / system) | ✅ | Dropdown with icons |
-| `NotificationsBell` (popover + dot) | ✅ | Empty body for now |
+| `NotificationsBell` (popover + dot) | ✅ | Conditional unread dot via `unreadCount` prop; localized labels (`notifications.*`); empty body for now |
 | `CommandPalette` (cmdk, navigate + theme) | ✅ | Search verbs not yet wired |
 | `HelpOverlay` (grouped shortcut list) | ✅ | Sourced from `shortcuts.ts` |
 | Chord listener (`g d`, `g s`, etc.) | ❌ | Registry exists, dispatcher pending |

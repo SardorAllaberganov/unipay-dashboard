@@ -4,7 +4,7 @@
 > Source-of-truth files (always trust over this snapshot): [`STYLE_DISCIPLINE.md`](../STYLE_DISCIPLINE.md), [`src/types/domain.ts`](../src/types/domain.ts), [`docs/product_states.md`](../docs/product_states.md).
 
 ## Last updated
-2026-05-10 — Prompt 0 v2.0 (foundation rewrite)
+2026-05-10 — chrome polish (favicon, notifications bell, radius bump, Pages CI fix)
 
 ## What this app is
 **UNIPAY** — merchant dashboard for Uzbek educational institutions (universities, schools, kindergartens) to manage tuition payments. Locale: RU primary, UZ secondary (Latin). Currency: UZS (space separator). Timezone: Asia/Tashkent.
@@ -23,6 +23,7 @@ React 18 · Vite 5 · TypeScript 5 (strict + `noUncheckedIndexedAccess`) · Tail
 - Motion: `--duration-fast/base/slow` (120/180/240ms), `--ease-standard/emphasized`. `prefers-reduced-motion` global override.
 - Density: `--row-h` driven by `html[data-density]` (40px compact / 44px comfortable).
 - Tabular numerals: `html[data-tabular-nums="true"]`.
+- Radius scale: `--radius: 0.5rem` (8px) drives `rounded-md` (6px) / `rounded-lg` (8px) / `rounded-sm` (4px). Card primitive uses Tailwind-default `rounded-xl` (12px, outside the cascade) for a slightly softer card edge; h-9 form controls (Button / Input / Select trigger / Textarea / Toggle / Topbar search) all use `rounded-lg` (8px). Hierarchy reads: Card 12px > controls 8px > internal items 4px.
 
 ## Folder map
 ```
@@ -89,6 +90,15 @@ HashRouter so the app deploys to any static host without a 404.html shim.
 - `?` opens Help Overlay ([HelpOverlay.tsx](../src/components/layout/HelpOverlay.tsx)).
 - `t` toggles theme; `/` focuses search; `Esc` closes overlays.
 - `g {x}` chord patterns documented in `shortcuts.ts`. Currently visualized in HelpOverlay; chord listener implementation lands in a later pass.
+
+## Notifications bell
+- [NotificationsBell.tsx](../src/components/layout/NotificationsBell.tsx) takes `unreadCount?: number` (default `0`). Red dot only renders when > 0; empty state otherwise.
+- Localized via `notifications.title` / `notifications.empty` / `notifications.unreadCount` (RU + UZ). When unread, `aria-label` appends `unreadCount` so screen readers announce the badge.
+- Trigger has no real notifications source yet — Topbar passes nothing → no dot visible.
+
+## Branding & deploy
+- Favicon: [public/favicon.svg](../public/favicon.svg) — UP mark on brand-600 rounded square; matches [UnipayLogo](../src/components/layout/UnipayLogo.tsx). Paired with `<meta name="theme-color" content="#1558B0">` in [index.html](../index.html).
+- GitHub Pages CI: [.nojekyll](../.nojekyll) at repo root + [public/.nojekyll](../public/.nojekyll) (Vite copies into `dist/`) bypass the auto Jekyll build that choked on `{{ }}` JS literals in `STYLE_DISCIPLINE.md` code blocks. Repo-side: Settings → Pages → Source must be set to "GitHub Actions" so [deploy.yml](../.github/workflows/deploy.yml) is the canonical deploy path.
 
 ## System states catalog (§0.11)
 - `SystemStateLayout` with `in-shell` / `full-bleed` variants.

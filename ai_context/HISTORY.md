@@ -4,6 +4,28 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-10 — Chrome polish (favicon, notifications bell, radius bump, Pages CI fix)
+
+**Summary.** Five small landing changes after the v2.0 foundation: real branded favicon, a polished notifications bell, a softer corner-radius hierarchy on cards and form controls, GitHub Pages Jekyll-bypass, and a fresh i18n group for notification copy.
+
+**Files written / replaced.**
+- Branding: [`public/favicon.svg`](../public/favicon.svg) (new), [`index.html`](../index.html) — favicon ref + `theme-color` meta.
+- Notifications: [`src/components/layout/NotificationsBell.tsx`](../src/components/layout/NotificationsBell.tsx) — `unreadCount?: number` prop (default 0); dot conditional on `> 0`; tighter `right-2 top-2 size-1.5` anchor; `aria-label` + tooltip + popover header pull from `notifications.*` keys.
+- i18n: [`src/lib/i18n/locales/ru.json`](../src/lib/i18n/locales/ru.json) + [`uz.json`](../src/lib/i18n/locales/uz.json) — new `notifications.{title,empty,unreadCount}` group.
+- Radius bump (parallel `lg → xl` for cards, `md → lg` for h-9 controls): [`src/components/ui/card.tsx`](../src/components/ui/card.tsx), [`button.tsx`](../src/components/ui/button.tsx) (default + sm + lg), [`input.tsx`](../src/components/ui/input.tsx), [`select.tsx`](../src/components/ui/select.tsx) (trigger), [`textarea.tsx`](../src/components/ui/textarea.tsx), [`toggle.tsx`](../src/components/ui/toggle.tsx), [`Topbar.tsx`](../src/components/layout/Topbar.tsx) (search button).
+- CI: [`.nojekyll`](../.nojekyll) (new), [`public/.nojekyll`](../public/.nojekyll) (new) — silences Pages auto-Jekyll which choked on `{{ }}` JS literals in [STYLE_DISCIPLINE.md](../STYLE_DISCIPLINE.md) code blocks.
+
+**Commits.** `7878e09` favicon, `10d78a6` notifications fix, `19505c3` Pages nojekyll. Radius bump uncommitted at sync time.
+
+**Verifications.** typecheck · lint --max-warnings 0 · build · §0.9 audit (touched files clean) — all clean.
+
+**Lessons.**
+- Even with `actions/deploy-pages@v4` wired up, GitHub Pages will still run Jekyll on the source branch unless Settings → Pages → Source is explicitly set to "GitHub Actions". `.nojekyll` is the belt-and-suspenders signal so the auto-build noops if the setting drifts.
+- A solo bumped `rounded-lg → rounded-xl` on the Card lifts cards out of the `--radius` token cascade (Tailwind's `xl` is hardcoded 12px). Acceptable for a one-off softer card edge — the controls below still ride the cascade.
+- "More border" can mean radius, not stroke. Verify before bumping border colors / inner dividers / shadow.
+
+---
+
 ## 2026-05-10 — Prompt 0 v2.0 — Foundation rewrite
 
 **Summary.** Re-scaffolded the entire foundation against the v2.0 prompt: scale-based color tokens, motion + density + tabular as DOM hooks, module-level state stores via `useSyncExternalStore`, AppShell pattern with command palette + help overlay + breadcrumb topbar, system states catalog with reference-id error reporting, HashRouter with maintenance gate + path-aware auth guard, AuthLayout for full-bleed system surfaces, new domain primitives (`Money` bigint, `MaskedAccount`, `WriteButton`, `KeyboardHint`).
