@@ -42,6 +42,8 @@
       "noResults": "Hech narsa topilmadi",
       "offlineNote": "Keshlangan ma'lumotlar ko'rsatildi"
     },
+    "reasonLabel": "Sabab (kamida {{count}} belgi)",
+    "reasonPlaceholder": "Audit uchun sababni ko'rsating",
     "yes": "Ha",
     "no": "Yo'q",
     "today": "Bugun",

@@ -22,6 +22,9 @@ interface Props {
   destructive?: boolean;
   requireReason?: boolean;
   reasonLabel?: string;
+  reasonPlaceholder?: string;
+  /** Minimum reason length. Defaults to 20 (§0.9 v2.0 destructive). Use 10 for low-stakes notes. */
+  minReasonLength?: number;
   confirmLabel?: string;
   cancelLabel?: string;
   loading?: boolean;
@@ -36,6 +39,8 @@ export function ConfirmDialog({
   destructive,
   requireReason,
   reasonLabel,
+  reasonPlaceholder,
+  minReasonLength = 20,
   confirmLabel,
   cancelLabel,
   loading,
@@ -48,7 +53,7 @@ export function ConfirmDialog({
     if (!open) setReason('');
   }, [open]);
 
-  const reasonOk = !requireReason || reason.trim().length >= 10;
+  const reasonOk = !requireReason || reason.trim().length >= minReasonLength;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -66,15 +71,15 @@ export function ConfirmDialog({
         {requireReason ? (
           <div className="space-y-2">
             <Label htmlFor="confirm-reason">
-              {reasonLabel ?? 'Причина (минимум 10 символов)'}
+              {reasonLabel ?? t('common.reasonLabel', { count: minReasonLength })}
             </Label>
             <Textarea
               id="confirm-reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              minLength={10}
+              minLength={minReasonLength}
               rows={3}
-              placeholder="Укажите причину для аудита"
+              placeholder={reasonPlaceholder ?? t('common.reasonPlaceholder')}
             />
           </div>
         ) : null}
