@@ -4,6 +4,94 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-11 — Dashboard polish + datepicker bug fixes
+
+**Summary.** A cluster of late-day fixes after Prompt 3 landed and the DateRangePicker rewrite went in: KPI hero typography made responsive so full UZS amounts don't clip; datepicker trigger bug that prevented the popover from opening; Revenue chart Y-axis labels that were clipped behind the chart; KPI grid stack changed to 1-per-row on phones.
+
+**Files written.**
+- Modified: [`src/features/dashboard/components/KpiCard.tsx`](../src/features/dashboard/components/KpiCard.tsx) — hero number `truncate text-3xl ... leading-none` → `text-2xl ... leading-tight md:text-3xl md:leading-none`. Removing `truncate` lets the number wrap at the existing UZS thousand-space separators on tight mobile widths; bumping down to `text-2xl` on `<md` keeps it on one line in most cases. Logged in [`DECISIONS.md`](../docs/DECISIONS.md) (2026-05-11 KPI hero entry).
+- Modified: [`src/features/dashboard/components/KpiRow.tsx`](../src/features/dashboard/components/KpiRow.tsx) — grid `grid-cols-2 lg:grid-cols-4` → `grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`. User report: 2-column mobile felt cramped even with the responsive hero. New stack: 1-col `<sm`, 2-col `sm–lg`, 4-col `lg+`. Loading skeleton row updated to match.
+- Modified: [`src/features/dashboard/pages/DashboardPage.tsx`](../src/features/dashboard/pages/DashboardPage.tsx) — inlined the `<Button>` trigger as the direct child of `<DateRangePicker>` (instead of an intermediate `<DateRangeTrigger />` function component). Radix `PopoverTrigger asChild` uses `Slot`, which can't forward ref/onClick through a function component that doesn't itself forward them — symptom: the popover silently never opened. The `useDateRangeLabel(value)` hook now runs in `DashboardPage` and its result is passed into the trigger directly.
+- Modified: [`src/features/dashboard/components/RevenueChart.tsx`](../src/features/dashboard/components/RevenueChart.tsx) — `<YAxis width={48}>` → `width={72}`. Localized compact labels like `200 млн` are roughly 50-55px wide at `fontSize 13`, so the prior 48px reservation clipped them. Default Recharts width (60) was also borderline.
+
+**Verifications.** typecheck · `eslint --max-warnings 0` · `vite build` — all clean.
+
+**Lessons.**
+- **Radix `asChild` clones the immediate child JSX element** — when that JSX is `<MyComponent />`, the merged props (onClick, ref, etc.) land on `MyComponent` and only reach the DOM if the component spreads/forwards them. The cheapest fix is inlining the underlying element (shadcn's `Button` already forwards ref) so `Slot` clones directly. The wrapper-component pattern works only if the wrapper uses `React.forwardRef` and spreads `...props`.
+- **Recharts `<YAxis width>` doesn't auto-grow to fit the formatted tick label.** When using `tickFormatter` with locale-aware compact (`200 млн`, `1,5 млрд`), set `width` explicitly to accommodate the longest label at the chosen `tick.fontSize`. Cyrillic + space + suffix tends to need 70-80px at `fontSize 13`.
+- **For volume-tolerant KPI cards on mobile, 1-per-row beats 2×2.** The 2×2 mobile layout from the original Prompt 3 spec felt cramped under realistic UZS amounts; making each card full-width gives the responsive hero typography enough room to breathe and renders the sparkline at full card width as a nice side effect.
+
+---
+
+## 2026-05-11 — DateRangePicker — adopt ZhiPay sidebar + dual-calendar + apply/cancel format
+
+**Summary.** Replaced the inline pill-row + popover calendar from Prompt 0 with the ZhiPay-style panel: quick-select sidebar (Today / Yesterday / Last 7 days / Last 30 days / Custom) on the left, two-month calendar with custom prev/next header bar on the right, and a footer carrying the resolved `from – to` summary + Cancel / Apply buttons. Apply commits — selections don't fire until the user clicks Apply. Mobile (below 768px) collapses to a single month and stacks the sidebar above the calendar.
+
+**API shape change.** The picker now takes `value: DateRangeValue` (a `{ range: 'today' | 'yesterday' | '7d' | '30d' | 'custom', customFrom?, customTo? }` discriminated union) instead of `{ from, to }`. Consumers receive named preset semantics for free (so "today" stays "today" across midnight rollovers instead of drifting). A `resolveDateRange(value)` helper computes the concrete `{ from, to }` for calendar highlighting and API filtering. A `useDateRangeLabel(value)` hook returns the localized trigger label. The trigger is passed as `children` via `asChild` so consumers control the button visual.
+
+**Files written.**
+- New: [`src/components/shared/dateRange.ts`](../src/components/shared/dateRange.ts) — types + `resolveDateRange()` + `useDateRangeLabel()`. Split into a sibling file so the component file stays "components only" for `react-refresh/only-export-components`.
+- Modified: [`src/components/shared/DateRangePicker.tsx`](../src/components/shared/DateRangePicker.tsx) — rewritten end-to-end to match the ZhiPay layout (sidebar `md:w-[210px]` + dual-month calendar + footer apply/cancel). Custom month-header bar with `<ChevronLeft />` / `<ChevronRight />` chevron buttons. Hides the Calendar primitive's built-in `nav` and `caption_label` via `classNames` overrides so the custom header is the only nav surface.
+- Modified: [`src/features/dashboard/pages/DashboardPage.tsx`](../src/features/dashboard/pages/DashboardPage.tsx) — state migrated to `DateRangeValue` (default `30d`). URL sync persists `?range=<key>` for presets and adds `&from=&to=` only when `range=custom`. `apiRange` derives via `resolveDateRange()`. Renders an `<DateRangeTrigger />` `Button` as the picker's child with calendar icon + label from `useDateRangeLabel`.
+- Modified: [`src/lib/i18n/locales/{ru,uz}.json`](../src/lib/i18n/locales/) — new `common.daterange.{title,quick-select,today,yesterday,7d,30d,custom,cancel,apply,prevMonth,nextMonth}` namespace.
+
+**Verifications.** typecheck · `eslint --max-warnings 0` · `vite build` · §0.9 audit (sole `text-xs` hit is the "Быстрый выбор" `uppercase tracking-wider` section header — allow-listed §0.2) — all clean.
+
+**Lessons.**
+- `react-refresh/only-export-components` flags helper functions and hooks sharing a file with components, even via re-exports. The fix is splitting helpers into a sibling `.ts` file and importing them explicitly — re-exporting from the component file doesn't satisfy the rule. Cost: one extra import per consumer; benefit: fast refresh keeps working.
+- For date-range pickers, storing the preset key (`'today' | '7d' | 'custom'`) rather than the resolved `{from, to}` is the right primitive — it keeps semantics stable across day boundaries and gives consumers a free badge label without reverse-deriving "is this 7 days back from today?" by inspecting timestamps.
+- shadcn's Calendar component (wrapping react-day-picker) supports custom `month` + `onMonthChange` controlled props; hiding the built-in `nav` via `classNames: { nav: 'hidden' }` lets you swap in a custom header bar without forking the primitive.
+
+---
+
+## 2026-05-11 — Onboarding — global Skip Setup affordance
+
+**Summary.** Onboarding wizard's 5-step / many-field flow was too long; added a "Пропустить" ghost button to the sticky step-indicator bar so it's visible on every step. Click → `ConfirmDialog` ("Можно настроить позже в разделе «Организация».") → reuses [`useOnboardingComplete`](../src/features/onboarding/hooks/useOnboardingComplete.ts) mutation + `updateUser({ onboardingComplete: true })` + sonner success toast + `navigate('/')` (the same finish-path Step 5 uses). No data persisted beyond what the user already saved as draft.
+
+**Files written.**
+- New: [`src/features/onboarding/components/SkipSetupButton.tsx`](../src/features/onboarding/components/SkipSetupButton.tsx) — encapsulates the button + dialog + mutation. Lives next to the `StepIndicator` in `OnboardingLayout`'s sticky bar.
+- Modified: [`src/features/onboarding/components/OnboardingLayout.tsx`](../src/features/onboarding/components/OnboardingLayout.tsx) — wraps the indicator + skip button in `flex items-start justify-between gap-3`. Indicator stays `min-w-0 flex-1` so its progress segments still grow into available width; the ghost button sits right-aligned.
+- Modified: [`src/lib/i18n/locales/{ru,uz}.json`](../src/lib/i18n/locales/) — new `onboarding.skipSetup.{action,title,body,confirm,toast}` namespace.
+
+**Verifications.** typecheck · `eslint --max-warnings 0` · `vite build` · §0.9 audit — all clean.
+
+**Lessons.**
+- Discoverability beats step-1-only for opt-out actions. A user 80% through a wizard might still want out; gating the bail behind a confirm dialog gives the right friction without making the user back-navigate to find the escape hatch.
+- Reusing the existing finish-path (complete mutation + `updateUser` + navigate) keeps the skip flow isomorphic to Step 5's "no invites" finish — same toast, same redirect, same backend signal. No new MSW endpoint needed.
+
+---
+
+## 2026-05-11 — Prompt 3 (Dashboard Home) — KPIs, charts, recent activity
+
+**Summary.** First real feature page on top of the foundation. Replaces the placeholder Dashboard at `/` with a full dashboard: dynamic greeting (Tashkent timezone), `<DateRangePicker>` URL-synced via `?from=&to=`, 4 KPI cards (Total Received / Pending / Overdue / Last Payout) with deltas + 7-day area sparklines, two charts (BarChart D/W/M with count↔amount toggle + Donut status breakdown with center label + legend), two list panels (Recent Transactions + Unpaid Students with bulk-remind WriteButton → destructive ConfirmDialog ≥ 20-char reason note → MSW success → toast). Every panel renders all 6 states (§0.8): loading skeleton, empty, error+retry, offline (no-cache fallback), offline-note (banner above stale data), partial (banner with shown/total), data.
+
+**Files written.**
+- New module: [`src/features/dashboard/`](../src/features/dashboard/) — `api.ts` (typed fetch wrappers, response `_meta` shape), `pages/DashboardPage.tsx`, 6 hooks (`useDashboardSummary`, `useRevenueSeries`, `usePaymentStatusBreakdown`, `useRecentTransactions`, `useUnpaidStudents`, `useBulkRemindUnpaid`), 9 components (`KpiSparkline`, `KpiCard`, `KpiRow`, `RevenueChart`, `PaymentStatusChart`, `RecentTransactions`, `UnpaidStudents`, `GreetingTitle`, `PanelStates`).
+- New MSW: [`src/mocks/handlers/dashboard.ts`](../src/mocks/handlers/dashboard.ts) — 6 endpoints + deterministic 240-student seed (mulberry32 PRNG, 3M–8M UZS tuitions, Payme-dominant channel mix, 65/20/15 paid/pending/overdue split). Honors `?_state=partial|empty|error` so each panel's 6-state coverage is QA-reproducible. Registered in [`src/mocks/handlers/index.ts`](../src/mocks/handlers/index.ts).
+- New helpers: [`src/lib/greeting.ts`](../src/lib/greeting.ts) — `getGreetingKey()` reads Tashkent hour via `Intl.DateTimeFormat`, returns `'morning' | 'day' | 'evening'`.
+- Modified: [`src/components/shared/ConfirmDialog.tsx`](../src/components/shared/ConfirmDialog.tsx) (default `minReasonLength` 10 → 20 per §0.9 v2.0; new `reasonPlaceholder` prop; i18n-driven label via `common.reasonLabel` ICU); [`src/router.tsx`](../src/router.tsx) (`/` now mounts `<DashboardPage />`); [`src/components/unipay/index.ts`](../src/components/unipay/index.ts) (drops orphan Sparkline re-export); [`src/lib/i18n/locales/{ru,uz}.json`](../src/lib/i18n/locales/) (full `dashboard.*` namespace + `common.reasonLabel/reasonPlaceholder` + `common.states.{errorTitle,errorBody,partialNote,slowNote,offlineNoCache}`); [`docs/DECISIONS.md`](../docs/DECISIONS.md) (two deviations logged: route choice + ConfirmDialog threshold bump).
+- Deleted: `src/pages/Dashboard.tsx` (placeholder retired), `src/components/shared/KpiCard.tsx` (legacy — only consumer was the placeholder), `src/components/shared/Sparkline.tsx` (legacy LineChart variant — Dashboard now uses Recharts `AreaChart` in `KpiSparkline`).
+
+**Layout details.**
+- Mobile 2×2 KPI grid → `lg:grid-cols-4`. Charts row: full-width stack → `lg:grid-cols-3` with RevenueChart `lg:col-span-2`. Panels row: full-width stack → `lg:grid-cols-2`.
+- DateRangePicker writes `?from=YYYY-MM-DD&to=YYYY-MM-DD` to the hash route, hooks read those as ISO strings and pass to MSW.
+- GreetingTitle re-evaluates at each hour boundary via `setTimeout(msUntilNextHour)` so the greeting flips without a reload.
+- 6-state primitives: `KpiCardSkeleton`, `ChartSkeleton`, `ListRowSkeleton`, `PanelErrorState`, `PanelEmptyState`, `PanelOfflineState` (no-cache), `PanelOfflineNote` (banner above stale data), `PanelPartialNote` (shown/total banner). Live under [`src/features/dashboard/components/PanelStates.tsx`](../src/features/dashboard/components/PanelStates.tsx).
+
+**Verifications.** typecheck · `eslint --max-warnings 0` · `vite build` · §0.9 audit greps — all clean. Dev server boots clean (port 5175). Recharts is the only chart library used; no hand-authored vector markup in source. `text-xs` hits inside the module map to allow-list items (§0.2 KPI category labels + avatar fallback initials).
+
+**Deviations logged.**
+- `/` (not `/dashboard`) — same rationale as the 2026-05-10 Auth deviation; only one home route exists.
+- ConfirmDialog default `minReasonLength` raised 10 → 20 per §0.9 v2.0. No external consumers existed at the time of the bump.
+
+**Lessons.**
+- For donut center labels in Recharts, layer an absolutely-positioned `<div>` over the `ResponsiveContainer` rather than fighting `<Pie>`'s built-in label slots — keeps `text-2xl tabular font-mono` discipline intact without re-implementing typography on the SVG layer.
+- QA-only `?_state=` query overrides on MSW handlers make 6-state coverage demonstrable without flipping the network. The 6 states aren't theoretical when each panel has a code path AND a way to trigger it.
+- For optimistic typing on response shapes that may carry `_meta`, prefer wrapping list endpoints as `{ items, _meta? }` from the start. Backfilling `_meta` later requires touching every consumer; doing it up front costs one extra destructure per consumer.
+- `setTimeout(msUntilNextHour)` is the cheapest way to make a time-of-day greeting live-update — no `setInterval` polling every minute, no date-fns timezone math, just `Intl.DateTimeFormat` + a one-shot timer that re-arms.
+
+---
+
 ## 2026-05-11 — Prompt 2 (Onboarding) — 5-step wizard
 
 **Summary.** Linear 5-step onboarding wizard for new institution accounts. Triggered when `user.onboardingComplete === false`. Lives at `/onboarding/:step` inside `<AppShell>`, with the sidebar nav locked, mobile bottom tab nav (none today) suppressed in spirit, and `<main>`'s top padding dropped so the wizard's sticky step indicator butts directly against TopBar.

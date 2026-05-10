@@ -4,7 +4,7 @@
 > Source-of-truth files (always trust over this snapshot): [`STYLE_DISCIPLINE.md`](../STYLE_DISCIPLINE.md), [`src/types/domain.ts`](../src/types/domain.ts), [`docs/product_states.md`](../docs/product_states.md).
 
 ## Last updated
-2026-05-11 — Prompt 2 (Onboarding) — 5-step wizard, OnboardingLayout sticky chrome, conditional `<main>` top padding, AppShellContext `onboardingActive` flag, sidebar nav locks during wizard
+2026-05-11 — Dashboard polish: KPI hero responsive `text-2xl md:text-3xl` (no more `truncate` clip), KPI grid 1-col on mobile (2-col `sm:`, 4-col `lg:`); DateRangePicker rewritten to ZhiPay format (sidebar + dual-month calendar + Apply/Cancel; new `DateRangeValue` API with preset keys + URL sync via `?range=&from=&to=`); datepicker open + Y-axis-label bugs fixed; Onboarding "Пропустить" ghost button in sticky bar + ConfirmDialog → finish-path. Earlier the same day: Prompt 3 (Dashboard Home) — KPI row + revenue/status charts + recent activity / unpaid panels; ConfirmDialog default reason ≥ 20; `?_state=` MSW QA hook; Dashboard mounted at `/`.
 
 ## What this app is
 **UNIPAY** — merchant dashboard for Uzbek educational institutions (universities, schools, kindergartens) to manage tuition payments. Locale: RU primary, UZ secondary (Latin). Currency: UZS (space separator). Timezone: Asia/Tashkent.
@@ -52,7 +52,7 @@ src/
 │   ├── tone.ts                   # tone-to-class map (single source of truth)
 │   ├── format.ts                 # bigint-aware formatMoney, masking
 │   └── i18n/locales/{ru,uz}.json
-├── pages/                        # Dashboard, Placeholder
+├── pages/                        # Placeholder (Dashboard now in features/dashboard/)
 ├── features/
 │   ├── auth/                     # SignIn / ForgotPassword / ResetPassword
 │   │   ├── pages/                # SignInPage, ForgotPasswordPage, ResetPasswordPage
@@ -60,6 +60,15 @@ src/
 │   │   ├── hooks/                # useFailedAttempts, useForgotPassword, useResetPassword
 │   │   ├── api.ts                # forgot + reset fetch wrappers (signIn lives in lib/auth.ts)
 │   │   └── schemas.ts
+│   ├── dashboard/                # Home page — KPIs + charts + recent activity panels
+│   │   ├── pages/                # DashboardPage (URL date-range sync via ?from=&to=)
+│   │   ├── components/           # KpiSparkline, KpiCard, KpiRow, RevenueChart,
+│   │   │                         # PaymentStatusChart, RecentTransactions, UnpaidStudents,
+│   │   │                         # GreetingTitle, PanelStates (6-state primitives)
+│   │   ├── hooks/                # useDashboardSummary, useRevenueSeries,
+│   │   │                         # usePaymentStatusBreakdown, useRecentTransactions,
+│   │   │                         # useUnpaidStudents, useBulkRemindUnpaid
+│   │   └── api.ts                # typed fetch wrappers + ResponseMeta shape
 │   └── onboarding/               # 5-step wizard for new institution accounts
 │       ├── pages/                # OnboardingPage (router + provider) + Step1..Step5
 │       ├── components/           # OnboardingLayout, StepIndicator, StepActionBar,
@@ -94,6 +103,7 @@ HashRouter so the app deploys to any static host without a 404.html shim.
 - `AuthGuard` wraps everything in `<AppShell>`; idle → `signOut({ reason: 'session_expired' })`. The reason is read by `SignInPage` (sessionStorage flag) to show the expired banner; `?expired=1` is also honored.
 - `OnboardingGuardWrapper` wraps `<AppRoutes>` and runs `useOnboardingGuard`: when `session.profile.onboardingComplete === false` and current path is not `/onboarding/*`, redirects to `/onboarding/1`.
 - `/onboarding/:step` is registered inside `AppRoutes` so it lives inside `<AppShell>`. The user identity / chrome persists; the wizard's own `OnboardingLayout` adds sticky step indicator + fixed action bar (Pattern A from §0.5).
+- `/` mounts `<DashboardPage />` from `features/dashboard/` (canonical home — no parallel `/dashboard`, see DECISIONS 2026-05-11). Sign-in success and post-onboarding completion both land here.
 - `SystemErrorBoundary` wraps `<AppRoutes>`; thrown errors land on `<ServerErrorState>` with copy-on-click reference id.
 - Preview routes for QA: `/system/preview/{404,500,403,offline,maintenance}`.
 
@@ -137,6 +147,28 @@ HashRouter so the app deploys to any static host without a 404.html shim.
 - `WriteButton` disables when `useNetworkState() === false` and shows a tooltip.
 - `KeyboardHint` re-exports the canonical Kbd primitive.
 
+## DateRangePicker (shared)
+- [`src/components/shared/DateRangePicker.tsx`](../src/components/shared/DateRangePicker.tsx) + helpers [`src/components/shared/dateRange.ts`](../src/components/shared/dateRange.ts) — ZhiPay-format range picker: quick-select sidebar (Today / Yesterday / Last 7 days / Last 30 days / Custom) on the left, two-month calendar with custom prev/next chevron header on the right, footer with resolved `from – to` summary + Cancel / Apply. Selections are pending until Apply commits.
+- **API.** `DateRangeValue = { range: 'today' | 'yesterday' | '7d' | '30d' | 'custom', customFrom?, customTo? }`. Helpers: `resolveDateRange(value)` → concrete `{ from, to }`; `useDateRangeLabel(value)` → localized trigger label.
+- **Trigger.** Passed as `children` via `asChild` so consumers control the visual. Inline the `<Button>` directly — wrapping in a function component breaks Radix `Slot`'s ability to forward ref/onClick (caught in this session: the picker silently didn't open until the trigger was inlined).
+- **Mobile.** `matchMedia('(max-width: 767px)')` collapses the calendar to a single month and stacks the sidebar above. Popover content is clamped to `w-[min(860px,calc(100vw-1rem))]` + `collisionPadding={8}` so Radix shifts off the viewport edge near the right border.
+- **i18n.** `common.daterange.{title,quick-select,today,yesterday,7d,30d,custom,cancel,apply,prevMonth,nextMonth}` in `ru.json` + `uz.json`. The Calendar's built-in `nav` and `caption_label` are hidden via `classNames` overrides so the custom header is the only nav surface.
+- **Helpers split.** `resolveDateRange` and `useDateRangeLabel` live in the sibling `dateRange.ts` (not the component file) so `react-refresh/only-export-components` doesn't flag the component file. Re-exporting helpers from the component file does NOT satisfy the rule.
+
+## Dashboard feature module
+- [`features/dashboard/`](../src/features/dashboard/) — home page at `/`. Greeting title (Tashkent-aware morning/day/evening via [`lib/greeting.ts`](../src/lib/greeting.ts)), institution subtitle (placeholder until `/api/organization` lands), `<DateRangePicker>` (ZhiPay format — see "DateRangePicker" section below) URL-synced via `?range=<key>` and `&from=&to=` (only when `range=custom`); default range is `30d`.
+- **Layout.** 4 KPI cards: 1-per-row on `<sm` (full-width on phones), 2×2 on `sm:`, 4 across on `lg:`. Charts row (full stack → `lg:grid-cols-3`, RevenueChart `lg:col-span-2` + PaymentStatusChart 1/3); two list panels (full stack → `lg:grid-cols-2`).
+- **KPI hero typography.** `text-2xl font-semibold font-mono tabular leading-tight md:text-3xl md:leading-none` — `truncate` removed so full UZS amounts (e.g. `298 436 322 UZS`) stay readable on every viewport, wrapping at the space separators when needed. Logged in DECISIONS 2026-05-11 ("KPI hero number is `text-2xl md:text-3xl`").
+- **KPIs.** Total Received (UZS + delta + 7-day area sparkline), Pending (count + students-with-debt subtitle, clicks → `/payments/pending`), Overdue (count hero + UZS subtitle in `text-destructive`, clicks → `/payments/pending?tab=overdue`), Last Payout (amount + date + next-payout relative). KpiSparkline = Recharts `AreaChart` with `stroke="hsl(var(--brand-600))"`.
+- **RevenueChart.** Recharts `BarChart` with daily/weekly/monthly `Tabs` + count↔amount `Switch`. `tick.fontSize: 13`, `tickLine={false}`, `axisLine={{ stroke: 'hsl(var(--border))' }}`, bars `fill="hsl(var(--brand-600))"`. Tooltip shows formatted UZS or count via `formatUZS`/`formatNumber`. `<YAxis width={72}>` so localized compact labels like `200 млн` clear the axis area (default 60 was too narrow; the value 48 from the initial pass clipped labels).
+- **PaymentStatusChart.** Recharts donut (`<Pie innerRadius=64 outerRadius=92>`) over success-600 / warning-600 / destructive cells. Center label is an absolute-positioned overlay carrying `text-2xl tabular font-mono` total. Legend renders as a `<ul>` of color-chip + label + count below the chart.
+- **Recent Transactions panel.** 10 rows: avatar initials (slate-100 circle, `text-xs` per §0.2 avatar fallback allow-list) + name + `<ChannelBadge>` + relative time + amount via `<Money>` + `<StatusBadge>`. Footer: "Все платежи" + lucide `ArrowRight` → `/payments/transactions`.
+- **Unpaid Students panel.** 10 rows: name + dept + amount + days-overdue in `text-destructive` (ICU plural via `daysOverdue_one/few/many/other` in `ru.json`). Footer: "Все просроченные" link + `<WriteButton variant="destructive">Отправить массовое напоминание</WriteButton>` → `<ConfirmDialog>` (`destructive` + `requireReason` + `minReasonLength={20}`) → MSW `POST /api/students/bulk-remind` → sonner toast with sent count. Reason note re-uses the global `ConfirmDialog` default after its 10 → 20 bump.
+- **6 states per panel.** `PanelStates.tsx` exports `KpiCardSkeleton`, `ChartSkeleton`, `ListRowSkeleton`, `PanelEmptyState`, `PanelErrorState` (with retry), `PanelOfflineState` (no-cache), `PanelOfflineNote` (banner above stale data), `PanelPartialNote` (shown/total banner). All 5 panels render every state.
+- **MSW.** [`src/mocks/handlers/dashboard.ts`](../src/mocks/handlers/dashboard.ts) seeds 240 deterministic students (mulberry32 seeded on brand-600 hex). Six endpoints: summary, revenue, status-breakdown, recent transactions, unpaid-top, bulk-remind. `?_state=partial|empty|error` query override on every GET makes 6-state coverage QA-reproducible without flipping the network.
+- **Response `_meta`.** Each GET response carries optional `_meta?: { partial?, shown?, total? }`. List endpoints return `{ items, _meta }` shape; summary/revenue/status-breakdown carry `_meta` flat on the data root.
+- **GreetingTitle.** `setTimeout(msUntilNextHour)` self-re-arms at each top-of-hour so the greeting flips morning, day, evening live without a reload.
+
 ## Onboarding feature module
 - [`features/onboarding/`](../src/features/onboarding/) — 5-step linear wizard for new institution accounts. Triggered when `user.onboardingComplete === false`.
 - **State**: `OnboardingProvider` (React Context — local feature state, not module store per the spec note in §0.12). Carries `draft` (current values + `completedSteps[]`) and mutators. Hydrated from `GET /api/onboarding/draft` on mount.
@@ -144,6 +176,7 @@ HashRouter so the app deploys to any static host without a 404.html shim.
 - **Step guard**: `OnboardingPage` reads `:step` param and renders the matching component. If user requests a step beyond `max(completedSteps) + 1`, redirects to the highest allowed step. Step 1 is always allowed.
 - **Pages**: Step 1 org info (RU/UZ name, type, legal form, TIN regex `\d{9}`, founded year, region, address, website). Step 2 contact + branding (email pre-filled from `useSession`, masked `+998 (XX) XXX-XX-XX` phone, drag-drop logo with 1MB / PNG·JPG·SVG cap, native color picker + HEX text, receipt preview live via `watch()`; mobile receipt preview opens in a bottom Sheet). Step 3 bank accounts via `useFieldArray` with searchable `BankCombobox` (cmdk + Popover) auto-filling MFO; USD radio disabled with "Скоро" tooltip; `isDefault` exclusive across array. Step 4 departments — radio for template/skip; if template, fetch from `GET /api/onboarding/templates/:type` with all 6 states (loading skeleton, empty, error+retry, offline-no-cache, offline-cached, data); editable `DepartmentTreeEditor` (rename / add child / remove). Step 5 invite staff (optional `useFieldArray`); finish path uses `<WriteButton>` + `POST /api/onboarding/complete` + `updateUser({ onboardingComplete: true })` + dynamic-imported `canvas-confetti` + sonner success toast + redirect to `/`.
 - **Sidebar lock**: `OnboardingPage` calls `setOnboardingActive(true)` on mount, `false` on unmount. Sidebar reads `useAppShell().onboardingActive` and renders nav items as disabled `<span>` with `Tooltip` "Завершите настройку, чтобы продолжить" instead of `<NavLink>`.
+- **Skip Setup**: a ghost "Пропустить" button lives in the `OnboardingLayout` sticky bar (right-aligned next to `StepIndicator`) on every step. Click → `ConfirmDialog` (no reason note required — not destructive in the audit sense) → same finish-path as Step 5 (`useOnboardingComplete` + `updateUser({ onboardingComplete: true })` + toast + `navigate('/')`). Lives in [`SkipSetupButton.tsx`](../src/features/onboarding/components/SkipSetupButton.tsx). Persists whatever draft the user has already saved.
 
 ## Auth feature module
 - [`features/auth/`](../src/features/auth/) — sign-in, forgot-password, reset-password.
@@ -157,8 +190,11 @@ HashRouter so the app deploys to any static host without a 404.html shim.
 
 ## Open work / not yet done
 - Real backend auth (currently sessionStorage placeholder + MSW). The `lib/auth.ts` `signIn` is now async-shaped, swapping to a real backend is a fetch URL change.
-- Real i18n keys for feature screens 3-12 (auth + onboarding keys done).
-- Feature pages 3–12: dashboard widgets, students, transactions, payouts, reports, settings — placeholders only.
+- Real i18n keys for feature screens 4-12 (auth + onboarding + dashboard keys done).
+- Feature pages 4–12: students, transactions, pending, refunds, reports, payouts, settings — placeholders only.
+- `/api/organization` endpoint — Dashboard's institution subtitle (name · type) currently uses a placeholder constant `УНИПЭЙ · Университет` in [`DashboardPage.tsx`](../src/features/dashboard/pages/DashboardPage.tsx); flip to a real session/organization fetch once the org endpoint lands.
+- Dashboard `?range=&from=&to=` filter currently ignored by MSW (handlers accept the params but the seed isn't date-windowed); wire real date filtering when the backend lands or when fixtures need it for demo polish.
+- Dashboard panel deep-links target placeholder routes (`/payments/transactions`, `/payments/pending`, `/payments/pending?tab=overdue`); these resolve to `<Placeholder />` today. Land when those feature pages ship.
 - Chord listener implementation (`g d` etc.) — registry exists, dispatcher doesn't.
 - Theme toggle wired but dark-mode token coverage not yet QA'd in every component.
 - Sidebar role-aware filtering (uses `roles?: Role[]`) — registry doesn't carry roles yet.
