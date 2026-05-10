@@ -1,0 +1,166 @@
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ─── Brand blue scale (anchor: #1558B0 ≈ brand-600) ─── */
+    --brand-50: 215 100% 96%;
+    --brand-100: 215 95% 90%;
+    --brand-200: 215 90% 80%;
+    --brand-300: 215 85% 68%;
+    --brand-400: 215 80% 55%;
+    --brand-500: 215 78% 47%;
+    --brand-600: 215 78% 39%;
+    --brand-700: 215 80% 32%;
+    --brand-800: 215 82% 24%;
+    --brand-900: 215 84% 16%;
+    --brand-950: 215 90% 10%;
+
+    /* ─── Slate scale ─── */
+    --slate-50: 210 40% 98%;
+    --slate-100: 210 40% 96%;
+    --slate-200: 214 32% 91%;
+    --slate-300: 213 27% 84%;
+    --slate-400: 215 20% 65%;
+    --slate-500: 215 16% 47%;
+    --slate-600: 215 19% 35%;
+    --slate-700: 215 25% 27%;
+    --slate-800: 217 33% 17%;
+    --slate-900: 222 47% 11%;
+    --slate-950: 229 84% 5%;
+
+    /* ─── Semantic scales ─── */
+    --success-50: 138 76% 97%;
+    --success-600: 142 71% 45%;
+    --success-700: 142 76% 36%;
+    --warning-50: 48 100% 96%;
+    --warning-600: 32 95% 44%;
+    --warning-700: 26 90% 37%;
+    --danger-50: 0 86% 97%;
+    --danger-600: 0 72% 51%;
+    --danger-700: 0 74% 42%;
+    --info-50: 214 95% 93%;
+    --info-600: 214 90% 50%;
+
+    /* ─── Legacy semantic aliases (backward-compat for existing components) ─── */
+    --primary-light: var(--brand-50);
+    --success: var(--success-700);
+    --success-foreground: var(--success-700);
+    --success-light: var(--success-50);
+    --warning: var(--warning-700);
+    --warning-foreground: var(--warning-700);
+    --warning-light: var(--warning-50);
+    --danger: var(--danger-600);
+    --danger-foreground: var(--danger-700);
+    --danger-light: var(--danger-50);
+    --info-light: var(--info-50);
+    --surface: var(--slate-50);
+    --surface-2: var(--slate-100);
+    --refund: var(--brand-700);
+    --refund-light: var(--info-50);
+
+    /* ─── shadcn semantic — map ONTO scales ─── */
+    --background: var(--slate-50);
+    --foreground: var(--slate-900);
+    --card: 0 0% 100%;
+    --card-foreground: var(--slate-900);
+    --popover: 0 0% 100%;
+    --popover-foreground: var(--slate-900);
+    --primary: var(--brand-600);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--slate-100);
+    --secondary-foreground: var(--slate-900);
+    --muted: var(--slate-100);
+    --muted-foreground: var(--slate-500);
+    --accent: var(--slate-100);
+    --accent-foreground: var(--slate-900);
+    --destructive: var(--danger-600);
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--slate-200);
+    --input: var(--slate-200);
+    --ring: var(--brand-600);
+
+    --radius: 0.5rem;
+    /* Boot fallback; AppShell sets per-shell as inline style */
+    --sidebar-width: 240px;
+    /* Density default — overridden by html[data-density] */
+    --row-h: 40px;
+  }
+
+  .dark {
+    --background: var(--slate-950);
+    --foreground: var(--slate-100);
+    --card: var(--slate-900);
+    --card-foreground: var(--slate-100);
+    --popover: var(--slate-900);
+    --popover-foreground: var(--slate-100);
+    --primary: var(--brand-500);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--slate-800);
+    --secondary-foreground: var(--slate-100);
+    --muted: var(--slate-800);
+    --muted-foreground: var(--slate-400);
+    --accent: var(--slate-800);
+    --accent-foreground: var(--slate-100);
+    --destructive: var(--danger-600);
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--slate-800);
+    --input: var(--slate-800);
+    --ring: var(--brand-400);
+  }
+
+  * {
+    @apply border-border;
+  }
+  html {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+  }
+
+  /* Tabular numerals on opt-in elements */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Density tokens — driven by html[data-density] from lib/preferences.ts */
+  html[data-density='compact'] {
+    --row-h: 40px;
+  }
+  html[data-density='comfortable'] {
+    --row-h: 44px;
+  }
+
+  /* Global tabular numerals — driven by html[data-tabular-nums] from lib/preferences.ts */
+  html[data-tabular-nums='true'] body {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Skip link */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground;
+  }
+
+  /* prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

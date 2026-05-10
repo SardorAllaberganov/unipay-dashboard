@@ -1,0 +1,157 @@
+{
+  "app": {
+    "name": "UNIPAY",
+    "tagline": "Ta'lim muassasalari uchun to'lovlarni boshqarish"
+  },
+  "common": {
+    "actions": {
+      "save": "Saqlash",
+      "cancel": "Bekor qilish",
+      "confirm": "Tasdiqlash",
+      "delete": "O'chirish",
+      "edit": "Tahrirlash",
+      "add": "Qo'shish",
+      "close": "Yopish",
+      "search": "Qidirish",
+      "retry": "Qayta urinish",
+      "tryAgain": "Qayta urinish",
+      "viewAll": "Barchasini ko'rish",
+      "back": "Orqaga",
+      "backTo": "{{plural}}ga qaytish",
+      "next": "Keyingi",
+      "prev": "Oldingi",
+      "apply": "Qo'llash",
+      "clear": "Tozalash",
+      "filters": "Filtrlar",
+      "signIn": "Kirish",
+      "signOut": "Chiqish",
+      "settings": "Sozlamalar",
+      "shortcuts": "Qaynoq tugmalar",
+      "copy": "Nusxalash",
+      "copied": "Nusxalandi",
+      "openMenu": "Menyuni ochish",
+      "openSearch": "Qidiruvni ochish",
+      "showHelp": "Yordam",
+      "toggleTheme": "Mavzuni almashtirish"
+    },
+    "states": {
+      "loading": "Yuklanmoqda…",
+      "noData": "Ma'lumot yo'q",
+      "noResults": "Hech narsa topilmadi",
+      "offlineNote": "Keshlangan ma'lumotlar ko'rsatildi"
+    },
+    "yes": "Ha",
+    "no": "Yo'q",
+    "today": "Bugun",
+    "week": "Hafta",
+    "month": "Oy",
+    "custom": "Davr"
+  },
+  "nav": {
+    "section": {
+      "main": "Asosiy",
+      "organization": "Tashkilot",
+      "students": "Talabalar",
+      "payments": "To'lovlar",
+      "finance": "Moliya",
+      "system": "Tizim"
+    },
+    "dashboard": "Boshqaruv paneli",
+    "organization": "Tashkilot",
+    "staff": "Xodimlar",
+    "students": "Talabalar",
+    "transactions": "Tranzaksiyalar",
+    "pending": "Kutilmoqda",
+    "refunds": "Qaytarishlar",
+    "reports": "Hisobotlar",
+    "payouts": "Yechib olishlar",
+    "settings": "Sozlamalar",
+    "more": "Yana"
+  },
+  "auth": {
+    "title": "UNIPAYga kirish",
+    "subtitle": "Ta'lim muassasalari uchun to'lovlarni boshqarish",
+    "email": "Email",
+    "password": "Parol",
+    "submit": "Kirish",
+    "errors": {
+      "invalid_credentials": "Noto'g'ri email yoki parol.",
+      "session_expired": "Sessiya tugadi. Qayta kiring."
+    },
+    "devContinueAs": "Quyidagi sifatida kirish (faqat dev)",
+    "devOwner": "Egasi",
+    "devFinance": "Moliya menejeri",
+    "devOperator": "Operator",
+    "devViewer": "Kuzatuvchi"
+  },
+  "roles": {
+    "owner": "Egasi",
+    "finance_manager": "Moliya menejeri",
+    "operator": "Operator",
+    "viewer": "Kuzatuvchi"
+  },
+  "status": {
+    "paid": "To'langan",
+    "processing": "Jarayonda",
+    "pending": "Kutilmoqda",
+    "overdue": "Muddati o'tgan",
+    "failed": "Xatolik",
+    "refunded": "Qaytarilgan",
+    "active": "Faol",
+    "inactive": "Faol emas",
+    "coming-soon": "Tez orada"
+  },
+  "channels": {
+    "payme": "Payme",
+    "click": "Click",
+    "uzum": "Uzum",
+    "apelsin": "Apelsin",
+    "tezpay": "TezPay",
+    "mpay": "MPAY",
+    "cash": "Naqd",
+    "manual": "Qo'lda"
+  },
+  "system": {
+    "offline": {
+      "title": "Siz oflaynsiz",
+      "body": "Keshlangan ma'lumotlar ko'rsatildi. O'zgarishlar lokal saqlanadi.",
+      "banner": "Siz oflaynsiz — keshlangan ma'lumotlar {{time}} dan",
+      "retry": "Qayta ulanish"
+    },
+    "notFound": {
+      "title": "Sahifa topilmadi",
+      "body": "Ko'rsatilgan manzil mavjud emas yoki ko'chirilgan.",
+      "primary": "Bosh sahifa"
+    },
+    "serverError": {
+      "title": "Nimadir noto'g'ri ketdi",
+      "body": "Ichki xatolik yuz berdi. Quyidagi ID hal qilishga yordam beradi.",
+      "primary": "Qayta urinish",
+      "referenceLabel": "Xato ID"
+    },
+    "forbidden": {
+      "title": "Kirish taqiqlangan",
+      "body": "Ushbu sahifani ko'rish uchun ruxsatingiz yo'q.",
+      "primary": "Bosh sahifa"
+    },
+    "maintenance": {
+      "title": "Texnik xizmat",
+      "body": "Xizmat vaqtinchalik ishlamayapti. Tiklash ustida ishlayapmiz.",
+      "estimated": "Taxminiy tugash: {{time}}",
+      "primary": "Yangilash"
+    }
+  },
+  "kpi": {
+    "todayRevenue": "Bugungi tushum",
+    "weekRevenue": "Haftalik tushum",
+    "monthRevenue": "Oylik tushum",
+    "pending": "Kutilmoqda",
+    "overdue": "Muddati o'tgan",
+    "studentsTotal": "Jami talabalar",
+    "studentsActive": "Faol talabalar",
+    "transactionsToday": "Bugungi tranzaksiyalar"
+  },
+  "errors": {
+    "generic": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring."
+  }
+}
