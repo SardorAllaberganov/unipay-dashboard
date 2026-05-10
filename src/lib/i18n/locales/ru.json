@@ -141,6 +141,11 @@
       "primary": "Обновить"
     }
   },
+  "notifications": {
+    "title": "Уведомления",
+    "empty": "Нет уведомлений",
+    "unreadCount": "{{count}} непрочитанных"
+  },
   "kpi": {
     "todayRevenue": "Выручка сегодня",
     "weekRevenue": "Выручка за неделю",

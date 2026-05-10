@@ -141,6 +141,11 @@
       "primary": "Yangilash"
     }
   },
+  "notifications": {
+    "title": "Bildirishnomalar",
+    "empty": "Bildirishnomalar yo'q",
+    "unreadCount": "{{count}} ta o'qilmagan"
+  },
   "kpi": {
     "todayRevenue": "Bugungi tushum",
     "weekRevenue": "Haftalik tushum",
