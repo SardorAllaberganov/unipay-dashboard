@@ -49,7 +49,20 @@
     "today": "Bugun",
     "week": "Hafta",
     "month": "Oy",
-    "custom": "Davr"
+    "custom": "Davr",
+    "daterange": {
+      "title": "Sana oralig'ini tanlang",
+      "quick-select": "Tezkor tanlash",
+      "today": "Bugun",
+      "yesterday": "Kecha",
+      "7d": "So'nggi 7 kun",
+      "30d": "So'nggi 30 kun",
+      "custom": "Davr",
+      "cancel": "Bekor qilish",
+      "apply": "Qo'llash",
+      "prevMonth": "Oldingi oy",
+      "nextMonth": "Keyingi oy"
+    }
   },
   "nav": {
     "section": {
