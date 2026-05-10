@@ -28,6 +28,7 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 | `ai_context/AI_CONTEXT.md` + `HISTORY.md` | ✅ | This pass |
 | Branded favicon + `theme-color` meta | ✅ | `public/favicon.svg`, brand-600 UP mark |
 | GitHub Pages Jekyll bypass | ✅ | `.nojekyll` at repo root + `public/.nojekyll` (lands in `dist/`) |
+| MSW worker in production builds (demo deploy) | ✅ | DEV-only gate dropped in [`main.tsx`](../src/main.tsx); `worker.start()` takes `serviceWorker.url` built from `import.meta.env.BASE_URL` so the worker resolves under both `/` (dev) and `/unipay-dashboard/` (Pages). ~97 KB gzipped chunk. Gate behind `VITE_USE_MOCKS` when the real backend lands. See DECISIONS 2026-05-11. |
 | Radius bump (Card 12px / controls 8px) | ✅ | Card → `rounded-xl`; Button / Input / Select / Textarea / Toggle / Topbar search → `rounded-lg` |
 | Auth feature module (`src/features/auth/`) | ✅ | `signIn`/`forgot`/`reset` pages, schemas, `useFailedAttempts` store, `DevRoleSwitcher`, `PasswordField`, `LockedAlert`, MSW endpoints |
 | AuthLayout lg+ brand panel split | ✅ | `bg-brand-600` left half with logo + tagline + radial gradient; form column right with ThemeToggle |
@@ -80,7 +81,7 @@ Status legend: ✅ Done · 🚧 In progress · ❌ Todo · ⏸ Deferred
 
 | Page | Status | Notes |
 |---|---|---|
-| `/sign-in` | ✅ | RHF + Zod, password show/hide, rememberMe (visual), `?next=` + `?expired=1`, lockout (5/15min), DevRoleSwitcher, async `signIn` via MSW |
+| `/sign-in` | ✅ | RHF + Zod, password show/hide, rememberMe (visual), `?next=` + `?expired=1`, lockout (5/15min), DevRoleSwitcher (DEV-only), async `signIn` via MSW (runs in both dev + prod builds). `defaultValues` pre-fills `owner@unipay.dev` / `demo1234` in every environment for the demo deploy (see DECISIONS 2026-05-11). |
 | `/forgot-password` | ✅ | Email form → success view (always 200, no enumeration leak); ArrowLeft "Назад ко входу" |
 | `/reset-password` | ✅ | `?token=` required (must start `valid-`); password 8+ letter+digit, confirm; toast + redirect on success/reject |
 | `/onboarding/:step` | ✅ | 5 linear steps (org info, contact+branding, bank accounts, departments, invites). Sticky step indicator + fixed action bar (Pattern A). Sidebar nav locked while active. Save & exit + offline queue. Confetti on finish. |

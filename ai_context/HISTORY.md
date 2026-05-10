@@ -4,6 +4,24 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-11 — Deployed Pages demo gets a working sign-in (MSW in prod + form pre-fill always-on)
+
+**Summary.** Reported bug: sign-in didn't work on the deployed GitHub Pages build. Two root causes: (1) MSW was gated to `import.meta.env.DEV` in [`src/main.tsx`](../src/main.tsx) so the prod build had no mock backend, and `POST /api/auth/sign-in` hit nothing. (2) Even after enabling MSW in prod, the worker registers at `/mockServiceWorker.js` by default — which 404s on Pages because the app is served under `/unipay-dashboard/`. Fixed by dropping the DEV gate and passing `serviceWorker: { url: \`${import.meta.env.BASE_URL}mockServiceWorker.js\` }` to `worker.start()` so the URL resolves to `/mockServiceWorker.js` in dev and `/unipay-dashboard/mockServiceWorker.js` on Pages. Vite already copies `public/mockServiceWorker.js` to `dist/` so no extra build step. Followed up by collapsing the `defaultValues: import.meta.env.DEV ? prefilled : empty` ternary in [`SignInForm.tsx`](../src/features/auth/components/SignInForm.tsx) to the prefilled branch unconditionally — the demo deploy needs the form pre-populated with `owner@unipay.dev` / `demo1234` so a visitor can click "Войти" once and be inside.
+
+**Files written.**
+- Modified: [`src/main.tsx`](../src/main.tsx) — `enableMocks()` no longer short-circuits in prod; `worker.start()` now takes `serviceWorker.url` resolved against `BASE_URL`.
+- Modified: [`src/features/auth/components/SignInForm.tsx`](../src/features/auth/components/SignInForm.tsx) — `defaultValues` is the same object in every environment (prefilled).
+
+**Cost.** MSW (`browser-*.js`) now ships in production — ~97 KB gzipped. Acceptable for a demo / preview deploy with no real backend yet; gate behind a `VITE_USE_MOCKS` env flag once the Express+Mongo backend is ready to take over. Tracked in DECISIONS 2026-05-11.
+
+**Verifications.** typecheck · `eslint --max-warnings 0` · `vite build` — all clean. `dist/mockServiceWorker.js` present at the expected path; build output's `assets/index-*.js` and the MSW chunk co-exist.
+
+**Lessons.**
+- MSW's `worker.start()` registers the service worker at `/mockServiceWorker.js` by default. When the app's deployed under a sub-path (Vite `base !== '/'`), pass `serviceWorker.url` resolved against `import.meta.env.BASE_URL` or the worker registration will 404 and MSW will silently no-op. Same applies to any app deployed under a project sub-path on Pages / Vercel-aliases / sub-directory CDNs.
+- For demo / preview deploys with no real backend, shipping MSW in production is the path of least resistance. The bundle cost (~97 KB gzipped) is fine for a marketing / portfolio demo. When the real backend lands, the gate should be `import.meta.env.VITE_USE_MOCKS === 'true'` (default true in dev / preview, false in real prod) — not the DEV-vs-prod short-circuit, which doesn't survive a preview deploy.
+
+---
+
 ## 2026-05-11 — Bank Edit Sheet — tap-to-copy rows for immutable details
 
 **Summary.** Restructured `BankImmutableSummary` (the read-only summary card at the top of the Bank Account Edit Sheet) from a horizontal 2-column `dl grid` (label-left / value-right) to stacked groups — each row now has its label on top (`text-xs uppercase tracking-wider` definition-label, §0.2 allow-listed) and value below (`text-sm font-medium`, with `tabular break-all` on numeric fields so a 20-digit account number wraps cleanly inside narrow sheets). Each row is now a `<button>` that copies the value on tap: `navigator.clipboard.writeText` with a hidden-textarea + `execCommand('copy')` fallback for non-secure contexts; `navigator.vibrate?.(10)` haptic on mobile (feature-detected, gracefully skipped on desktop); trailing icon swaps `Copy → Check (success-700)` for 1500ms; sonner toast using existing `common.actions.copied` key; `sr-only role="status" aria-live="polite"` span for screen readers. `aria-label` combines `Скопировать: {label}, {value}` so screen readers announce context + value on focus.

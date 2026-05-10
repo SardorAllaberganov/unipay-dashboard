@@ -6,6 +6,16 @@ Review at session start (or via `/start_task`). Most recent on top.
 
 ---
 
+## 2026-05-11 · MSW under a Vite sub-path deploy — pass `serviceWorker.url` built from `BASE_URL`
+
+**Rule.** Whenever `vite.config` sets `base` to anything other than `/` (GitHub Pages sub-path, Netlify alias, sub-directory CDN), the MSW worker registration must point at the same prefix. Pass `serviceWorker: { url: \`${import.meta.env.BASE_URL}mockServiceWorker.js\` }` to `worker.start()`. The default registration at `/mockServiceWorker.js` will 404 silently and MSW will no-op every request, masquerading as "the backend doesn't respond."
+
+**Why.** MSW's `worker.start()` registers the service worker at `/mockServiceWorker.js` by default. On a sub-path deploy, the file is served under the base prefix (e.g. `/unipay-dashboard/mockServiceWorker.js`) but the registration call hits the unprefixed root. The 404 is silent — no thrown error, no console scream — the worker just never registers, and every `fetch` falls through to the real network. Symptoms look identical to "the backend isn't responding" (because there isn't one), which is exactly the bug the user reported on the Pages deploy.
+
+**How to apply.** Reference: [`src/main.tsx`](../src/main.tsx). Any time someone bumps `vite.config.ts` `base` away from `/`, or adds a new MSW-using build target, audit `worker.start()` for the `serviceWorker.url` arg. Also worth knowing: for demo / preview deploys, gate MSW behind a `VITE_USE_MOCKS` env flag (default true in dev + preview, false in real prod) — never use `import.meta.env.DEV` as the gate because it doesn't survive a preview deploy. See DECISIONS 2026-05-11 "MSW ships in production builds".
+
+---
+
 ## 2026-05-11 · Tap-to-copy rows — canonical pattern (haptic + icon-swap + sr-only live region + fallback)
 
 **Rule.** Any "tap to copy" affordance — bank details, transaction IDs, reference codes, API keys, etc. — follows this pattern:

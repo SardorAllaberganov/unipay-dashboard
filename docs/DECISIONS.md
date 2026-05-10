@@ -15,6 +15,20 @@ A deviation that isn't logged here is a bug.
 
 ---
 
+## 2026-05-11 · Deploy — MSW ships in production builds (demo deploy)
+
+1. **Rule** — Implicit convention from Prompt 0 v2.0: MSW is a dev-time mock, gated to `import.meta.env.DEV` in [`src/main.tsx`](../src/main.tsx). Reinforced by `STYLE_DISCIPLINE.md` posture that production builds talk to a real backend.
+2. **Reason** — The Express+Mongo backend lives in a separate repo and isn't deployed yet, but the frontend is published to GitHub Pages as a portfolio / preview demo. Gating MSW to DEV means the deployed demo has no working sign-in (nor any data loading) — every API call hits a 404. Lifting the gate (and pointing `worker.start()` at `${BASE_URL}mockServiceWorker.js` so the worker resolves under the `/unipay-dashboard/` sub-path) gives the demo a functional sign-in + dashboard + organization flow at zero backend cost. Bundle cost: ~97 KB gzipped `browser-*.js` chunk — acceptable for a demo deploy with no real backend in the picture.
+3. **Scope** — [`src/main.tsx`](../src/main.tsx) — `enableMocks()` no longer short-circuits in prod; `worker.start()` takes `serviceWorker.url` built from `import.meta.env.BASE_URL`.
+4. **Review date** — When the real backend ships (next major milestone). At that point, replace the unconditional `enableMocks()` with a `VITE_USE_MOCKS` env-flag check (true in dev + preview, false in real prod). Do **not** revert to the DEV-vs-prod ternary — it doesn't survive any preview deploy.
+
+## 2026-05-11 · Auth — sign-in form pre-fills `owner@unipay.dev` / `demo1234` in every environment
+
+1. **Rule** — Standard UX: production sign-in forms ship with empty inputs.
+2. **Reason** — The deployed GitHub Pages build is a demo, not a real production sign-in. With MSW now serving the auth endpoint in every environment (see deviation above), a visitor's first interaction should be "click Войти, land inside" — not "type credentials they don't have." The DEV-only `defaultValues` ternary that pre-filled the owner demo account in dev was extended to prod by collapsing the ternary. The pre-filled credentials are not secrets — they're mock-account fixtures published in the public repo.
+3. **Scope** — [`src/features/auth/components/SignInForm.tsx`](../src/features/auth/components/SignInForm.tsx) — `defaultValues: { email: 'owner@unipay.dev', password: 'demo1234', rememberMe: false }` unconditionally (was wrapped in `import.meta.env.DEV ? ... : { email: '', password: '', ... }`).
+4. **Review date** — Same milestone as the MSW-in-prod deviation: when the real backend lands and a `VITE_USE_MOCKS` flag turns off the mocks for real prod, restore the DEV-only branch (or gate the prefill on the same `VITE_USE_MOCKS` flag). Real production sign-in should never auto-fill credentials.
+
 ## 2026-05-11 · Organization — add flows are standalone pages, not Dialogs/Sheets
 
 1. **Rule** — The Prompt 4 spec called for "Add account → `<ResponsiveSheet>` form" and "+ Add подразделение → `<AddDepartmentDialog>`". §0.5 doesn't prescribe a default for create flows — it documents detail-page chrome (back link + action bar) for either pattern.
