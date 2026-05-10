@@ -69,20 +69,57 @@
     "more": "Yana"
   },
   "auth": {
-    "title": "UNIPAYga kirish",
-    "subtitle": "Ta'lim muassasalari uchun to'lovlarni boshqarish",
-    "email": "Email",
-    "password": "Parol",
-    "submit": "Kirish",
-    "errors": {
-      "invalid_credentials": "Noto'g'ri email yoki parol.",
-      "session_expired": "Sessiya tugadi. Qayta kiring."
+    "signIn": {
+      "title": "UNIPAYga kirish",
+      "subtitle": "Ta'lim muassasalari uchun to'lovlarni boshqarish",
+      "emailLabel": "Email",
+      "passwordLabel": "Parol",
+      "rememberMe": "Meni eslab qoling",
+      "submit": "Kirish",
+      "forgotLink": "Parolni unutdingizmi?",
+      "errorInvalid": "Noto'g'ri email yoki parol.",
+      "expired": "Sessiyangiz tugadi. Qayta kiring.",
+      "lockedOut": "Juda ko'p urinish. 15 daqiqadan so'ng qayta urining.",
+      "showPassword": "Parolni ko'rsatish",
+      "hidePassword": "Parolni yashirish",
+      "errors": {
+        "emailRequired": "Email kiriting",
+        "emailInvalid": "Noto'g'ri email",
+        "passwordRequired": "Parol kiriting",
+        "passwordTooShort": "Kamida 6 belgi"
+      }
     },
-    "devContinueAs": "Quyidagi sifatida kirish (faqat dev)",
-    "devOwner": "Egasi",
-    "devFinance": "Moliya menejeri",
-    "devOperator": "Operator",
-    "devViewer": "Kuzatuvchi"
+    "forgot": {
+      "title": "Parolni tiklash",
+      "subtitle": "Email kiriting — biz tiklash havolasini yuboramiz.",
+      "emailLabel": "Email",
+      "submit": "Havolani yuborish",
+      "successTitle": "Pochtangizni tekshiring",
+      "successBody": "{{email}} manziliga tiklash havolasini yubordik.",
+      "backToSignIn": "Kirishga qaytish",
+      "errors": {
+        "emailRequired": "Email kiriting",
+        "emailInvalid": "Noto'g'ri email"
+      }
+    },
+    "reset": {
+      "title": "Yangi parol",
+      "subtitle": "Kirish uchun ishonchli parol o'ylab toping.",
+      "passwordLabel": "Yangi parol",
+      "confirmLabel": "Parolni takrorlang",
+      "submit": "Parolni saqlash",
+      "mismatch": "Parollar mos kelmadi",
+      "successToast": "Parol yangilandi. Qayta kiring.",
+      "invalidToken": "Havola yaroqsiz yoki eskirgan.",
+      "errors": {
+        "passwordTooShort": "Kamida 8 belgi",
+        "passwordWeak": "Harf va raqam bo'lishi kerak"
+      }
+    },
+    "dev": {
+      "title": "Faqat dev uchun",
+      "continueAs": "Quyidagi sifatida kirish"
+    }
   },
   "roles": {
     "owner": "Egasi",

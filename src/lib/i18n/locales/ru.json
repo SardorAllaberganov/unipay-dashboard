@@ -69,20 +69,57 @@
     "more": "Ещё"
   },
   "auth": {
-    "title": "Войти в UNIPAY",
-    "subtitle": "Управление платежами для образовательных учреждений",
-    "email": "Email",
-    "password": "Пароль",
-    "submit": "Войти",
-    "errors": {
-      "invalid_credentials": "Неверный email или пароль.",
-      "session_expired": "Сессия истекла. Войдите снова."
+    "signIn": {
+      "title": "Войти в UNIPAY",
+      "subtitle": "Управление платежами для образовательных учреждений",
+      "emailLabel": "Email",
+      "passwordLabel": "Пароль",
+      "rememberMe": "Запомнить меня",
+      "submit": "Войти",
+      "forgotLink": "Забыли пароль?",
+      "errorInvalid": "Неверный email или пароль.",
+      "expired": "Ваша сессия истекла. Войдите снова.",
+      "lockedOut": "Слишком много попыток. Попробуйте через 15 минут.",
+      "showPassword": "Показать пароль",
+      "hidePassword": "Скрыть пароль",
+      "errors": {
+        "emailRequired": "Введите email",
+        "emailInvalid": "Некорректный email",
+        "passwordRequired": "Введите пароль",
+        "passwordTooShort": "Минимум 6 символов"
+      }
     },
-    "devContinueAs": "Войти как (только для разработки)",
-    "devOwner": "Владелец",
-    "devFinance": "Финансовый менеджер",
-    "devOperator": "Оператор",
-    "devViewer": "Наблюдатель"
+    "forgot": {
+      "title": "Восстановление пароля",
+      "subtitle": "Введите email — мы отправим ссылку для сброса.",
+      "emailLabel": "Email",
+      "submit": "Отправить ссылку",
+      "successTitle": "Проверьте почту",
+      "successBody": "Мы отправили ссылку для сброса на {{email}}.",
+      "backToSignIn": "Назад ко входу",
+      "errors": {
+        "emailRequired": "Введите email",
+        "emailInvalid": "Некорректный email"
+      }
+    },
+    "reset": {
+      "title": "Новый пароль",
+      "subtitle": "Придумайте надёжный пароль для входа.",
+      "passwordLabel": "Новый пароль",
+      "confirmLabel": "Повторите пароль",
+      "submit": "Сохранить пароль",
+      "mismatch": "Пароли не совпадают",
+      "successToast": "Пароль обновлён. Войдите снова.",
+      "invalidToken": "Ссылка недействительна или устарела.",
+      "errors": {
+        "passwordTooShort": "Минимум 8 символов",
+        "passwordWeak": "Должен содержать буквы и цифры"
+      }
+    },
+    "dev": {
+      "title": "Только для разработки",
+      "continueAs": "Войти как"
+    }
   },
   "roles": {
     "owner": "Владелец",

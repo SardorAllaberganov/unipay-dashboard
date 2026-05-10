@@ -1,7 +1,7 @@
 // STYLE_DISCIPLINE.md §0.12 — module-level state store. Auth placeholder for v1 scaffold.
 // Real auth wires up later — this gives the router and AppShell something to hang on.
 import { useSyncExternalStore, useEffect, useState } from 'react';
-import type { Role } from '@/types/domain';
+import type { Role, User } from '@/types/domain';
 
 export interface ActiveSession {
   state: 'authenticated';
@@ -15,6 +15,7 @@ export interface ActiveSession {
 }
 
 const STORAGE_KEY = 'unipay-session';
+const SIGNOUT_REASON_KEY = 'unipay-signout-reason';
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 min
 
 let cached: ActiveSession | null = readFromStorage();
@@ -91,23 +92,43 @@ const DEV_USERS: Record<Role, ActiveSession['profile']> = {
   },
 };
 
-export function signIn(
+export async function signIn(
   email: string,
-  _password: string
-): { ok: boolean; failureCode?: string } {
-  // Placeholder — accept anything that looks like an email; pick role by prefix.
+  password: string
+): Promise<{ ok: boolean; failureCode?: string }> {
   if (!email || !email.includes('@')) {
     return { ok: false, failureCode: 'invalid_credentials' };
   }
-  const role: Role = email.startsWith('finance')
-    ? 'finance_manager'
-    : email.startsWith('operator')
-      ? 'operator'
-      : email.startsWith('viewer')
-        ? 'viewer'
-        : 'owner';
-  signInAsRole(role);
-  return { ok: true };
+  if (!password || password.length < 6) {
+    return { ok: false, failureCode: 'invalid_credentials' };
+  }
+  try {
+    const res = await fetch('/api/auth/sign-in', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) return { ok: false, failureCode: 'invalid_credentials' };
+    const body = (await res.json()) as { data: { user: User; token: string } };
+    const u = body.data.user;
+    const session: ActiveSession = {
+      state: 'authenticated',
+      id: u.id,
+      profile: {
+        id: u.id,
+        email: u.email,
+        displayName: u.fullName,
+        role: u.role,
+      },
+    };
+    cached = session;
+    persist(session);
+    lastActivityAt = Date.now();
+    notify();
+    return { ok: true };
+  } catch {
+    return { ok: false, failureCode: 'invalid_credentials' };
+  }
 }
 
 export function signInAsRole(role: Role): void {
@@ -119,10 +140,36 @@ export function signInAsRole(role: Role): void {
   notify();
 }
 
-export function signOut(_opts?: { reason?: 'user' | 'session_expired' }): void {
+export function signOut(opts?: { reason?: 'user' | 'session_expired' }): void {
   cached = null;
   persist(null);
+  if (typeof window !== 'undefined' && opts?.reason) {
+    try {
+      window.sessionStorage.setItem(SIGNOUT_REASON_KEY, opts.reason);
+    } catch {
+      // ignore
+    }
+  }
   notify();
+}
+
+export function readSignOutReason(): 'user' | 'session_expired' | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const v = window.sessionStorage.getItem(SIGNOUT_REASON_KEY);
+    return v === 'user' || v === 'session_expired' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearSignOutReason(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.sessionStorage.removeItem(SIGNOUT_REASON_KEY);
+  } catch {
+    // ignore
+  }
 }
 
 export function markActivity(): void {

@@ -14,7 +14,9 @@ import { OfflineState } from '@/components/system/OfflineState';
 import { MaintenanceState } from '@/components/system/MaintenanceState';
 import { signOut, useIdleTimeout, useSession } from '@/lib/auth';
 import { useMaintenanceState } from '@/lib/maintenanceState';
-import SignIn from '@/pages/SignIn';
+import SignInPage from '@/features/auth/pages/SignInPage';
+import ForgotPasswordPage from '@/features/auth/pages/ForgotPasswordPage';
+import ResetPasswordPage from '@/features/auth/pages/ResetPasswordPage';
 import Dashboard from '@/pages/Dashboard';
 import Placeholder from '@/pages/Placeholder';
 
@@ -30,7 +32,14 @@ const KNOWN_PATH_PREFIXES = [
 ];
 
 function isKnownPath(pathname: string): boolean {
-  if (pathname === '/' || pathname === '/sign-in') return true;
+  if (
+    pathname === '/' ||
+    pathname === '/sign-in' ||
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password'
+  ) {
+    return true;
+  }
   return KNOWN_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
@@ -67,7 +76,9 @@ export function Router() {
   return (
     <MaintenanceGate>
       <Routes>
-        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/sign-in" element={<SignInPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route
           path="*"
           element={
