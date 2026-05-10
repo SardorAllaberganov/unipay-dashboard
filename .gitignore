@@ -1,0 +1,25 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.env
+.env.*
+!.env.example
+
+# build / cache
+node_modules/.tmp
+.eslintcache
+
+# Claude Code — per-developer permission overrides
+.claude/settings.local.json
