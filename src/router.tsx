@@ -39,6 +39,9 @@ import { TransactionsPage } from '@/features/payments/pages/TransactionsPage';
 import { TransactionDetailPage } from '@/features/payments/pages/TransactionDetailPage';
 import { PendingOverduePage } from '@/features/payments/pages/PendingOverduePage';
 import { RefundsPage } from '@/features/payments/pages/RefundsPage';
+import ReportsLayout from '@/features/reports/pages/ReportsLayout';
+import SummaryPage from '@/features/reports/pages/SummaryPage';
+import ExportPage from '@/features/reports/pages/ExportPage';
 import Placeholder from '@/pages/Placeholder';
 
 const KNOWN_PATH_PREFIXES = [
@@ -153,7 +156,11 @@ function AppRoutes() {
           <Route path="/payments/transactions/:id" element={<TransactionDetailPage />} />
           <Route path="/payments/pending" element={<PendingOverduePage />} />
           <Route path="/payments/refunds" element={<RefundsPage />} />
-          <Route path="/reports" element={<Placeholder />} />
+          <Route path="/reports" element={<ReportsLayout />}>
+            <Route index element={<Navigate to="summary" replace />} />
+            <Route path="summary" element={<SummaryPage />} />
+            <Route path="export" element={<ExportPage />} />
+          </Route>
           <Route path="/payouts" element={<Placeholder />} />
           <Route path="/payouts/:id" element={<Placeholder />} />
           <Route path="/settings" element={<Placeholder />} />

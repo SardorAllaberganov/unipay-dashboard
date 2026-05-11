@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { ArrowDown, ArrowUp, Minus, type LucideIcon } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { KpiSparkline } from './KpiSparkline';
 import { cn } from '@/lib/utils';
 import { formatDelta } from '@/lib/format';
+import { KpiSparkline } from './KpiSparkline';
 
 interface Props {
   label: string;
@@ -65,7 +65,7 @@ export function KpiCard({
 
       {spark && spark.length > 1 ? (
         <div className="mt-auto">
-          <KpiSparkline data={spark} height={32} ariaLabel={`${label} — тренд за 7 дней`} />
+          <KpiSparkline data={spark} height={32} ariaLabel={`${label} — спарклайн`} />
         </div>
       ) : null}
     </Card>

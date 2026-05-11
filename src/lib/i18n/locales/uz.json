@@ -1655,5 +1655,134 @@
         "success": "Qaytarish rad etildi"
       }
     }
+  },
+  "reports": {
+    "title": "Hisobotlar",
+    "tabs": {
+      "aria": "Hisobot bo'limlari",
+      "summary": "Qisqacha",
+      "export": "Eksport"
+    },
+    "summary": {
+      "title": "Qisqacha hisobot",
+      "description": "Tanlangan davr bo'yicha tushum, komissiya va to'lovlar."
+    },
+    "kpis": {
+      "totalReceived": "Qabul qilindi",
+      "totalCommission": "Komissiya",
+      "totalNet": "Hisobga o'tkaziladi",
+      "payoutCount": "To'lovlar",
+      "vsPrev": "oldingi davrga nisbatan",
+      "payoutCountUnit_one": "{{count}} to'lov",
+      "payoutCountUnit_other": "{{count}} ta to'lov"
+    },
+    "charts": {
+      "revenue": {
+        "title": "Davr tushumi",
+        "daily": "Kunlik",
+        "weekly": "Haftalik",
+        "monthly": "Oylik",
+        "tooltipAmount": "Summa",
+        "tooltipCount": "Soni"
+      },
+      "channels": {
+        "title": "Kanallar bo'yicha",
+        "tooltipAmount": "Summa",
+        "tooltipShare": "Ulush"
+      },
+      "departments": {
+        "title": "Bo'limlar bo'yicha",
+        "totalLabel": "Jami qabul qilindi",
+        "tooltipAmount": "Summa"
+      }
+    },
+    "byDay": {
+      "title": "Kunlar bo'yicha taqsimot",
+      "description": "Saralanadigan jadval — ustun sarlavhasini bosing.",
+      "columns": {
+        "date": "Sana",
+        "transactions": "Tranzaksiyalar",
+        "totalCharged": "Summa",
+        "commission": "Komissiya",
+        "net": "Hisobga",
+        "payout": "To'lov"
+      },
+      "payoutBadge": "Hisoblandi",
+      "noPayout": "—",
+      "emptyTitle": "Davr uchun ma'lumot yo'q",
+      "emptyBody": "Davrni kengaytirib ko'ring yoki filtrlarni tozalang."
+    },
+    "export": {
+      "title": "Eksport",
+      "description": "Tanlangan davr bo'yicha ma'lumotli faylni yarating.",
+      "form": {
+        "dateRangeLabel": "Davr",
+        "dataTypeLabel": "Ma'lumot turi",
+        "dataType": {
+          "transactions": "Tranzaksiyalar",
+          "students": "Talabalar",
+          "overdue": "Muddati o'tgan",
+          "payouts": "To'lovlar"
+        },
+        "formatLabel": "Format",
+        "format": {
+          "csv": "CSV",
+          "ndjson": "NDJSON"
+        },
+        "groupingLabel": "Guruhlash",
+        "grouping": {
+          "none": "Guruhlashsiz",
+          "student": "Talabalar bo'yicha",
+          "department": "Bo'limlar bo'yicha",
+          "day": "Kunlar bo'yicha"
+        },
+        "includeContextLabel": "Filtr kontekstini qo'shish",
+        "includeContextHint": "Fayl boshida faol filtrlar bilan sarlavha qatori.",
+        "submit": "Yaratish",
+        "submitGenerating": "Eksport tayyorlanmoqda…"
+      },
+      "progress": {
+        "preparing": "Eksport tayyorlanmoqda… ~{{seconds}} sek",
+        "ready": "Fayl tayyor",
+        "openCta": "Ochish",
+        "failed": "Fayl yaratilmadi"
+      },
+      "toasts": {
+        "generateError": "Eksportni boshlab bo'lmadi",
+        "deleteSuccess": "Eksport o'chirildi",
+        "deleteError": "Eksportni o'chirib bo'lmadi"
+      },
+      "recent": {
+        "title": "So'nggi eksportlar",
+        "description": "Fayllar yaratilgandan keyin 7 kun mavjud bo'ladi.",
+        "rowsLabel_one": "{{count}} qator",
+        "rowsLabel_other": "{{count}} ta qator",
+        "downloadCta": "Yuklab olish",
+        "deleteCta": "O'chirish",
+        "deleteTitle": "Eksportni o'chirilsinmi?",
+        "deleteBody": "«{{name}}» fayli qaytarib bo'lmas tarzda o'chiriladi.",
+        "deleteConfirm": "Eksportni o'chirish",
+        "deleteReasonHint": "O'chirish sababi (kamida 20 belgi).",
+        "emptyTitle": "So'nggi eksportlar yo'q",
+        "emptyBody": "Fayl yaratish uchun yuqoridagi formani to'ldiring."
+      },
+      "expiry": {
+        "days_one": "{{count}} kundan keyin tugaydi",
+        "days_other": "{{count}} kundan keyin tugaydi",
+        "hours_one": "{{count}} soatdan keyin tugaydi",
+        "hours_other": "{{count}} soatdan keyin tugaydi",
+        "expired": "tugagan"
+      },
+      "channels": {
+        "payme": "Payme",
+        "click": "Click",
+        "uzum": "Uzum",
+        "apelsin": "Apelsin",
+        "tezpay": "TezPay",
+        "mpay": "MPAY",
+        "cash": "Naqd",
+        "manual": "Qo'lda kiritish"
+      }
+    }
   }
 }

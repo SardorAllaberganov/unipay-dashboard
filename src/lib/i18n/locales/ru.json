@@ -1693,5 +1693,142 @@
         "success": "Возврат отклонён"
       }
     }
+  },
+  "reports": {
+    "title": "Отчёты",
+    "tabs": {
+      "aria": "Разделы отчётов",
+      "summary": "Сводка",
+      "export": "Экспорт"
+    },
+    "summary": {
+      "title": "Сводный отчёт",
+      "description": "Доходы, комиссии и выплаты за выбранный период."
+    },
+    "kpis": {
+      "totalReceived": "Получено",
+      "totalCommission": "Комиссия",
+      "totalNet": "К зачислению",
+      "payoutCount": "Выплат",
+      "vsPrev": "к прошлому периоду",
+      "payoutCountUnit_one": "{{count}} выплата",
+      "payoutCountUnit_few": "{{count}} выплаты",
+      "payoutCountUnit_many": "{{count}} выплат",
+      "payoutCountUnit_other": "{{count}} выплат"
+    },
+    "charts": {
+      "revenue": {
+        "title": "Доходы за период",
+        "daily": "По дням",
+        "weekly": "По неделям",
+        "monthly": "По месяцам",
+        "tooltipAmount": "Сумма",
+        "tooltipCount": "Кол-во"
+      },
+      "channels": {
+        "title": "По каналам",
+        "tooltipAmount": "Сумма",
+        "tooltipShare": "Доля"
+      },
+      "departments": {
+        "title": "По подразделениям",
+        "totalLabel": "Всего получено",
+        "tooltipAmount": "Сумма"
+      }
+    },
+    "byDay": {
+      "title": "Разбивка по дням",
+      "description": "Сортируемая таблица — кликните по заголовку колонки.",
+      "columns": {
+        "date": "Дата",
+        "transactions": "Транзакции",
+        "totalCharged": "Сумма",
+        "commission": "Комиссия",
+        "net": "К зачислению",
+        "payout": "Выплата"
+      },
+      "payoutBadge": "Зачислено",
+      "noPayout": "—",
+      "emptyTitle": "Нет данных за период",
+      "emptyBody": "Попробуйте расширить диапазон или сбросить фильтры."
+    },
+    "export": {
+      "title": "Экспорт",
+      "description": "Сгенерируйте файл с данными за выбранный период.",
+      "form": {
+        "dateRangeLabel": "Период",
+        "dataTypeLabel": "Тип данных",
+        "dataType": {
+          "transactions": "Транзакции",
+          "students": "Студенты",
+          "overdue": "Просроченные",
+          "payouts": "Выплаты"
+        },
+        "formatLabel": "Формат",
+        "format": {
+          "csv": "CSV",
+          "ndjson": "NDJSON"
+        },
+        "groupingLabel": "Группировка",
+        "grouping": {
+          "none": "Без группировки",
+          "student": "По студентам",
+          "department": "По подразделениям",
+          "day": "По дням"
+        },
+        "includeContextLabel": "Включить контекст фильтров",
+        "includeContextHint": "Заголовочная строка с активными фильтрами в начале файла.",
+        "submit": "Сгенерировать",
+        "submitGenerating": "Готовим экспорт…"
+      },
+      "progress": {
+        "preparing": "Готовим экспорт… ~{{seconds}} сек",
+        "ready": "Файл готов",
+        "openCta": "Открыть",
+        "failed": "Не удалось сформировать файл"
+      },
+      "toasts": {
+        "generateError": "Не удалось запустить экспорт",
+        "deleteSuccess": "Экспорт удалён",
+        "deleteError": "Не удалось удалить экспорт"
+      },
+      "recent": {
+        "title": "Недавние экспорты",
+        "description": "Файлы доступны 7 дней после генерации.",
+        "rowsLabel_one": "{{count}} строка",
+        "rowsLabel_few": "{{count}} строки",
+        "rowsLabel_many": "{{count}} строк",
+        "rowsLabel_other": "{{count}} строк",
+        "downloadCta": "Скачать",
+        "deleteCta": "Удалить",
+        "deleteTitle": "Удалить экспорт?",
+        "deleteBody": "Файл «{{name}}» будет удалён без возможности восстановления.",
+        "deleteConfirm": "Удалить экспорт",
+        "deleteReasonHint": "Причина удаления (мин. 20 символов).",
+        "emptyTitle": "Нет недавних экспортов",
+        "emptyBody": "Сгенерируйте файл, чтобы он появился здесь."
+      },
+      "expiry": {
+        "days_one": "истекает через {{count}} день",
+        "days_few": "истекает через {{count}} дня",
+        "days_many": "истекает через {{count}} дней",
+        "days_other": "истекает через {{count}} дней",
+        "hours_one": "истекает через {{count}} час",
+        "hours_few": "истекает через {{count}} часа",
+        "hours_many": "истекает через {{count}} часов",
+        "hours_other": "истекает через {{count}} часов",
+        "expired": "истёк"
+      },
+      "channels": {
+        "payme": "Payme",
+        "click": "Click",
+        "uzum": "Uzum",
+        "apelsin": "Apelsin",
+        "tezpay": "TezPay",
+        "mpay": "MPAY",
+        "cash": "Наличные",
+        "manual": "Ручной ввод"
+      }
+    }
   }
 }

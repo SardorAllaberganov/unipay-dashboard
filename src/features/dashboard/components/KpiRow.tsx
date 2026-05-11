@@ -4,7 +4,7 @@ import { formatDate, formatRelative, formatUZS } from '@/lib/format';
 import { useNetworkState } from '@/hooks/useNetworkState';
 import { useDashboardSummary } from '../hooks/useDashboardSummary';
 import type { DashboardDateRange } from '../api';
-import { KpiCard } from './KpiCard';
+import { KpiCard } from '@/components/shared/KpiCard';
 import {
   KpiCardSkeleton,
   PanelErrorState,
