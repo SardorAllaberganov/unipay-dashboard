@@ -75,6 +75,15 @@ export interface Department {
   children?: Department[];
 }
 
+/**
+ * Student-level payment health. Distinct from transaction `PaymentStatus` because
+ * a student's overall position is an aggregate ('partial' = some schedule rows paid)
+ * and never carries transaction-only states like 'processing' / 'failed' / 'refunded'.
+ */
+export type StudentPaymentStatus = 'paid' | 'partial' | 'pending' | 'overdue';
+
+export type PaymentType = 'tuition' | 'dormitory' | 'other';
+
 export interface Student {
   id: string;
   studentId: string;
@@ -93,7 +102,135 @@ export interface Student {
   status: AccountStatus;
   avatarUrl?: string;
   currentBalance: Money;
-  paymentStatus: PaymentStatus;
+  paymentStatus: StudentPaymentStatus;
+  lastPaymentAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+/**
+ * A row of a student's payment schedule. Status mirrors `StudentPaymentStatus` but
+ * applies to that single row (not the student in aggregate).
+ */
+export type ScheduleRowStatus = 'paid' | 'partial' | 'pending' | 'overdue';
+
+export interface ScheduleRow {
+  id: string;
+  studentId: string;
+  period: string;
+  type: PaymentType;
+  amount: Money;
+  paid: Money;
+  remaining: Money;
+  dueDate: string;
+  status: ScheduleRowStatus;
+  templateId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * Reusable payment schedule template. Applied to a set of departments / years / students;
+ * each application generates a `ScheduleRow` per target student.
+ */
+export interface ScheduleTemplate {
+  id: string;
+  name: string;
+  type: PaymentType;
+  amountMode: 'single' | 'per-department';
+  amount?: Money;
+  perDepartmentAmounts?: Array<{ departmentId: string; amount: Money }>;
+  dueDate: string;
+  periodLabel: string;
+  appliesTo: {
+    departmentIds: string[];
+    years: number[];
+    studentIds: string[];
+  };
+  appliedCount: number;
+  createdAt: string;
+  createdBy?: string;
+}
+
+export interface StudentNote {
+  id: string;
+  studentId: string;
+  authorId: string;
+  authorName: string;
+  body: string;
+  createdAt: string;
+}
+
+export type StudentActivityAction =
+  | 'created'
+  | 'updated'
+  | 'profile_updated'
+  | 'department_changed'
+  | 'status_changed'
+  | 'schedule_row_added'
+  | 'schedule_row_updated'
+  | 'schedule_row_removed'
+  | 'template_applied'
+  | 'note_added'
+  | 'sms_sent'
+  | 'deactivated'
+  | 'reactivated'
+  | 'deleted'
+  | 'imported';
+
+export interface StudentActivityEntry {
+  id: string;
+  studentId: string;
+  action: StudentActivityAction;
+  actorId?: string;
+  actorName?: string;
+  field?: string;
+  before?: string | null;
+  after?: string | null;
+  createdAt: string;
+}
+
+/**
+ * Server-side staging area for an in-progress xlsx/csv import. Rows carry per-cell
+ * errors so the Review step can highlight and inline-edit until the batch is clean.
+ */
+export interface ImportRowError {
+  field: string;
+  code: string;
+  message: string;
+}
+
+export interface ImportRow {
+  index: number;
+  raw: {
+    studentId?: string;
+    firstName?: string;
+    lastName?: string;
+    middleName?: string;
+    dob?: string;
+    gender?: string;
+    phone?: string;
+    email?: string;
+    departmentId?: string;
+    departmentPath?: string;
+    year?: string;
+    educationType?: string;
+    enrollmentDate?: string;
+    amount?: string;
+    dueDate?: string;
+  };
+  errors: ImportRowError[];
+}
+
+export interface ImportSession {
+  id: string;
+  fileName: string;
+  totalRows: number;
+  okCount: number;
+  errorCount: number;
+  rows: ImportRow[];
+  status: 'parsed' | 'committing' | 'committed' | 'failed';
+  createdAt: string;
 }
 
 export interface Transaction {
