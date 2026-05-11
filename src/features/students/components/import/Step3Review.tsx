@@ -96,7 +96,6 @@ export function Step3Review({
         }),
       ),
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [t, onPatch],
   );
 
