@@ -29,6 +29,12 @@ import AddBankAccountPage from '@/features/organization/pages/AddBankAccountPage
 import AddDepartmentPage from '@/features/organization/pages/AddDepartmentPage';
 import StaffListPage from '@/features/staff/pages/StaffListPage';
 import StaffDetailPage from '@/features/staff/pages/StaffDetailPage';
+import StudentsListPage from '@/features/students/pages/StudentsListPage';
+import AddStudentPage from '@/features/students/pages/AddStudentPage';
+import StudentProfilePage from '@/features/students/pages/StudentProfilePage';
+import EditStudentPage from '@/features/students/pages/EditStudentPage';
+import SchedulesPage from '@/features/students/pages/SchedulesPage';
+import ImportStudentsPage from '@/features/students/pages/ImportStudentsPage';
 import Placeholder from '@/pages/Placeholder';
 
 const KNOWN_PATH_PREFIXES = [
@@ -133,8 +139,12 @@ function AppRoutes() {
           />
           <Route path="/staff" element={<StaffListPage />} />
           <Route path="/staff/:id" element={<StaffDetailPage />} />
-          <Route path="/students" element={<Placeholder />} />
-          <Route path="/students/:id" element={<Placeholder />} />
+          <Route path="/students" element={<StudentsListPage />} />
+          <Route path="/students/new" element={<AddStudentPage />} />
+          <Route path="/students/import" element={<ImportStudentsPage />} />
+          <Route path="/students/schedules" element={<SchedulesPage />} />
+          <Route path="/students/:id" element={<StudentProfilePage />} />
+          <Route path="/students/:id/edit" element={<EditStudentPage />} />
           <Route path="/payments/transactions" element={<Placeholder />} />
           <Route path="/payments/transactions/:id" element={<Placeholder />} />
           <Route path="/payments/pending" element={<Placeholder />} />
