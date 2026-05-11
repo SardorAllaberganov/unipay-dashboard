@@ -6,6 +6,68 @@ Review at session start (or via `/start_task`). Most recent on top.
 
 ---
 
+## 2026-05-11 · DataTable column `meta`: header and cell alignment must be set together; date/time and amount columns also need `whitespace-nowrap` on BOTH sides
+
+**Rule.** When defining a `<DataTable>` column via TanStack `ColumnDef`, the `meta.headerClassName` and `meta.cellClassName` are independent — applying `text-right` to one does NOT propagate to the other. Whatever alignment / wrapping the cell has, the **header must mirror**. Concretely:
+
+- **Right-aligned amount column** →
+  ```ts
+  meta: {
+    headerClassName: 'text-right',
+    cellClassName: 'text-right whitespace-nowrap',
+  }
+  ```
+  Both sides get `text-right`. The cell gets `whitespace-nowrap` so values like `"116 562 100 UZS"` don't break at the digit-group spaces. The header is short enough that nowrap rarely matters, but if the column has `w-[1%]` it should also wrap-nowrap so the header itself doesn't squeeze to 2 lines.
+
+- **Date / datetime column** (typically narrow, `w-[1%]`) →
+  ```ts
+  meta: {
+    headerClassName: 'w-[1%] whitespace-nowrap',
+    cellClassName: 'whitespace-nowrap',
+  }
+  ```
+  The header (`"Дата и время"`, `"Last payment"`, etc.) must NOT wrap to multiple lines just because the column is width-collapsed.
+
+- **Mono ID column** → same: `headerClassName: 'w-[1%] whitespace-nowrap'`, `cellClassName: 'whitespace-nowrap'` so e.g. `TXN-…FCD2` doesn't break.
+
+- **Numeric-tail columns like "Days overdue"** → `headerClassName: 'w-[1%] whitespace-nowrap text-right'`, `cellClassName: 'pr-3 text-right whitespace-nowrap'`.
+
+**Why.** Repeated bug pattern across the Payments/Students/Pending tables: cells were right-aligned, headers stayed left-aligned (mismatch), and date/time headers wrapped to two lines because the column was width-collapsed with `w-[1%]` and the header text had spaces. Users flagged each instance separately. This rule consolidates: any time you write `cellClassName: 'text-right'`, also write `headerClassName: 'text-right'`. Any narrow column (`w-[1%]`) needs `whitespace-nowrap` on the header.
+
+**How to apply.** When creating a `ColumnDef` for a DataTable column:
+1. If the cell has `text-right`, the header gets `text-right` too.
+2. If the column collapses via `w-[1%]`, the header gets `whitespace-nowrap`.
+3. If the cell content includes spaces in formatted values (UZS amounts, datetimes, mono ids with `…`), the cell gets `whitespace-nowrap`.
+4. Sanity-check by reading both `headerClassName` and `cellClassName` together — they should rhyme.
+
+Reference fixes that applied this rule: [`PendingTable.tsx`](../src/features/payments/components/PendingTable.tsx) `remaining` + `dueDate` + `daysOverdue` columns; [`TransactionsTable.tsx`](../src/features/payments/components/TransactionsTable.tsx) `id` + `amount` / `commission` / `net` + `datetime` columns; [`StudentsTable.tsx`](../src/features/students/components/list/StudentsTable.tsx) `amount` + `lastPayment` columns.
+
+---
+
+## 2026-05-11 · `BigInt.prototype.toJSON` patch makes `Money.amount` a `number` at runtime — dividing by `100n` throws TypeError
+
+**Rule.** When a Money-bearing object reaches the UI through MSW (i.e. anywhere outside the seed code itself), `money.amount` is a `number`, NOT a `bigint`, even though the TS type says `bigint`. The global patch in [`src/main.tsx`](../src/main.tsx) collapses bigint → number for JSON serialization so MSW handlers can `HttpResponse.json({ data: tx })` without throwing. Net effect: at runtime, `money.amount` is whatever JSON gave back — a number. Code that does `money.amount / 100n` therefore mixes a JS number with a bigint literal and throws `TypeError: Cannot mix BigInt and other types, use explicit conversions`. **Always coerce to Number first** when you need a UZS-major-units value: `Number(money.amount) / 100`. `formatMoney` already accepts both bigint and number, so it doesn't need this — but ad-hoc arithmetic (refund eligibility / dialog descriptions / amount limits) does.
+
+**Why.** A user reported the transaction detail page showed `<ErrorState>` instead of content. Root cause was `<RefundDialog>` (mounted via `<TransactionDetailActionBar>`) failing with `Cannot mix BigInt and other types` on `Number(transaction.amount.amount / 100n)`. The line typechecks because TS thinks `.amount` is `bigint`, but runtime is `number`. Same bug in [`RefundsTable.tsx`](../src/features/payments/components/RefundsTable.tsx) `approveTarget.amount.amount / 100n`. The error boundary surfaced the issue as "page broken" rather than a clean stack.
+
+**How to apply.** Any time you write arithmetic on a `Money.amount`, write `Number(m.amount) / 100` (no `100n` literal). If you need to push amounts back to the wire (e.g. POSTing a refund), send the UZS-major as a plain `number` — the MSW handler converts back via `uzs(amountUzs)` which wraps in `BigInt(...) * 100n`. Server-side store code can still use `100n` since `m.amount` there really is a bigint. The "number at runtime" only applies after a fetch round-trip.
+
+---
+
+## 2026-05-11 · html + body need `overflow: hidden; height: 100%` for the SPA app-shell to contain scroll properly
+
+**Rule.** In [`src/styles/globals.css`](../src/styles/globals.css) the @layer base contains:
+```css
+html, body { height: 100%; overflow: hidden; }
+```
+This locks the document to the viewport so the `<main>` element (which has `flex-1 overflow-y-auto`) owns all vertical scrolling. Without this, certain pages (Transactions specifically, with its bordered shell + bare DataTable + horizontal-overflow Table primitive) leak overflow up to the html level, making the *whole document* scrollable. The user sees the page over-scroll past the bottom of the main content and reveal a blank background.
+
+**Why.** The AppShell layout is `<div className="flex h-dvh"><Sidebar/><main className="flex-1 overflow-y-auto">…</main></div>`. The intent is clear — main is the only scroll container. But in practice some layouts leak: the Transactions page reported `html.scrollHeight = 4262` while every other page (Students / Staff / Pending / etc.) reported `800` = viewport. Diagnosing the exact path was painful; the architectural fix is to physically prevent html/body from scrolling at all. This is the standard "app-shell" pattern used by Slack / Linear / etc. — html and body never scroll.
+
+**How to apply.** Don't remove these rules. If you ever see a "document over-scrolls past content" symptom, this rule is your guard rail. The dvh-based outer flex container + `main.overflow-y-auto` does the actual scroll. Any future "stick this to bottom of viewport" requirement should pin to `main` (or use position:fixed with `--sidebar-width` offset like `<DetailActionBar>` does), not rely on the html-level scroll.
+
+---
+
 ## 2026-05-11 · `npm run lint` runs `--report-unused-disable-directives` — stale `eslint-disable-next-line` comments fail CI as errors
 
 **Rule.** After any change that quiets a previously-noisy lint rule — tightening a hook's dependency array, adding a missing return, removing the last `any` from a block, etc. — grep the same file for the matching `eslint-disable-next-line` (or block-level `/* eslint-disable ... */`) comment and remove it in the same change. The [`lint`](../package.json) script is `eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0`, so an orphaned suppression is reported as an error and fails CI just like a real lint violation. Local IDE eslint with default settings does NOT report unused directives, so this only surfaces when CI runs.

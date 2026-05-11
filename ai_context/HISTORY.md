@@ -4,6 +4,145 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-11 — Payments module polish round 2 + pagination/banner refinements (cross-cutting)
+
+**Summary.** Second wave of user-driven polish on the Payments module, plus several cross-cutting fixes to the shared `<DataTable>` pagination block that now propagate to Students / Staff / Pending list pages too.
+
+**Pending table fixes** ([`PendingTable.tsx`](../src/features/payments/components/PendingTable.tsx)):
+- `remaining` column: added `headerClassName: 'text-right'` (was only on the cell) + `whitespace-nowrap` on the cell.
+- `dueDate` column: added `whitespace-nowrap` to BOTH header and cell — the "Дата и время" header was wrapping to two lines because the column collapses via `w-[1%]`.
+- `daysOverdue` column (overdue tab): both sides get `text-right whitespace-nowrap`.
+
+**Pending stats banner rewritten** ([`PendingOverdueStatsBanner.tsx`](../src/features/payments/components/PendingOverdueStatsBanner.tsx)) — was a bare sentence in a Card (wasted horizontal space, no visual hierarchy). Replaced with a KPI-style stat grid matching the dashboard's `<KpiCard>` rhythm: 2 columns on Pending tab (Students with debt / Total amount), 3 columns on Overdue tab (+ Просрочка >30 дней with destructive tint when > 0). Each column = lucide icon + uppercase tracking-wider label + `text-2xl md:text-3xl font-semibold tabular` value. Horizontal dividers on mobile (`divide-y md:divide-x md:divide-y-0`) so cleanly stacks vertically on narrow viewports.
+
+**Per-page selector wired across all list pages**:
+- [`PendingOverduePage.tsx`](../src/features/payments/pages/PendingOverduePage.tsx) — `PAGE_SIZE_OPTIONS = [25, 50, 100]` + `setPageSize` URL-synced. Also dropped the outer `<Card>` wrapping `<PendingTable>` (DataTable's own non-bare shell owns the chrome now).
+- [`StaffListPage.tsx`](../src/features/staff/pages/StaffListPage.tsx) — same wiring; `updateParams` extended to handle `pageSize` resets. Pagination threshold lowered to `total > min(PAGE_SIZE_OPTIONS)` so the selector is reachable on smaller datasets.
+- [`StaffTable.tsx`](../src/features/staff/components/list/StaffTable.tsx) — `pagination` prop interface extended with `onPageSizeChange` + `pageSizeOptions` pass-through.
+- Students / Transactions already had this (last polish round).
+
+**Mobile card-in-card eliminated**:
+- [`PendingTable.tsx`](../src/features/payments/components/PendingTable.tsx) `mobileCardRender` was returning `<Card className="p-4">` while DataTable's mobile path ALREADY wraps each row in a `<Card>`. Switched root to plain `<div>` (canonical pattern matching `<StudentMobileCard>` / `<StaffMobileCard>`).
+- [`RefundsTable.tsx`](../src/features/payments/components/RefundsTable.tsx) — same fix.
+- [`RefundsPage.tsx`](../src/features/payments/pages/RefundsPage.tsx) — additionally dropped the section-level `<Card>` wrappers (had title + description) around each refund-table section. Replaced with plain `<section>` blocks (heading + description above the table). On mobile, this removed the remaining section-level card-in-card around the row cards.
+
+**Mobile pagination layout** ([`DataTable.tsx`](../src/components/shared/DataTable.tsx) `<DataTablePagination>`):
+- Row 1 on mobile: showing-text + per-page selector with `justify-content: space-between` (`flex items-center justify-between gap-3`).
+- Row 2 on mobile: pagination buttons `justify-content: center` (`mx-0 w-auto justify-center sm:justify-end`).
+- Both pieces in row 1 get `whitespace-nowrap` so labels don't wrap to multiple lines on narrow viewports.
+- Desktop layout unchanged: row 1 grouped left with `gap-x-4`, row 2 right-aligned.
+
+**Receipt modal sizes to content**:
+- [`ReceiptPreviewIframe.tsx`](../src/features/payments/components/ReceiptPreviewIframe.tsx) — added `useRef` + `onLoad` handler that reads `Math.max(documentElement.scrollHeight, body.scrollHeight)` and sets the iframe's `style.height` accordingly. Initial 560px placeholder, then snaps to actual receipt content height once loaded. Modal now fits the receipt without trailing whitespace.
+- [`ReceiptPreviewDialog.tsx`](../src/features/payments/components/ReceiptPreviewDialog.tsx) — dropped fixed `h-[92dvh] flex flex-col` layout; just `max-h-[92dvh] overflow-y-auto sm:max-w-3xl` so the dialog naturally sizes to content with viewport-overflow as a safety. Download button switched to default brand-primary variant (no `variant="outline"`).
+
+**Transaction list polish (smaller fixes)**:
+- ID column: `whitespace-nowrap` on cell (was wrapping `TXN-…FCD2` to two lines).
+- Amount / Commission / Net columns: `headerClassName: 'text-right'` added (only cells had it before); both sides also get `whitespace-nowrap` so values like `"116 562 100 UZS"` never break at digit-group spaces.
+- Removed the 3-dot kebab column — row click handles View; refund moved to detail page; copy-id available via mono `<TransactionIdCopy>` button.
+- Row click navigates DIRECTLY to detail page (intermediate Sheet flow + `TransactionDetailSheet` component dropped per user feedback).
+- Export button → brand-primary `<DropdownMenu>` with CSV / Excel / PDF (each with lucide file-type icon).
+- Receipt section in detail content: replaced inline iframe with a "Просмотр чека" button that opens `<ReceiptPreviewDialog>`. Inline timeline made horizontal edge-to-edge (`h-[3px]` connector + `size-3.5` circles, past = `success-600`, failed = `destructive`).
+
+**Two critical bug fixes** (separate from polish, both logged as lessons):
+1. `RefundDialog` + `RefundsTable` threw `Cannot mix BigInt and other types` on `Number(amount.amount / 100n)` — MSW collapses bigint → number on the wire (BigInt.toJSON patch). Fix: `Number(amount.amount) / 100`.
+2. Transactions page document over-scroll — `html.scrollHeight` was 4262px on this route only (vs 800 on every other page). Architectural fix: `html, body { height: 100%; overflow: hidden; }` in [`globals.css`](../src/styles/globals.css). Standard SPA app-shell pattern.
+
+**Students table fix**:
+- [`StudentsTable.tsx`](../src/features/students/components/list/StudentsTable.tsx) — `amount` column got `headerClassName: 'text-right'` + `whitespace-nowrap` on cell; `lastPayment` column got `whitespace-nowrap` (header + cell) so "Последний платёж" / "Нет платежей" stay on one line.
+
+**Refunds table fix** (applying the same column-meta lesson):
+- [`RefundsTable.tsx`](../src/features/payments/components/RefundsTable.tsx) — `originalTx` / `refundTx` / `bankRef` columns (all narrow `w-[1%]`) had no `whitespace-nowrap` on the header; headers like "Исходная транзакция" / "Транзакция возврата" / "Банковский номер" wrapped to two lines. Added `whitespace-nowrap` to header + cell. Also: `amount` column was missing `headerClassName: 'text-right'` (only the cell had `text-right`); added it plus `whitespace-nowrap` so values like "117 982 900 UZS" don't break at digit-group spaces.
+
+**i18n keys added** ([`ru.json`](../src/lib/i18n/locales/ru.json) + [`uz.json`](../src/lib/i18n/locales/uz.json)):
+- `common.pagination.{showing,pageOf,prev,next,rowsPerPage,goToPage}` (was hardcoded Russian)
+- `common.actions.selectAll`
+- `payments.list.exportCsv / exportXlsx / exportPdf`
+- `payments.detail.previewReceipt`
+- `payments.detail.receipt.*` (21 keys for the redesigned receipt iframe)
+- `payments.pending.stats.{studentsLabel,amountLabel,overdueLabel}` (for the rewritten banner)
+
+**Lessons added** to [`LESSONS.md`](LESSONS.md):
+- DataTable column `meta` rule: `cellClassName: 'text-right'` doesn't propagate; the header needs `headerClassName: 'text-right'` too. Narrow `w-[1%]` columns need `whitespace-nowrap` on the header. Values with digit-group spaces (UZS amounts, datetimes, mono ids with `…`) need `whitespace-nowrap` on cells.
+
+**Verifications.** Every iteration: `npm run lint` · `tsc --noEmit` clean. Headless-Chrome smoke checks at desktop (1280–1400 viewports) and mobile (390×844) viewports.
+
+---
+
+## 2026-05-11 — Prompt 7 (Payments module) shipped end-to-end + long polish round
+
+**Summary.** Built the entire Payments module per spec §9 (4 routes, ~30 new files), then iterated through ~15 rounds of user-driven UX/visual polish. Net result: a working transactions list with filters / export-format dropdown / row-click-to-detail / per-page selector / right-aligned amounts; a Pattern A transaction detail page with a horizontal step timeline + modal-only receipt preview; a Pending+Overdue page with bulk actions; a Refunds page with 2-step approve/reject dialogs.
+
+**Routes wired** in [`src/router.tsx`](../src/router.tsx) (replaced 4 Placeholder rows):
+- `/payments/transactions` — list with `<TransactionFilters>` (status + channel chips, DateRangePicker, search), brand-primary "Экспорт" `<DropdownMenu>` (CSV / Excel / PDF), 9-column DataTable, `<SummaryFooter>` (∑ charged / ∑ commission / ∑ net). Row click → detail page directly (no intermediate Sheet — Sheet pattern dropped per user feedback). Per-page selector (25/50/100) in pagination block.
+- `/payments/transactions/:id` — full-page Pattern A detail. `<TransactionDetailHeader>` (back-link + identity row + chips) → `<TransactionDetailContent>` sections (Student / Расчёт суммы / Канал и реквизиты / **horizontal `<TransactionTimeline>`** edge-to-edge / Чек button → `<ReceiptPreviewDialog>` modal) → `<TransactionDetailActionBar>` (Скачать чек + Возврат gated by `getRefundEligibility`).
+- `/payments/pending` — Ожидающие / Просроченные tabs + `<PendingOverdueStatsBanner>` + paginated `<PendingTable>` with select checkboxes + shared `<BulkActionBar>` (Remind / Export / Manual-entry). `<ManualPaymentEntryDialog>` in a ResponsiveSheet with student→schedule cascade via `<StudentSearchPicker>`.
+- `/payments/refunds` — two stacked Card sections (Pending / History) with `<RefundsTable>` × 2; Approve/Reject `<ConfirmDialog>` flows. Initiate refund from any tx detail page via `<RefundDialog>` (single Dialog with internal `step: 'review' | 'confirm'`; Step 2 requires typing `REFUND` + reason ≥20). MSW auto-approves pending refunds after 3s.
+
+**Domain extensions** ([`src/types/domain.ts`](../src/types/domain.ts)):
+- `FAILURE_CODES` × 4 (`INSUFFICIENT_FUNDS` / `CARD_DECLINED` / `TIMEOUT` / `INVALID_AMOUNT`)
+- `TransactionEvent` + `TransactionEventType` (`created` / `processed` / `settled` / `failed` / `refunded`)
+- `MANUAL_PAYMENT_METHODS` × 3 (`cash` / `bank_transfer` / `other`)
+- `REFUND_REASONS` × 4, `RefundStatus` × 4, `Refund` interface
+- `Transaction` extended with optional `failureCode`, `events`, `paymentMethod`, `receiptNumber`, `scheduleId`, `note`
+
+**Shared primitive promotions** (now used by ≥ 2 modules):
+- `<BulkActionBar>` extracted from Students module → [`src/components/shared/BulkActionBar.tsx`](../src/components/shared/BulkActionBar.tsx). Children-slot API. Existing Students consumer composes its specific actions inside.
+- `<FilterStack>` + `<ChipGroup>` extracted from `StudentsFilters` → [`src/components/shared/FilterStack.tsx`](../src/components/shared/FilterStack.tsx).
+- [`src/lib/errorCodes.ts`](../src/lib/errorCodes.ts) — UI-side mirror of the backend `error_codes` table (4 codes × category × retryable × i18n keys).
+- [`src/lib/refundEligibility.ts`](../src/lib/refundEligibility.ts) — pure helper, returns `{ eligible, reason: 'not_paid' | 'too_old' | 'already_refunded' | null, reasonKey }`.
+
+**MSW handler** ([`src/mocks/handlers/payments.ts`](../src/mocks/handlers/payments.ts)) — 9 endpoints, deterministic 820-transaction fixture (seeded LCG, channel mix per spec, 3 forced "stuck" pending >12min, failure-code variety, paginated). 14 history + 4 pending refund seeds. `setTimeout`-based auto-approve for new refund requests after 3 s.
+
+**DataTable upgrades** ([`src/components/shared/DataTable.tsx`](../src/components/shared/DataTable.tsx)):
+- New `bare?: boolean` prop strips the inner `rounded-lg border bg-card` shell so parent pages can own the chrome (avoids double-borders when wrapped in a Card).
+- Pagination MOVED INSIDE the table's bordered shell — last table row's `border-b` is stripped by `TableBody`'s `[&_tr:last-child]:border-0`, and a `border-t` wrapper around `<DataTablePagination>` provides the divider. Pagination now also renders on mobile inside its own standalone card below the mobile card stack.
+- `<DataTablePagination>` rewritten using shadcn `<Pagination>` primitives: shadcn-style clickable page numbers (`< Назад · 1 · 2 · … · 12 · Далее >`) with active page highlighted, `buildPageList()` helper for the 1…N±1…last ellipsis pattern.
+- Optional `onPageSizeChange` + `pageSizeOptions` → renders a "Строк на стр. [50 ▼]" `<Select>` when provided. Wired in TransactionsPage and StudentsListPage (URL-synced `?pageSize=`).
+- All hardcoded "Показано / Назад / Далее" strings replaced with `common.pagination.*` i18n keys in RU + UZ.
+- Modified shadcn primitive [`src/components/ui/pagination.tsx`](../src/components/ui/pagination.tsx) — `PaginationPrevious` / `PaginationNext` no longer hardcode Russian labels; accept `children` for i18n.
+
+**Receipt preview**:
+- [`src/features/payments/components/ReceiptPreviewIframe.tsx`](../src/features/payments/components/ReceiptPreviewIframe.tsx) — HTML `srcDoc` styled as a tuition receipt: header (title + org name + receipt number + datetime), payer/recipient grid with `useOrganization` data, line-items table (`Оплата обучения` + commission row hidden when 0), totals (subtotal + к зачислению), meta grid (channel / status badge / mono TX id), footer (thanks + disclaimer). Auto-sizes via `useRef` + `onLoad` reading body `scrollHeight`.
+- [`<ReceiptPreviewDialog>`](../src/features/payments/components/ReceiptPreviewDialog.tsx) — modal wraps the iframe, primary-variant "Скачать чек" triggers `window.print()`. Sizes to content (`max-h-[92dvh]` cap).
+- Receipt rendered ONLY on press of "Просмотр чека" button in detail content section (was inline; user requested modal-only).
+
+**Transaction timeline**:
+- [`<TransactionTimeline>`](../src/features/payments/components/TransactionTimeline.tsx) — horizontal step diagram. Each step: half-line + size-3.5 circle + half-line + label/time below. First step's left half + last step's right half follow their own status, so the colored bar spans **edge-to-edge** (no inset gaps). `h-[3px]` thicker line for clarity. Past = success-600, failed = destructive, upcoming = muted-foreground/20.
+
+**i18n** ([`ru.json`](../src/lib/i18n/locales/ru.json) + [`uz.json`](../src/lib/i18n/locales/uz.json)):
+- New top-level `payments` block (~120 keys × 2 locales)
+- New `errors.codes.*` block × 4 codes
+- New `common.pagination.*` block (showing / pageOf / prev / next / rowsPerPage / goToPage)
+- Added `common.actions.selectAll`, `payments.list.exportCsv|exportXlsx|exportPdf`, `payments.detail.previewReceipt`, `payments.detail.receipt.*` (21 keys)
+
+**Critical bug fixes during polish**:
+- **`BigInt.prototype.toJSON` collision in RefundDialog + RefundsTable** — code did `Number(transaction.amount.amount / 100n)` but MSW collapses bigint → number on the wire via the global `BigInt.prototype.toJSON` patch, so dividing a number by a bigint literal threw `TypeError: Cannot mix BigInt and other types`. The page rendered the ErrorState instead of the detail view. Fixed: `Number(transaction.amount.amount) / 100` works for both runtime forms. Same fix applied in two sites.
+- **Document over-scroll on Transactions page** — the user reported scrolling past the bottom of the table revealed a blank screen. Diagnosis: `html.scrollHeight = 4262` on transactions only (other pages were 800 = viewport). Root cause unclear at the layout level, but the simpler architectural fix was to lock html/body to viewport: added `html, body { height: 100%; overflow: hidden; }` in [`globals.css`](../src/styles/globals.css). Standard SPA app-shell pattern — main owns all vertical scroll; document scroll is physically impossible. Also reverted an earlier `-mb-4 md:-mb-6` negative-margin hack on the page wrapper which was contributing to the leak.
+- **Mobile transactions: card-in-card** — `<TransactionMobileCard>` was returning its own `<Card>`, while DataTable's mobile path already wraps each row in a `<Card>`. Two cards per row. Fixed by switching the mobile-card root to a plain `<div className="flex flex-col gap-2">` (matches canonical `StudentMobileCard` pattern). Dropped now-unused `onOpen` prop (parent Card handles click via `rowHref`).
+- **Mobile pagination missing** — pagination was only rendered in DataTable's desktop branch. Now rendered in both branches; on mobile, wrapped in its own standalone bordered card.
+- **Outer shell card-in-card on mobile** — TransactionsPage's `<div className="overflow-hidden rounded-lg border ...">` wrapping the mobile cards (already individually bordered) created a nested-card effect. Fixed: TransactionsPage now uses `useIsMobile()` to conditionally drop the outer shell on mobile; DataTable's `bare` prop only applied on desktop.
+
+**Other polish** (chronological, user-driven):
+- ID transaction TD `whitespace-nowrap` (was wrapping to two lines on narrow viewports). Same fix on Students table `lastPayment` column.
+- Amount column headers in both Transactions table and Students table got `headerClassName: 'text-right'` (only the cell had it before; header stayed `text-left`). Combined with `whitespace-nowrap` on cells so values like "116 562 100 UZS" don't wrap at the digit-group spaces.
+- Removed the 3-dot kebab column from transactions table (row click handles View; refund moved to detail page; copy-id available via the row's mono TXN button).
+- Receipt iframe: 21 new i18n keys for proper receipt labels (`Чек № / Плательщик / Получатель / Наименование / Способ оплаты / Спасибо за оплату / disclaimer`), pulling `useOrganization` for org name + TIN. Was previously a generic 2-column dl that mislabelled fields.
+- Receipt download button now uses default brand-primary variant (no `variant="outline"`) — matches "active button" feel.
+- Export button restructured into a `<DropdownMenu>` with three format options (CSV / Excel / PDF), each with a lucide file-type icon. Trigger is brand-primary `<WriteButton>` with chevron-down.
+
+**Files written**.
+- **New**: ~32 files in [`src/features/payments/`](../src/features/payments/) (api / schemas / 4 hooks / 16 components / 4 pages); [`src/components/shared/BulkActionBar.tsx`](../src/components/shared/BulkActionBar.tsx); [`src/components/shared/FilterStack.tsx`](../src/components/shared/FilterStack.tsx); [`src/lib/errorCodes.ts`](../src/lib/errorCodes.ts); [`src/lib/refundEligibility.ts`](../src/lib/refundEligibility.ts); [`src/mocks/handlers/payments.ts`](../src/mocks/handlers/payments.ts).
+- **Modified**: [`src/types/domain.ts`](../src/types/domain.ts), [`src/router.tsx`](../src/router.tsx), [`src/components/shared/DataTable.tsx`](../src/components/shared/DataTable.tsx), [`src/components/ui/pagination.tsx`](../src/components/ui/pagination.tsx), [`src/styles/globals.css`](../src/styles/globals.css), [`src/mocks/handlers/index.ts`](../src/mocks/handlers/index.ts), [`src/mocks/handlers/students.ts`](../src/mocks/handlers/students.ts) (added `getSeededStudents` + `getSeededScheduleRows` read-only exports for cross-handler seeding), [`src/features/students/components/list/{BulkActionBar,StudentsFilters,StudentsTable}.tsx`](../src/features/students/components/list/), [`src/features/students/pages/StudentsListPage.tsx`](../src/features/students/pages/StudentsListPage.tsx), i18n locales.
+
+**Verifications**. `npm run lint` · `tsc --noEmit` · `npm run build` — all clean throughout. Headless-Chrome smoke checks at each polish round (row click navigation, pagination clicks, page-size change, refund dialog, receipt modal, mobile viewport).
+
+**Lessons logged**:
+- New entry in [`LESSONS.md`](LESSONS.md) (to be added in a separate doc-sync): `BigInt.prototype.toJSON` patch makes `Money.amount` a `number` at runtime — code that divides by `100n` will throw. Always `Number(x.amount) / 100`.
+- New entry: html/body need `overflow: hidden; height: 100%` for SPA app-shell layouts where `main` owns all vertical scroll, otherwise certain pages can leak overflow up to the document and create a broken over-scroll.
+
+---
+
 ## 2026-05-11 — CI lint fix: dropped stale `eslint-disable-next-line react-hooks/exhaustive-deps` in `Step3Review`
 
 **Summary.** CI lint job failed with `Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')` at [`Step3Review.tsx:99`](../src/features/students/components/import/Step3Review.tsx#L99). The deps array `[t, onPatch]` is already complete (no hook lint warning would fire), so the suppression was dead code surviving an earlier cleanup pass. Removed the comment line. The `lint` npm script runs eslint with `--report-unused-disable-directives --max-warnings 0`, so any stale suppression is a CI failure — not a warning.
