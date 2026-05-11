@@ -822,7 +822,8 @@
         "ownerCannotDelete": "Egasini o'chirib bo'lmaydi",
         "selfCannotAct": "Bu amalni o'z hisobingiz uchun bajarib bo'lmaydi",
         "needsRole": "Owner yoki Finance Manager roli kerak"
-      }
+      },
+      "resendAria": "Taklifni qayta yuborish"
     },
     "role": {
       "title": "Rol va ruxsatlar",

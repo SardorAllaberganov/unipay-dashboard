@@ -13,12 +13,15 @@ import {
 } from '@tanstack/react-table';
 
 // Per-column className hooks (e.g. `w-[1%]` to collapse an actions column to content-width,
-// `text-right` for amount columns). Read by DataTable below; consumers attach via columnDef.meta.
+// `text-right` for amount columns). `cellColSpan` returns the number of columns a cell should
+// span for a given row — subsequent cells are skipped. Read by DataTable below; consumers
+// attach via columnDef.meta.
 declare module '@tanstack/react-table' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     headerClassName?: string;
     cellClassName?: string;
+    cellColSpan?: (row: TData) => number;
   }
 }
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
@@ -304,14 +307,34 @@ export function DataTable<T>({
                         : undefined
                     }
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className={cn('py-2', cell.column.columnDef.meta?.cellClassName)}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
+                    {(() => {
+                      // Per-row colSpan support: when a cell sets meta.cellColSpan(row) > 1,
+                      // the next (colSpan - 1) cells are skipped. Lets a consumer merge the
+                      // tail cells of a row (e.g. status + actions on pending staff rows).
+                      const cells = row.getVisibleCells();
+                      const out: ReactNode[] = [];
+                      let skip = 0;
+                      for (let i = 0; i < cells.length; i++) {
+                        if (skip > 0) {
+                          skip--;
+                          continue;
+                        }
+                        const cell = cells[i]!;
+                        const span =
+                          cell.column.columnDef.meta?.cellColSpan?.(row.original) ?? 1;
+                        if (span > 1) skip = span - 1;
+                        out.push(
+                          <TableCell
+                            key={cell.id}
+                            colSpan={span > 1 ? span : undefined}
+                            className={cn('py-2', cell.column.columnDef.meta?.cellClassName)}
+                          >
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>,
+                        );
+                      }
+                      return out;
+                    })()}
                   </TableRow>
                 );
               })}

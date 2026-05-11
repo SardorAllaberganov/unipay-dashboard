@@ -90,7 +90,28 @@ export function StaffTable({
       {
         id: 'status',
         header: () => t('staff.list.columns.status'),
-        cell: ({ row }) => <StatusBadge variant={row.original.status} />,
+        // Pending rows merge the status + actions cells via cellColSpan=2 so the badge
+        // and kebab share the right edge cleanly. Non-pending rows keep the standard
+        // layout (badge in status td, kebab in actions td).
+        meta: {
+          cellColSpan: (row) => (row.status === 'pending' ? 2 : 1),
+          cellClassName: 'pr-3',
+        },
+        cell: ({ row }) =>
+          row.original.status === 'pending' ? (
+            <div
+              className="flex items-center justify-between gap-3"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <StatusBadge variant="pending" />
+              <StaffRowKebab
+                staff={row.original}
+                currentUserId={currentUserId}
+              />
+            </div>
+          ) : (
+            <StatusBadge variant={row.original.status} />
+          ),
       },
       {
         id: 'actions',
