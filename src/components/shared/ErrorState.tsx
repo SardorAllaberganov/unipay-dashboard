@@ -24,16 +24,16 @@ export function ErrorState({ title, description, onRetry, retryLabel, className 
       <AlertCircle className="size-10 text-danger" aria-hidden />
       <div>
         <h3 className="text-lg font-semibold text-danger-foreground">
-          {title ?? t('states.errorTitle')}
+          {title ?? t('common.states.errorTitle')}
         </h3>
         <p className="mt-1 max-w-md text-sm text-danger-foreground/80">
-          {description ?? t('states.errorDescription')}
+          {description ?? t('common.states.errorBody')}
         </p>
       </div>
       {onRetry ? (
         <Button variant="outline" onClick={onRetry}>
           <RotateCw className="size-4" aria-hidden />
-          {retryLabel ?? t('common.retry')}
+          {retryLabel ?? t('common.actions.retry')}
         </Button>
       ) : null}
     </div>

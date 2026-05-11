@@ -48,13 +48,19 @@ const DialogContent = React.forwardRef<
 DialogContent.displayName = DialogPrimitive.Content.displayName;
 
 const DialogHeader = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />
+  // `text-left` always. The shadcn default `text-center sm:text-left` conflicted with
+  // consumers (e.g. ConfirmDialog) that wrap the title in `flex items-center gap-2` —
+  // the flex left-aligned the title content while the description still inherited the
+  // mobile `text-center`, producing a mismatched header.
+  <div className={cn('flex flex-col space-y-1.5 text-left', className)} {...props} />
 );
 DialogHeader.displayName = 'DialogHeader';
 
 const DialogFooter = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+  // `gap-2` works for both axes — replaces the original `sm:space-x-2` which left
+  // mobile (flex-col-reverse) with zero gap between stacked buttons.
   <div
-    className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
+    className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)}
     {...props}
   />
 );

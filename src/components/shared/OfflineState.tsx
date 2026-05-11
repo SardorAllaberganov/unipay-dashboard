@@ -22,9 +22,9 @@ export function OfflineState({ title, description, cachedNote, className }: Prop
     >
       <WifiOff className="size-10 text-muted-foreground" aria-hidden />
       <div>
-        <h3 className="text-lg font-semibold text-foreground">{title ?? t('states.offlineTitle')}</h3>
+        <h3 className="text-lg font-semibold text-foreground">{title ?? t('system.offline.title')}</h3>
         <p className="mt-1 max-w-md text-sm text-muted-foreground">
-          {description ?? t('states.offlineDescription')}
+          {description ?? t('system.offline.body')}
         </p>
       </div>
       {cachedNote ? <div className="text-sm text-muted-foreground">{cachedNote}</div> : null}

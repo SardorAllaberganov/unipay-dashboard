@@ -152,6 +152,50 @@
     @apply sr-only focus:not-sr-only focus:fixed focus:left-2 focus:top-2 focus:z-50 focus:rounded focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground;
   }
 
+  /* Native date / datetime / month / time / week inputs — shadcn's base Input class
+     applies `display: flex` to every `<input>`, which packs the native shadow children
+     (date editor + calendar picker indicator) flush at the start with no gap. Forcing
+     `justify-content: space-between` on these typed inputs pushes the date text to the
+     left edge and the calendar indicator to the right edge of the input. */
+  input[type='date'],
+  input[type='datetime-local'],
+  input[type='month'],
+  input[type='time'],
+  input[type='week'] {
+    justify-content: space-between;
+  }
+
+  /* Picker indicator styling — keep on the right (default UA position) and give it
+     visible weight + muted tone across themes. The default UA chrome is a tiny gray
+     glyph that disappears against the input background; this surfaces the trigger so
+     users notice it. Click-to-open behavior stays native. */
+  input[type='date']::-webkit-calendar-picker-indicator,
+  input[type='datetime-local']::-webkit-calendar-picker-indicator,
+  input[type='month']::-webkit-calendar-picker-indicator,
+  input[type='time']::-webkit-calendar-picker-indicator,
+  input[type='week']::-webkit-calendar-picker-indicator {
+    margin-left: auto;
+    margin-right: 0;
+    padding-left: 6px;
+    cursor: pointer;
+    opacity: 0.6;
+    filter: invert(0.35);
+  }
+  input[type='date']::-webkit-calendar-picker-indicator:hover,
+  input[type='datetime-local']::-webkit-calendar-picker-indicator:hover,
+  input[type='month']::-webkit-calendar-picker-indicator:hover,
+  input[type='time']::-webkit-calendar-picker-indicator:hover,
+  input[type='week']::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+  .dark input[type='date']::-webkit-calendar-picker-indicator,
+  .dark input[type='datetime-local']::-webkit-calendar-picker-indicator,
+  .dark input[type='month']::-webkit-calendar-picker-indicator,
+  .dark input[type='time']::-webkit-calendar-picker-indicator,
+  .dark input[type='week']::-webkit-calendar-picker-indicator {
+    filter: invert(0.75);
+  }
+
   /* prefers-reduced-motion */
   @media (prefers-reduced-motion: reduce) {
     *,
