@@ -86,9 +86,9 @@ export default function DashboardPage() {
         })}
         actions={
           <DateRangePicker value={value} onChange={handleRangeChange}>
-            <Button variant="outline" className="justify-start gap-2 font-normal tabular">
-              <CalendarIcon className="size-4 text-muted-foreground" aria-hidden />
-              {dateRangeLabel}
+            <Button variant="outline" className="justify-between gap-2 font-normal tabular">
+              <span className="truncate">{dateRangeLabel}</span>
+              <CalendarIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
             </Button>
           </DateRangePicker>
         }

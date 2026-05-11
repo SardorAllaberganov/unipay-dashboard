@@ -201,10 +201,10 @@ export function ActivityLogTab({ staffId }: Props) {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full justify-start font-normal"
+                className="w-full justify-between gap-2 font-normal"
               >
-                <CalendarDays className="mr-2 size-4" aria-hidden />
                 <span className="truncate">{rangeLabel}</span>
+                <CalendarDays className="size-4 shrink-0 text-muted-foreground" aria-hidden />
               </Button>
             </DateRangePicker>
           </div>
