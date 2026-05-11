@@ -1,11 +1,13 @@
-// Drop-in for <Button> that disables when offline + Tooltip explains why.
+// Drop-in for <Button> that disables when offline + Tooltip explains why (§0.11).
 import { forwardRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button, type ButtonProps } from '@/components/ui/button';
 import { useNetworkState } from '@/hooks/useNetworkState';
 
 export const WriteButton = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ disabled, children, ...props }, ref) => {
+    const { t } = useTranslation();
     const online = useNetworkState();
     const isDisabled = disabled || !online;
 
@@ -20,7 +22,7 @@ export const WriteButton = forwardRef<HTMLButtonElement, ButtonProps>(
               </Button>
             </span>
           </TooltipTrigger>
-          <TooltipContent>Подключитесь к сети, чтобы выполнить это действие.</TooltipContent>
+          <TooltipContent>{t('common.offline.tooltip')}</TooltipContent>
         </Tooltip>
       );
     }

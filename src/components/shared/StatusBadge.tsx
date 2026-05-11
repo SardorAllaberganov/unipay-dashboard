@@ -4,6 +4,7 @@ import {
   AlertCircle,
   Check,
   CheckCircle2,
+  CircleDot,
   Clock,
   Loader2,
   Lock,
@@ -19,6 +20,7 @@ import { TONE, type Tone } from '@/lib/tone';
 const VARIANT_TO_TONE: Record<string, Tone> = {
   paid: 'success',
   processing: 'info',
+  partial: 'info',
   pending: 'warning',
   overdue: 'danger',
   failed: 'danger',
@@ -31,6 +33,7 @@ const VARIANT_TO_TONE: Record<string, Tone> = {
 const ICONS: Record<string, LucideIcon> = {
   paid: CheckCircle2,
   processing: Loader2,
+  partial: CircleDot,
   pending: Clock,
   overdue: AlertCircle,
   failed: XCircle,
@@ -43,6 +46,7 @@ const ICONS: Record<string, LucideIcon> = {
 export type StatusBadgeVariant =
   | 'paid'
   | 'processing'
+  | 'partial'
   | 'pending'
   | 'overdue'
   | 'failed'
