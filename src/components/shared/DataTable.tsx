@@ -1,6 +1,7 @@
 // STYLE_DISCIPLINE.md §0.6 (data tables) + §0.8 (mandatory state coverage).
 // Encodes: Title Case headers, table headers never stick, mobile card stack, all 6 states.
 import { useState, type ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   flexRender,
   getCoreRowModel,
@@ -27,6 +28,12 @@ import { EmptyState } from './EmptyState';
 import { ErrorState } from './ErrorState';
 import { OfflineState } from './OfflineState';
 import { PartialBanner } from './PartialBanner';
+
+interface RowHrefOptions {
+  /** Optional list-state to attach to the navigation (e.g. `{ from: '/staff?role=...' }`)
+      so the destination page can compute a back-link target. */
+  state?: unknown;
+}
 
 // All 6 states managed here: loading / empty / error / offline / partial / data — §0.8.
 export type DataTableState = 'loading' | 'empty' | 'error' | 'offline' | 'partial' | 'data';
@@ -55,6 +62,21 @@ interface DataTableProps<T> {
   pagination?: PaginationProps;
   mobileCardRender?: (row: T) => ReactNode;
   rowKey?: (row: T) => string;
+  /** Optional per-row className (e.g. for status-tinted accent stripes via `before:` pseudo). */
+  rowClassName?: (row: T) => string | undefined;
+  onRowClick?: (row: T) => void;
+  /**
+   * When provided, each row becomes a clickable link to the resolved href.
+   * - Plain click + Enter/Space → navigate via React Router (preserves SPA state).
+   * - Cmd/Ctrl/Shift-click or middle-click → open in a new tab via `window.open`.
+   * - Per-row label is sourced from `getRowAriaLabel?` for screen readers.
+   * Use this instead of `onRowClick` when the destination is a real URL (deep-linkable).
+   */
+  rowHref?: (row: T) => string;
+  /** Optional per-row aria-label for the link semantics. */
+  getRowAriaLabel?: (row: T) => string;
+  /** Optional list-state passed to React Router on navigation (e.g. `{ from: location }`). */
+  getRowNavigateState?: (row: T) => RowHrefOptions['state'];
   className?: string;
 }
 
@@ -70,10 +92,38 @@ export function DataTable<T>({
   pagination,
   mobileCardRender,
   rowKey,
+  rowClassName,
+  onRowClick,
+  rowHref,
+  getRowAriaLabel,
+  getRowNavigateState,
   className,
 }: DataTableProps<T>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+
+  /**
+   * Unified row activation that respects modifier keys and middle-click.
+   * - cmd/ctrl/shift → new tab via window.open (preserves native multi-tab UX)
+   * - plain → SPA navigate (carries optional state for back-link)
+   * `auxClick` calls this with `forceNewTab = true` for middle-clicks.
+   */
+  const handleRowActivate = (row: T, mods: { newTab: boolean }) => {
+    if (rowHref) {
+      const href = rowHref(row);
+      if (mods.newTab) {
+        window.open(href, '_blank', 'noopener');
+        return;
+      }
+      const state = getRowNavigateState?.(row);
+      navigate(href, state !== undefined ? { state } : undefined);
+      return;
+    }
+    if (onRowClick) onRowClick(row);
+  };
+
+  const isRowInteractive = !!rowHref || !!onRowClick;
 
   const table = useReactTable({
     data,
@@ -109,8 +159,51 @@ export function DataTable<T>({
         <div className="space-y-3">
           {rows.map((row, idx) => {
             const key = rowKey ? rowKey(row.original) : `row-${idx}`;
+            const accent = rowClassName?.(row.original);
+            const ariaLabel = getRowAriaLabel?.(row.original);
             return (
-              <Card key={key} className="p-4">
+              <Card
+                key={key}
+                className={cn(
+                  'relative overflow-hidden p-4',
+                  isRowInteractive &&
+                    'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-1',
+                  accent
+                )}
+                onClick={
+                  isRowInteractive
+                    ? (e) =>
+                        handleRowActivate(row.original, {
+                          newTab: e.metaKey || e.ctrlKey || e.shiftKey,
+                        })
+                    : undefined
+                }
+                onAuxClick={
+                  isRowInteractive
+                    ? (e) => {
+                        if (e.button === 1) {
+                          e.preventDefault();
+                          handleRowActivate(row.original, { newTab: true });
+                        }
+                      }
+                    : undefined
+                }
+                role={rowHref ? 'link' : isRowInteractive ? 'button' : undefined}
+                aria-label={ariaLabel}
+                tabIndex={isRowInteractive ? 0 : undefined}
+                onKeyDown={
+                  isRowInteractive
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleRowActivate(row.original, {
+                            newTab: e.metaKey || e.ctrlKey,
+                          });
+                        }
+                      }
+                    : undefined
+                }
+              >
                 {mobileCardRender(row.original)}
               </Card>
             );
@@ -152,15 +245,61 @@ export function DataTable<T>({
               ))}
             </TableHeader>
             <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.id} style={{ height: 'var(--row-h)' }}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="py-2">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))}
+              {rows.map((row) => {
+                const accent = rowClassName?.(row.original);
+                const ariaLabel = getRowAriaLabel?.(row.original);
+                return (
+                  <TableRow
+                    key={row.id}
+                    style={{ height: 'var(--row-h)' }}
+                    className={cn(
+                      'relative',
+                      isRowInteractive &&
+                        'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset',
+                      accent
+                    )}
+                    role={rowHref ? 'link' : isRowInteractive ? 'button' : undefined}
+                    aria-label={ariaLabel}
+                    tabIndex={isRowInteractive ? 0 : undefined}
+                    onClick={
+                      isRowInteractive
+                        ? (e) =>
+                            handleRowActivate(row.original, {
+                              newTab: e.metaKey || e.ctrlKey || e.shiftKey,
+                            })
+                        : undefined
+                    }
+                    onAuxClick={
+                      isRowInteractive
+                        ? (e) => {
+                            if (e.button === 1) {
+                              e.preventDefault();
+                              handleRowActivate(row.original, { newTab: true });
+                            }
+                          }
+                        : undefined
+                    }
+                    onKeyDown={
+                      isRowInteractive
+                        ? (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              handleRowActivate(row.original, {
+                                newTab: e.metaKey || e.ctrlKey,
+                              });
+                            }
+                          }
+                        : undefined
+                    }
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className="py-2">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
