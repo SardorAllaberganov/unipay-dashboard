@@ -167,6 +167,14 @@ const activityStore: StudentActivityEntry[] = [];
 let templateStore: ScheduleTemplate[] = [];
 const importSessions = new Map<string, ImportSession>();
 
+// Read-only accessors for other MSW handlers (payments.ts seeds against the real student set).
+export function getSeededStudents(): readonly Student[] {
+  return studentStore;
+}
+export function getSeededScheduleRows(): readonly ScheduleRow[] {
+  return scheduleStore;
+}
+
 // ---------- seeders ----------
 
 function deriveStudentPaymentStatus(rows: ScheduleRow[]): StudentPaymentStatus {

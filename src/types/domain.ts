@@ -233,18 +233,73 @@ export interface ImportSession {
   createdAt: string;
 }
 
+export const FAILURE_CODES = [
+  'INSUFFICIENT_FUNDS',
+  'CARD_DECLINED',
+  'TIMEOUT',
+  'INVALID_AMOUNT',
+] as const;
+export type FailureCode = (typeof FAILURE_CODES)[number];
+
+export type TransactionEventType =
+  | 'created'
+  | 'processed'
+  | 'settled'
+  | 'failed'
+  | 'refunded';
+
+export interface TransactionEvent {
+  type: TransactionEventType;
+  at: string;
+  actor?: 'system' | 'user' | 'provider' | 'admin';
+}
+
+export const MANUAL_PAYMENT_METHODS = ['cash', 'bank_transfer', 'other'] as const;
+export type ManualPaymentMethod = (typeof MANUAL_PAYMENT_METHODS)[number];
+
 export interface Transaction {
   id: string;
   studentId: string;
   studentName: string;
   departmentId: string;
+  scheduleId?: string;
   amount: Money;
   commission: Money;
   net: Money;
   channel: PaymentChannel;
   status: PaymentStatus;
+  paymentMethod?: ManualPaymentMethod;
+  receiptNumber?: string;
+  note?: string;
+  failureCode?: FailureCode;
+  events?: TransactionEvent[];
   createdAt: string;
   receiptUrl?: string;
+}
+
+export const REFUND_REASONS = [
+  'duplicate',
+  'wrong_amount',
+  'service_not_provided',
+  'other',
+] as const;
+export type RefundReason = (typeof REFUND_REASONS)[number];
+
+export type RefundStatus = 'pending' | 'approved' | 'rejected' | 'completed';
+
+export interface Refund {
+  id: string;
+  transactionId: string;
+  studentId: string;
+  studentName: string;
+  amount: Money;
+  reason: RefundReason;
+  note: string;
+  status: RefundStatus;
+  requestedAt: string;
+  resolvedAt?: string;
+  bankRef?: string;
+  refundTransactionId?: string;
 }
 
 export interface BankAccount {

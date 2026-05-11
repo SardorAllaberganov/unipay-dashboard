@@ -35,6 +35,10 @@ import StudentProfilePage from '@/features/students/pages/StudentProfilePage';
 import EditStudentPage from '@/features/students/pages/EditStudentPage';
 import SchedulesPage from '@/features/students/pages/SchedulesPage';
 import ImportStudentsPage from '@/features/students/pages/ImportStudentsPage';
+import { TransactionsPage } from '@/features/payments/pages/TransactionsPage';
+import { TransactionDetailPage } from '@/features/payments/pages/TransactionDetailPage';
+import { PendingOverduePage } from '@/features/payments/pages/PendingOverduePage';
+import { RefundsPage } from '@/features/payments/pages/RefundsPage';
 import Placeholder from '@/pages/Placeholder';
 
 const KNOWN_PATH_PREFIXES = [
@@ -145,10 +149,10 @@ function AppRoutes() {
           <Route path="/students/schedules" element={<SchedulesPage />} />
           <Route path="/students/:id" element={<StudentProfilePage />} />
           <Route path="/students/:id/edit" element={<EditStudentPage />} />
-          <Route path="/payments/transactions" element={<Placeholder />} />
-          <Route path="/payments/transactions/:id" element={<Placeholder />} />
-          <Route path="/payments/pending" element={<Placeholder />} />
-          <Route path="/payments/refunds" element={<Placeholder />} />
+          <Route path="/payments/transactions" element={<TransactionsPage />} />
+          <Route path="/payments/transactions/:id" element={<TransactionDetailPage />} />
+          <Route path="/payments/pending" element={<PendingOverduePage />} />
+          <Route path="/payments/refunds" element={<RefundsPage />} />
           <Route path="/reports" element={<Placeholder />} />
           <Route path="/payouts" element={<Placeholder />} />
           <Route path="/payouts/:id" element={<Placeholder />} />
