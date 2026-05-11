@@ -6,6 +6,16 @@ Review at session start (or via `/start_task`). Most recent on top.
 
 ---
 
+## 2026-05-11 · `npm run lint` runs `--report-unused-disable-directives` — stale `eslint-disable-next-line` comments fail CI as errors
+
+**Rule.** After any change that quiets a previously-noisy lint rule — tightening a hook's dependency array, adding a missing return, removing the last `any` from a block, etc. — grep the same file for the matching `eslint-disable-next-line` (or block-level `/* eslint-disable ... */`) comment and remove it in the same change. The [`lint`](../package.json) script is `eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0`, so an orphaned suppression is reported as an error and fails CI just like a real lint violation. Local IDE eslint with default settings does NOT report unused directives, so this only surfaces when CI runs.
+
+**Why.** [`Step3Review.tsx`](../src/features/students/components/import/Step3Review.tsx) carried `// eslint-disable-next-line react-hooks/exhaustive-deps` above a `useMemo` whose deps array `[t, onPatch]` was already complete. The suppression survived a prior cleanup pass. Local `eslint --ext ts,tsx` without `--report-unused-disable-directives` was silent; CI failed.
+
+**How to apply.** When you fix the underlying issue, audit suppressions in the same diff. Pattern to grep before committing a hook-related change: `git grep -nE '// eslint-disable-next-line react-hooks/(exhaustive-deps|rules-of-hooks)' src/`. Same idea applies to other rules — if you remove the last `any` cast in a file, check for `@typescript-eslint/no-explicit-any` disables. The simplest verification is `npm run lint` (not just `eslint` from the IDE) before declaring a change clean.
+
+---
+
 ## 2026-05-11 · MSW responses containing `Money.amount: bigint` throw on `HttpResponse.json` — patch `BigInt.prototype.toJSON` globally
 
 **Rule.** Any MSW handler that serializes domain models containing `Money` (or any other `bigint` field) needs JSON to know how to handle bigint. The standard fix: patch `BigInt.prototype.toJSON` once in [`src/main.tsx`](../src/main.tsx) before anything else runs:

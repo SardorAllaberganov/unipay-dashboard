@@ -4,6 +4,19 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-11 — CI lint fix: dropped stale `eslint-disable-next-line react-hooks/exhaustive-deps` in `Step3Review`
+
+**Summary.** CI lint job failed with `Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')` at [`Step3Review.tsx:99`](../src/features/students/components/import/Step3Review.tsx#L99). The deps array `[t, onPatch]` is already complete (no hook lint warning would fire), so the suppression was dead code surviving an earlier cleanup pass. Removed the comment line. The `lint` npm script runs eslint with `--report-unused-disable-directives --max-warnings 0`, so any stale suppression is a CI failure — not a warning.
+
+**Files written.**
+- Modified: [`src/features/students/components/import/Step3Review.tsx`](../src/features/students/components/import/Step3Review.tsx) — removed one `eslint-disable-next-line` comment.
+
+**Verifications.** `npm run lint` — clean.
+
+**Lessons.** Added to [`LESSONS.md`](LESSONS.md): after tightening a hook's dependency array (or any change that quiets a previously-noisy lint rule), grep the same file for the matching `eslint-disable-next-line` comment and remove it in the same change.
+
+---
+
 ## 2026-05-11 — DataTable per-row cell merging (`meta.cellColSpan`) + staff pending-row badge/kebab merge
 
 **Summary.** Reported alignment issue: in the staff list, the "Ожидает" badge in pending rows sat further from the kebab than the wider "Активен"/"Неактивен" badges did in non-pending rows. After several iterations (right-align, layout-only spacer column), settled on a structural fix: merge the last two `<td>`s for pending rows. Added a new `meta.cellColSpan: (row) => number` field to the shared `DataTable`'s `ColumnMeta` augmentation. The body row renderer walks cells with a `skip` counter — when a cell sets `cellColSpan > 1` for that row, the next N-1 cells are skipped and the rendered `<TableCell>` gets a `colSpan` attribute. Staff table's status column now uses `cellColSpan: (row) => row.status === 'pending' ? 2 : 1`; the pending-row status cell renders a `flex items-center justify-between` container with the badge on the left and the kebab on the right, sharing the right-edge of the row. Non-pending rows keep the standard 6-column layout (badge in status td, kebab in actions td). The intermediate `inviteResend` spacer column was removed entirely.
