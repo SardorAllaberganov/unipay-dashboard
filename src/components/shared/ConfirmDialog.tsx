@@ -86,7 +86,7 @@ export function ConfirmDialog({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
-            {cancelLabel ?? t('common.cancel')}
+            {cancelLabel ?? t('common.actions.cancel')}
           </Button>
           <Button
             variant={destructive ? 'destructive' : 'default'}
@@ -94,7 +94,7 @@ export function ConfirmDialog({
             disabled={!reasonOk || loading}
             loading={loading}
           >
-            {confirmLabel ?? t('common.confirm')}
+            {confirmLabel ?? t('common.actions.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>
