@@ -1,5 +1,4 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import {
   BookOpen,
   ChevronDown,
@@ -68,8 +67,10 @@ export function DepartmentNode(props: Props) {
   const droppable = useDroppable({ id: dept.id, disabled: isDropBanned });
   const isOver = droppable.isOver && !isDropBanned;
 
+  // No transform on the source row — `<DragOverlay>` in the parent renders the floating snapshot
+  // following the cursor. Translating the source as well caused the row to look "gone" from its
+  // tree slot during drag. We keep the slot in place at reduced opacity for visual continuity.
   const style: React.CSSProperties = {
-    transform: CSS.Translate.toString(draggable.transform),
     opacity: draggable.isDragging ? 0.4 : 1,
   };
 
@@ -86,6 +87,7 @@ export function DepartmentNode(props: Props) {
         className={cn(
           'group/row flex items-center gap-1 rounded-md pr-1 text-sm leading-none transition-colors',
           'h-11 md:h-10',
+          draggable.isDragging ? 'cursor-grabbing' : 'cursor-grab',
           isSelected && 'bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300',
           !isSelected && 'hover:bg-muted/60',
           isOver && 'ring-2 ring-brand-600 ring-offset-1',
@@ -187,5 +189,20 @@ export function DepartmentNode(props: Props) {
         </ul>
       ) : null}
     </li>
+  );
+}
+
+/**
+ * Static, non-interactive snapshot of a department row used inside `<DragOverlay>`.
+ * Keep this layout in sync with the live row above so the overlay matches what the user grabbed.
+ */
+export function DepartmentNodePreview({ dept }: { dept: Department }) {
+  const Icon = TYPE_ICONS[dept.type];
+  return (
+    <div className="flex h-10 items-center gap-2 rounded-md border border-border bg-card px-3 text-sm shadow-md ring-1 ring-brand-600/30">
+      <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      <span className="truncate font-medium">{dept.name.ru}</span>
+      <span className="tabular text-sm text-muted-foreground">{dept.studentCount}</span>
+    </div>
   );
 }

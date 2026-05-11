@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   DndContext,
-  PointerSensor,
+  DragOverlay,
+  MouseSensor,
+  TouchSensor,
   KeyboardSensor,
-  closestCorners,
+  MeasuringStrategy,
+  closestCenter,
+  defaultDropAnimationSideEffects,
   useDroppable,
   useSensor,
   useSensors,
@@ -32,7 +37,7 @@ import {
   type DepartmentTreeNode,
 } from '../hooks/useDepartments';
 import { useDepartmentMutations } from '../hooks/useDepartmentMutations';
-import { DepartmentNode } from './DepartmentNode';
+import { DepartmentNode, DepartmentNodePreview } from './DepartmentNode';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -68,12 +73,16 @@ export function DepartmentTree({
     affected: number;
   } | null>(null);
 
-  // Touch scroll vs drag: delay-based activation lets the user scroll the list freely;
-  // a 250ms press starts a drag. Same constraint works fine for mouse pointers.
+  // Split sensors so desktop and touch each get the right activation:
+  //  - Mouse: tiny distance threshold so drag starts almost immediately on press+move
+  //    (no perceptible delay). 4px filters accidental clicks.
+  //  - Touch: 250ms delay + 8px tolerance so a finger scroll wins by default and an
+  //    intentional long-press starts the drag (see LESSONS.md 2026-05-11).
+  // Using PointerSensor for both was making desktop drags feel like "nothing happens"
+  // because the 250ms delay ate quick mouse drags.
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { delay: 250, tolerance: 8 },
-    }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 8 } }),
     useSensor(KeyboardSensor)
   );
 
@@ -132,10 +141,16 @@ export function DepartmentTree({
     return descendantIds(items, draggingId);
   }, [draggingId, items]);
 
-  const rootDroppable = useDroppable({
-    id: ROOT_DROP_ID,
-    disabled: !draggingId,
-  });
+  const draggedDept = useMemo(
+    () => (draggingId ? items.find((d) => d.id === draggingId) ?? null : null),
+    [draggingId, items]
+  );
+
+  // Always-enabled droppable so the rect is measured at drag activation.
+  // Previously this was `disabled: !draggingId` + a conditionally-rendered banner — but the
+  // banner element didn't exist until drag started, so @dnd-kit had nothing to measure and
+  // drop-on-root silently failed.
+  const rootDroppable = useDroppable({ id: ROOT_DROP_ID });
 
   const onToggle = (id: string) => {
     setExpanded((prev) => {
@@ -248,48 +263,80 @@ export function DepartmentTree({
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={closestCenter}
+        measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
         onDragStart={(event) => setDraggingId(String(event.active.id))}
         onDragCancel={() => setDraggingId(null)}
         onDragEnd={onDragEnd}
       >
-        {draggingId ? (
+        {/* Tree scroll area is `relative` so the root drop banner can absolutely-position
+           over the top without taking layout space — zero shift when a drag begins. */}
+        <div className="relative -mx-1 min-h-0 flex-1">
+          {/* Root drop zone — ALWAYS in the DOM (so its rect is measured at drag start),
+             absolutely positioned over the top of the scroll area (so the tree below it
+             doesn't shift), and faded in only when a drag is active. */}
           <div
             ref={rootDroppable.setNodeRef}
+            aria-hidden={!draggingId}
             className={cn(
-              'rounded-md border border-dashed border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground transition-colors',
-              rootDroppable.isOver && 'border-brand-600 bg-brand-50 text-brand-700'
+              'absolute inset-x-1 top-0 z-10 flex h-9 items-center rounded-md border border-dashed px-3 text-sm shadow-sm transition-opacity duration-200',
+              draggingId
+                ? rootDroppable.isOver
+                  ? 'border-brand-600 bg-brand-50 text-brand-700 opacity-100'
+                  : 'border-border bg-card text-muted-foreground opacity-100'
+                : 'pointer-events-none border-transparent opacity-0'
             )}
           >
             {t('organization.departments.rootDropHint')}
           </div>
-        ) : null}
 
-        <div className="-mx-1 min-h-0 flex-1 overflow-y-auto">
-          {filteredTree.length === 0 && search ? (
-            <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-              {t('organization.departments.searchNoResults')}
-            </p>
-          ) : (
-            <ul role="tree" className="space-y-0.5">
-              {filteredTree.map((node) => (
-                <DepartmentNode
-                  key={node.department.id}
-                  node={node}
-                  depth={0}
-                  expanded={expanded}
-                  onToggle={onToggle}
-                  selectedId={selectedId}
-                  onSelect={(d) => onSelect(d)}
-                  onAddChild={(parentId) => onAdd(parentId)}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  bannedDropIds={bannedDropIds}
-                />
-              ))}
-            </ul>
-          )}
+          <div className="h-full overflow-y-auto px-1">
+            {filteredTree.length === 0 && search ? (
+              <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+                {t('organization.departments.searchNoResults')}
+              </p>
+            ) : (
+              <ul role="tree" className="space-y-0.5">
+                {filteredTree.map((node) => (
+                  <DepartmentNode
+                    key={node.department.id}
+                    node={node}
+                    depth={0}
+                    expanded={expanded}
+                    onToggle={onToggle}
+                    selectedId={selectedId}
+                    onSelect={(d) => onSelect(d)}
+                    onAddChild={(parentId) => onAdd(parentId)}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    bannedDropIds={bannedDropIds}
+                  />
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
+
+        {/* Portal the overlay to <body> so it floats above the scroll <main> and any
+           stacking context inside the page. zIndex 40 stays *below* Radix Dialog (z-50)
+           so the post-drop ConfirmDialog renders on top of the still-fading overlay. */}
+        {typeof document !== 'undefined'
+          ? createPortal(
+              <DragOverlay
+                zIndex={40}
+                dropAnimation={{
+                  duration: 180,
+                  easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+                  sideEffects: defaultDropAnimationSideEffects({
+                    styles: { active: { opacity: '0.4' } },
+                  }),
+                }}
+              >
+                {draggedDept ? <DepartmentNodePreview dept={draggedDept} /> : null}
+              </DragOverlay>,
+              document.body
+            )
+          : null}
       </DndContext>
 
       {pendingMove ? (
