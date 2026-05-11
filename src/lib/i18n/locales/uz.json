@@ -76,6 +76,15 @@
       "periodLabel": "Davr",
       "periodSample": "Aprel 2026",
       "totalLabel": "Jami"
+    },
+    "offline": {
+      "tooltip": "Bu amalni bajarish uchun tarmoqqa ulaning."
+    },
+    "educationType": {
+      "full-time": "Kunduzgi",
+      "part-time": "Sirtqi",
+      "evening": "Kechki",
+      "remote": "Masofaviy"
     }
   },
   "nav": {
@@ -167,7 +176,8 @@
     "refunded": "Qaytarilgan",
     "active": "Faol",
     "inactive": "Faol emas",
-    "coming-soon": "Tez orada"
+    "coming-soon": "Tez orada",
+    "partial": "Qisman"
   },
   "channels": {
     "payme": "Payme",
@@ -225,10 +235,10 @@
     },
     "skipSetup": {
       "action": "O'tkazib yuborish",
-      "title": "Sozlamani o'tkazib yuborilsinmi?",
-      "body": "Keyinroq «Tashkilot» bo'limida sozlash mumkin.",
+      "title": "Sozlashni o'tkazib yuborasizmi?",
+      "body": "Keyinroq «Tashkilot» bo'limida sozlashingiz mumkin.",
       "confirm": "O'tkazib yuborish",
-      "toast": "Sozlamani keyinroq yakunlash mumkin."
+      "toast": "Sozlashni keyinroq yakunlashingiz mumkin."
     },
     "errors": {
       "required": "Majburiy maydon",
@@ -976,5 +986,379 @@
   },
   "errors": {
     "generic": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring."
+  },
+  "students": {
+    "title": "Talabalar",
+    "backPlural": "talabalarga",
+    "list": {
+      "title": "Talabalar",
+      "addCta": "Talaba qo'shish",
+      "importCta": "Import",
+      "emptyTitle": "Talabalar hali qo'shilmagan",
+      "emptyBody": "Birinchi talabani qo'shing yoki Excel'dan ro'yxatni import qiling.",
+      "columns": {
+        "name": "F.I.Sh",
+        "department": "Bo‘lim / Sinf",
+        "year": "Kurs",
+        "amount": "Davr summasi",
+        "status": "Holat",
+        "lastPayment": "So‘nggi to'lov",
+        "actions": "Amallar"
+      },
+      "paymentStatus": {
+        "all": "Hammasi",
+        "paid": "To‘langan",
+        "partial": "Qisman",
+        "pending": "Kutilmoqda",
+        "overdue": "Muddati o‘tgan"
+      },
+      "lastPaymentNever": "To'lovlar yo'q",
+      "rowKebab": {
+        "open": "Profilni ochish",
+        "sendSms": "SMS yuborish",
+        "changeDept": "Bo'limni o'zgartirish",
+        "deactivate": "Faolsizlantirish",
+        "openMenu": "Amallar menyusi"
+      }
+    },
+    "filters": {
+      "searchPlaceholder": "Ism, ID, telefon, email",
+      "department": "Bo'lim",
+      "year": "Kurs",
+      "status": "To'lov holati",
+      "educationType": "O'qish shakli",
+      "openMobile": "Filtrlar",
+      "reset": "Tozalash",
+      "apply": "Qo‘llash",
+      "searchDepartment": "Bo'lim bo'yicha qidirish",
+      "departmentsHint": "Bir yoki bir nechta bo'limni tanlang",
+      "activeCount_one": "{{count}} faol",
+      "activeCount_other": "{{count}} faol"
+    },
+    "bulk": {
+      "selectedCount_one": "{{count}} talaba tanlandi",
+      "selectedCount_other": "{{count}} talaba tanlandi",
+      "remind": "Eslatma yuborish",
+      "export": "Eksport",
+      "changeDept": "Bo'limni o'zgartirish",
+      "deactivate": "Faolsizlantirish",
+      "remindSuccess_one": "{{count}} talabaga eslatma yuborildi",
+      "remindSuccess_other": "{{count}} talabaga eslatma yuborildi",
+      "exportSuccess": "Eksport boshlandi — fayl yuklab olinadi",
+      "changeDeptTitle": "Bo'limni o'zgartirish",
+      "changeDeptBody": "{{count}} talaba uchun yangi bo'limni tanlang.",
+      "changeDeptConfirm": "O'zgartirish",
+      "changeDeptSuccess": "Bo'lim o'zgartirildi",
+      "deactivateTitle": "Talabalarni faolsizlantirish?",
+      "deactivateBody": "{{count}} talaba faolsizlantiriladi. To'lov jadvali saqlanadi, lekin yangi tranzaksiyalar qabul qilinmaydi.",
+      "deactivateConfirm": "Faolsizlantirish",
+      "deactivateSuccess_one": "{{count}} talaba faolsizlantirildi",
+      "deactivateSuccess_other": "{{count}} talaba faolsizlantirildi",
+      "reasonPlaceholder": "Sababini yozing (kamida 20 belgi)"
+    },
+    "add": {
+      "title": "Yangi talaba",
+      "sectionPersonal": "Shaxsiy ma'lumotlar",
+      "sectionAcademic": "O'quv ma'lumotlari",
+      "sectionPayment": "To'lov jadvali",
+      "firstName": "Ism",
+      "lastName": "Familiya",
+      "middleName": "Ota ismi",
+      "dob": "Tug'ilgan sana",
+      "gender": "Jins",
+      "genderMale": "Erkak",
+      "genderFemale": "Ayol",
+      "phone": "Telefon",
+      "email": "Email",
+      "studentId": "Talaba ID",
+      "studentIdHint": "Tizimdagi noyob identifikator",
+      "studentIdChecking": "Noyobligini tekshiryapmiz…",
+      "studentIdTaken": "Bu ID allaqachon ishlatilgan",
+      "department": "Guruh / Sinf",
+      "departmentHint": "Yakuniy tugunni tanlang (guruh yoki sinf)",
+      "departmentRequired": "Guruhni tanlang",
+      "educationType": "O'qish shakli",
+      "enrollmentDate": "O'qishga qabul sanasi",
+      "applyTemplate": "Jadval shablonini qo‘llash",
+      "applyTemplateHint": "Saqlangan shablondan foydalaning yoki qatorlarni qo'lda kiriting",
+      "pickTemplate": "Shablonni tanlang",
+      "rowPeriod": "Davr",
+      "rowType": "Turi",
+      "rowAmount": "Summa",
+      "rowDueDate": "Muddat",
+      "addRow": "Qator qo'shish",
+      "removeRow": "Qatorni o'chirish",
+      "saveAndClose": "Saqlash va yopish",
+      "saveAndAddAnother": "Saqlash va yana qo'shish",
+      "cancel": "Bekor qilish",
+      "savedToast": "Talaba saqlandi",
+      "savedAnotherToast": "Talaba saqlandi — forma tozalandi",
+      "fieldRequired": "Majburiy maydon",
+      "emailInvalid": "Email noto‘g‘ri",
+      "phoneInvalid": "+998 (XX) XXX-XX-XX formatida kiriting"
+    },
+    "detail": {
+      "backPlural": "talabalarga",
+      "notFoundTitle": "Talaba topilmadi",
+      "notFoundBody": "Yozuv o'chirilgan yoki manzil noto'g'ri.",
+      "errorTitle": "Profilni yuklashda xato",
+      "enrolledOn": "{{date}} dan qabul qilingan",
+      "endsOn": "{{date}} da tugaydi",
+      "lastActivity": "So'nggi faollik {{relative}}",
+      "personalCard": "Shaxsiy ma'lumotlar",
+      "academicCard": "O'quv ma'lumotlari",
+      "dob": "Tug'ilgan sana",
+      "gender": "Jins",
+      "phone": "Telefon",
+      "email": "Email",
+      "department": "Bo'lim",
+      "year": "Kurs",
+      "educationType": "O'qish shakli",
+      "enrollmentDate": "Qabul qilingan",
+      "endDate": "Tugashi",
+      "edit": "Tahrirlash",
+      "sendSms": "SMS yuborish",
+      "deactivate": "Faolsizlantirish",
+      "delete": "O'chirish",
+      "deactivateTitle": "Talabani faolsizlantirish?",
+      "deactivateBody": "Talaba endi hisob-fakturalarni olmaydi. Jadval saqlanib qoladi.",
+      "deactivateSuccess": "Talaba faolsizlantirildi",
+      "deleteTitle": "Talabani o'chirib tashlash?",
+      "deleteBody": "Yozuv va barcha bog'liq to'lovlar butunlay o'chiriladi. Bu amalni bekor qilib bo'lmaydi.",
+      "deleteSuccess": "Yozuv o'chirildi",
+      "deleteOwnerOnly": "Faqat egasi yozuvni o'chira oladi",
+      "smsTitle": "SMS yuborish",
+      "smsSuccess": "SMS yuborildi",
+      "tabs": {
+        "schedule": "Jadval",
+        "transactions": "To'lovlar",
+        "notes": "Eslatmalar",
+        "activity": "Jurnal"
+      }
+    },
+    "schedule": {
+      "columns": {
+        "period": "Davr",
+        "type": "Turi",
+        "amount": "Summa",
+        "paid": "To'langan",
+        "remaining": "Qoldiq",
+        "dueDate": "Muddat",
+        "status": "Holat",
+        "actions": "Amallar"
+      },
+      "paymentTypes": {
+        "tuition": "O'qish",
+        "dormitory": "Yotoqxona",
+        "other": "Boshqa"
+      },
+      "rowStatus": {
+        "paid": "To'langan",
+        "partial": "Qisman",
+        "pending": "Kutilmoqda",
+        "overdue": "Muddati o‘tgan"
+      },
+      "addRow": "Jadval qatorini qo'shish",
+      "applyTemplate": "Shablonni qo'llash",
+      "editAria": "{{label}} ni tahrirlash",
+      "savedToast": "O'zgarishlar saqlandi",
+      "errorToast": "Saqlanmadi — qaytadan urinib ko'ring",
+      "emptyTitle": "To'lov jadvali bo'sh",
+      "emptyBody": "Qatorlarni qo'lda qo'shing yoki shablonni qo'llang.",
+      "removeTitle": "Jadval qatorini o'chirish?",
+      "removeBody": "Qator butunlay o'chiriladi. Bajarilgan to'lovlar tranzaksiya jurnalida saqlanadi.",
+      "removeSuccess": "Qator o'chirildi",
+      "newRowPeriod": "Yangi davr"
+    },
+    "transactions": {
+      "columns": {
+        "date": "Sana",
+        "amount": "Summa",
+        "channel": "Kanal",
+        "status": "Holat",
+        "receipt": "Chek"
+      },
+      "receipt": "Ochish",
+      "emptyTitle": "To'lovlar hali yo'q",
+      "emptyBody": "Tranzaksiyalar birinchi to'lovdan keyin ko'rinadi.",
+      "detail": {
+        "title": "To'lov",
+        "amount": "Summa",
+        "commission": "Komissiya",
+        "net": "Yetkazib beriladi",
+        "channel": "Kanal",
+        "status": "Holat",
+        "date": "Sana",
+        "receipt": "Chekni ochish"
+      }
+    },
+    "notes": {
+      "placeholder": "Talaba haqida ichki eslatma…",
+      "submit": "Eslatma qo'shish",
+      "submitting": "Saqlayapmiz…",
+      "emptyTitle": "Eslatmalar hali yo'q",
+      "emptyBody": "Eslatmalar talabaga kirish huquqi bo'lgan barcha xodimlarga ko'rinadi.",
+      "savedToast": "Eslatma qo'shildi",
+      "auditNote": "Eslatmalarni o'chirib bo'lmaydi — bu audit jurnalining qismi."
+    },
+    "activity": {
+      "columns": {
+        "actor": "Kim",
+        "action": "Amal",
+        "change": "O'zgarish",
+        "date": "Sana"
+      },
+      "system": "Tizim",
+      "actions": {
+        "created": "Yaratilgan",
+        "updated": "Yangilangan",
+        "profile_updated": "Profil yangilangan",
+        "department_changed": "Bo'lim o'zgartirilgan",
+        "status_changed": "Holat o'zgartirilgan",
+        "schedule_row_added": "Jadval qatori qo'shildi",
+        "schedule_row_updated": "Jadval qatori yangilandi",
+        "schedule_row_removed": "Jadval qatori o'chirildi",
+        "template_applied": "Shablon qo'llandi",
+        "note_added": "Eslatma qo'shildi",
+        "sms_sent": "SMS yuborildi",
+        "deactivated": "Faolsizlantirildi",
+        "reactivated": "Faollashtirildi",
+        "deleted": "O'chirildi",
+        "imported": "Import qilingan"
+      },
+      "before": "edi",
+      "after": "bo'ldi",
+      "emptyTitle": "Yozuvlar hali yo'q",
+      "emptyBody": "Talaba bilan bog'liq amallar shu yerda ko'rinadi."
+    },
+    "import": {
+      "title": "Talabalarni import qilish",
+      "backPlural": "talabalarga",
+      "steps": {
+        "download": "Shablon",
+        "upload": "Yuklash",
+        "review": "Tekshirish",
+        "confirm": "Tasdiqlash"
+      },
+      "step1": {
+        "title": "Shablonni yuklab oling",
+        "body": "Shablon «Students» varog'i va maydonlar bo'yicha yo'riqnomani o'z ichiga oladi. Ma'lumotlarni to'ldiring va shu yerga qayting.",
+        "download": "Excel shablonini yuklab olish",
+        "next": "Keyingi"
+      },
+      "step2": {
+        "title": "Faylni yuklang",
+        "body": ".xlsx va .csv qo‘llab-quvvatlanadi, 5 MB va 5 000 qatorgacha.",
+        "drop": "Faylni shu yerga torting yoki tanlash uchun bosing",
+        "choose": "Faylni tanlash",
+        "parsing": "Faylni tahlil qilayapmiz…",
+        "fileTooLarge": "Fayl juda katta (maks. 5 MB)",
+        "tooManyRows": "Juda ko'p qatorlar (maks. 5 000)",
+        "wrongFormat": "Qo'llab-quvvatlanmagan format",
+        "parseError": "Faylni tahlil qilib bo'lmadi",
+        "next": "Keyingi",
+        "cancel": "Bekor qilish"
+      },
+      "step3": {
+        "title": "Ma'lumotlarni tekshiring",
+        "summaryOk_one": "{{count}} qator tayyor",
+        "summaryOk_other": "{{count}} qator tayyor",
+        "summaryErrors_one": "{{count}} qatorda xato",
+        "summaryErrors_other": "{{count}} qatorda xato",
+        "downloadReport": "Xatolar hisobotini yuklab olish",
+        "continue": "Davom etish",
+        "continueDisabled": "Davom etish uchun xatolarni tuzating",
+        "rowError": "Xato",
+        "rowOk": "OK",
+        "columns": {
+          "index": "№",
+          "studentId": "ID",
+          "firstName": "Ism",
+          "lastName": "Familiya",
+          "departmentPath": "Bo'lim",
+          "year": "Kurs",
+          "educationType": "Shakl",
+          "enrollmentDate": "Qabul",
+          "amount": "Summa",
+          "dueDate": "Muddat",
+          "status": "Holat"
+        },
+        "fieldErrors": {
+          "required": "Majburiy maydon",
+          "invalid_date": "Sana formati noto'g'ri",
+          "invalid_amount": "Summa noto'g'ri",
+          "duplicate_student_id": "ID allaqachon ishlatilgan",
+          "unknown_department": "Bo'lim topilmadi",
+          "invalid_education_type": "Noma'lum o'qish shakli"
+        }
+      },
+      "step4": {
+        "title": "Importni yakunlang",
+        "body": "{{count}} talaba import qilinadi. Bu amalni bekor qilib bo'lmaydi.",
+        "reasonHint": "100 dan ortiq talabani import qilishda sababini yozing (kamida 20 belgi).",
+        "commit": "{{count}} ni import qilish",
+        "committing": "Import qilayapmiz…",
+        "progress": "{{total}} dan {{done}} ni import qilyapmiz",
+        "success": "Import yakunlandi",
+        "goToList": "Talabalar ro'yxatiga"
+      }
+    },
+    "schedules": {
+      "title": "Jadval shablonlari",
+      "createCta": "Shablon yaratish",
+      "emptyTitle": "Shablonlar hali yo'q",
+      "emptyBody": "Bir nechta talabaga jadvalni tez qo'llash uchun shablon yarating.",
+      "card": {
+        "period": "Davr",
+        "dueDate": "Muddat",
+        "amount": "Summa",
+        "amountPerDept": "Bo'limlar bo'yicha summa",
+        "appliedTo_one": "{{count}} talabaga qo'llandi",
+        "appliedTo_other": "{{count}} talabaga qo'llandi",
+        "edit": "Tahrirlash",
+        "duplicate": "Nusxa olish",
+        "apply": "Qo'llash",
+        "delete": "O'chirish"
+      },
+      "form": {
+        "createTitle": "Yangi shablon",
+        "editTitle": "Shablonni tahrirlash",
+        "name": "Nomi",
+        "type": "To'lov turi",
+        "amountMode": "Summa",
+        "amountModeSingle": "Yagona summa",
+        "amountModePerDept": "Bo'limlarga qarab har xil",
+        "amount": "Summa",
+        "dueDate": "To'lov muddati",
+        "periodLabel": "Davr",
+        "appliesTo": "Qo'llanadigan ob'ekt",
+        "appliesToDepts": "Bo'limlar",
+        "appliesToYears": "Kurslar",
+        "appliesToStudents": "Talabalar (ixtiyoriy)",
+        "preview_one": "{{count}} talabaga qo'llanadi",
+        "preview_other": "{{count}} talabaga qo'llanadi",
+        "apply": "Shablonni qo'llash",
+        "save": "Saqlash",
+        "cancel": "Bekor qilish",
+        "savedToast": "Shablon saqlandi"
+      },
+      "apply": {
+        "title": "Shablonni qo'llash",
+        "body": "«{{name}}» shabloni {{count}} talabaga qo'llanadi.",
+        "reasonHint": "Sababini yozing (kamida 20 belgi).",
+        "confirm": "Qo'llash",
+        "success_one": "Shablon {{count}} talabaga qo'llandi",
+        "success_other": "Shablon {{count}} talabaga qo'llandi"
+      },
+      "delete": {
+        "title": "Shablonni o'chirish?",
+        "body": "Shablonni boshqa qo'llab bo'lmaydi. Avval qo'llangan jadval qatorlari saqlanib qoladi.",
+        "success": "Shablon o'chirildi"
+      },
+      "duplicateSuccess": "Shablon nusxasi yaratildi"
+    },
+    "edit": {
+      "title": "Talabani tahrirlash"
+    }
   }
 }

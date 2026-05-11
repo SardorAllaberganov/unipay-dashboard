@@ -76,6 +76,15 @@
       "periodLabel": "Период",
       "periodSample": "Апрель 2026",
       "totalLabel": "Итого"
+    },
+    "offline": {
+      "tooltip": "Подключитесь к сети, чтобы выполнить это действие."
+    },
+    "educationType": {
+      "full-time": "Очная",
+      "part-time": "Заочная",
+      "evening": "Вечерняя",
+      "remote": "Дистанционная"
     }
   },
   "nav": {
@@ -167,7 +176,8 @@
     "refunded": "Возврат",
     "active": "Активен",
     "inactive": "Неактивен",
-    "coming-soon": "Скоро"
+    "coming-soon": "Скоро",
+    "partial": "Частично"
   },
   "channels": {
     "payme": "Payme",
@@ -986,5 +996,397 @@
   },
   "errors": {
     "generic": "Что-то пошло не так. Попробуйте ещё раз."
+  },
+  "students": {
+    "title": "Студенты",
+    "backPlural": "студентам",
+    "list": {
+      "title": "Студенты",
+      "addCta": "Добавить студента",
+      "importCta": "Импорт",
+      "emptyTitle": "Студенты ещё не добавлены",
+      "emptyBody": "Добавьте первого студента или импортируйте список из Excel.",
+      "columns": {
+        "name": "ФИО",
+        "department": "Отделение / Класс",
+        "year": "Курс",
+        "amount": "Сумма периода",
+        "status": "Статус",
+        "lastPayment": "Последний платёж",
+        "actions": "Действия"
+      },
+      "paymentStatus": {
+        "all": "Все",
+        "paid": "Оплачено",
+        "partial": "Частично",
+        "pending": "Ожидает",
+        "overdue": "Просрочено"
+      },
+      "lastPaymentNever": "Нет платежей",
+      "rowKebab": {
+        "open": "Открыть профиль",
+        "sendSms": "Отправить SMS",
+        "changeDept": "Сменить отдел",
+        "deactivate": "Деактивировать",
+        "openMenu": "Открыть меню действий"
+      }
+    },
+    "filters": {
+      "searchPlaceholder": "Имя, ID, телефон, email",
+      "department": "Отделение",
+      "year": "Курс",
+      "status": "Статус оплаты",
+      "educationType": "Форма обучения",
+      "openMobile": "Фильтры",
+      "reset": "Сбросить",
+      "apply": "Применить",
+      "searchDepartment": "Поиск по отделениям",
+      "departmentsHint": "Выберите одно или несколько отделений",
+      "activeCount_one": "{{count}} активный",
+      "activeCount_few": "{{count}} активных",
+      "activeCount_many": "{{count}} активных",
+      "activeCount_other": "{{count}} активных"
+    },
+    "bulk": {
+      "selectedCount_one": "{{count}} студент выбран",
+      "selectedCount_few": "{{count}} студента выбрано",
+      "selectedCount_many": "{{count}} студентов выбрано",
+      "selectedCount_other": "{{count}} студентов выбрано",
+      "remind": "Отправить напоминание",
+      "export": "Экспорт",
+      "changeDept": "Сменить отдел",
+      "deactivate": "Деактивировать",
+      "remindSuccess_one": "Напоминание отправлено {{count}} студенту",
+      "remindSuccess_few": "Напоминания отправлены {{count}} студентам",
+      "remindSuccess_many": "Напоминания отправлены {{count}} студентам",
+      "remindSuccess_other": "Напоминания отправлены {{count}} студентам",
+      "exportSuccess": "Экспорт начат — файл будет скачан",
+      "changeDeptTitle": "Сменить отдел",
+      "changeDeptBody": "Выберите новое отделение для {{count}} студентов.",
+      "changeDeptConfirm": "Сменить",
+      "changeDeptSuccess": "Отдел изменён",
+      "deactivateTitle": "Деактивировать студентов?",
+      "deactivateBody": "Будут деактивированы {{count}} студентов. График платежей сохраняется, но новые транзакции не принимаются.",
+      "deactivateConfirm": "Деактивировать",
+      "deactivateSuccess_one": "{{count}} студент деактивирован",
+      "deactivateSuccess_few": "{{count}} студента деактивированы",
+      "deactivateSuccess_many": "{{count}} студентов деактивированы",
+      "deactivateSuccess_other": "{{count}} студентов деактивированы",
+      "reasonPlaceholder": "Опишите причину (мин. 20 символов)"
+    },
+    "add": {
+      "title": "Новый студент",
+      "sectionPersonal": "Личные данные",
+      "sectionAcademic": "Учебная информация",
+      "sectionPayment": "График платежей",
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "middleName": "Отчество",
+      "dob": "Дата рождения",
+      "gender": "Пол",
+      "genderMale": "Мужской",
+      "genderFemale": "Женский",
+      "phone": "Телефон",
+      "email": "Email",
+      "studentId": "ID студента",
+      "studentIdHint": "Уникальный идентификатор в системе",
+      "studentIdChecking": "Проверяем уникальность…",
+      "studentIdTaken": "Такой ID уже используется",
+      "department": "Группа / Класс",
+      "departmentHint": "Выберите конечный узел (группу или класс)",
+      "departmentRequired": "Выберите группу",
+      "educationType": "Форма обучения",
+      "enrollmentDate": "Дата зачисления",
+      "applyTemplate": "Применить шаблон графика",
+      "applyTemplateHint": "Используйте сохранённый шаблон или задайте строки вручную",
+      "pickTemplate": "Выберите шаблон",
+      "rowPeriod": "Период",
+      "rowType": "Тип",
+      "rowAmount": "Сумма",
+      "rowDueDate": "Срок",
+      "addRow": "Добавить строку",
+      "removeRow": "Удалить строку",
+      "saveAndClose": "Сохранить и закрыть",
+      "saveAndAddAnother": "Сохранить и добавить ещё",
+      "cancel": "Отмена",
+      "savedToast": "Студент сохранён",
+      "savedAnotherToast": "Студент сохранён — форма очищена",
+      "fieldRequired": "Обязательное поле",
+      "emailInvalid": "Некорректный email",
+      "phoneInvalid": "Введите номер в формате +998 (XX) XXX-XX-XX"
+    },
+    "detail": {
+      "backPlural": "студентам",
+      "notFoundTitle": "Студент не найден",
+      "notFoundBody": "Запись была удалена или вы перешли по неверной ссылке.",
+      "errorTitle": "Не удалось загрузить профиль",
+      "enrolledOn": "Зачислен {{date}}",
+      "endsOn": "Окончание {{date}}",
+      "lastActivity": "Последняя активность {{relative}}",
+      "personalCard": "Личные данные",
+      "academicCard": "Учебная информация",
+      "dob": "Дата рождения",
+      "gender": "Пол",
+      "phone": "Телефон",
+      "email": "Email",
+      "department": "Отделение",
+      "year": "Курс",
+      "educationType": "Форма обучения",
+      "enrollmentDate": "Зачислен",
+      "endDate": "Окончание",
+      "edit": "Редактировать",
+      "sendSms": "Отправить SMS",
+      "deactivate": "Деактивировать",
+      "delete": "Удалить",
+      "deactivateTitle": "Деактивировать студента?",
+      "deactivateBody": "Студент больше не сможет получать счета. График сохраняется.",
+      "deactivateSuccess": "Студент деактивирован",
+      "deleteTitle": "Удалить запись студента?",
+      "deleteBody": "Запись и все связанные платежи будут безвозвратно удалены. Действие нельзя отменить.",
+      "deleteSuccess": "Запись удалена",
+      "deleteOwnerOnly": "Только владелец может удалить запись",
+      "smsTitle": "Отправить SMS",
+      "smsSuccess": "SMS отправлено",
+      "tabs": {
+        "schedule": "График",
+        "transactions": "Платежи",
+        "notes": "Заметки",
+        "activity": "Журнал"
+      }
+    },
+    "schedule": {
+      "columns": {
+        "period": "Период",
+        "type": "Тип",
+        "amount": "Сумма",
+        "paid": "Оплачено",
+        "remaining": "Остаток",
+        "dueDate": "Срок",
+        "status": "Статус",
+        "actions": "Действия"
+      },
+      "paymentTypes": {
+        "tuition": "Обучение",
+        "dormitory": "Общежитие",
+        "other": "Прочее"
+      },
+      "rowStatus": {
+        "paid": "Оплачено",
+        "partial": "Частично",
+        "pending": "Ожидает",
+        "overdue": "Просрочено"
+      },
+      "addRow": "Добавить строку графика",
+      "applyTemplate": "Применить шаблон",
+      "editAria": "Редактировать {{label}}",
+      "savedToast": "Изменения сохранены",
+      "errorToast": "Не удалось сохранить — попробуйте ещё раз",
+      "emptyTitle": "График платежей пуст",
+      "emptyBody": "Добавьте строки вручную или примените шаблон.",
+      "removeTitle": "Удалить строку графика?",
+      "removeBody": "Строка будет безвозвратно удалена. Уже выполненные платежи сохранятся в журнале транзакций.",
+      "removeSuccess": "Строка удалена",
+      "newRowPeriod": "Новый период"
+    },
+    "transactions": {
+      "columns": {
+        "date": "Дата",
+        "amount": "Сумма",
+        "channel": "Канал",
+        "status": "Статус",
+        "receipt": "Чек"
+      },
+      "receipt": "Открыть",
+      "emptyTitle": "Платежей пока нет",
+      "emptyBody": "Транзакции появятся здесь после первой оплаты.",
+      "detail": {
+        "title": "Платёж",
+        "amount": "Сумма",
+        "commission": "Комиссия",
+        "net": "К зачислению",
+        "channel": "Канал",
+        "status": "Статус",
+        "date": "Дата",
+        "receipt": "Открыть чек"
+      }
+    },
+    "notes": {
+      "placeholder": "Внутренняя заметка по студенту…",
+      "submit": "Добавить заметку",
+      "submitting": "Сохраняем…",
+      "emptyTitle": "Заметок пока нет",
+      "emptyBody": "Заметки видны всем сотрудникам с доступом к студенту.",
+      "savedToast": "Заметка добавлена",
+      "auditNote": "Заметки нельзя удалить — это часть журнала аудита."
+    },
+    "activity": {
+      "columns": {
+        "actor": "Кто",
+        "action": "Действие",
+        "change": "Изменение",
+        "date": "Дата"
+      },
+      "system": "Система",
+      "actions": {
+        "created": "Создан",
+        "updated": "Обновлён",
+        "profile_updated": "Профиль обновлён",
+        "department_changed": "Сменён отдел",
+        "status_changed": "Изменён статус",
+        "schedule_row_added": "Добавлена строка графика",
+        "schedule_row_updated": "Обновлена строка графика",
+        "schedule_row_removed": "Удалена строка графика",
+        "template_applied": "Применён шаблон",
+        "note_added": "Добавлена заметка",
+        "sms_sent": "Отправлено SMS",
+        "deactivated": "Деактивирован",
+        "reactivated": "Активирован",
+        "deleted": "Удалён",
+        "imported": "Импортирован"
+      },
+      "before": "было",
+      "after": "стало",
+      "emptyTitle": "Записей пока нет",
+      "emptyBody": "Действия со студентом будут отображаться здесь."
+    },
+    "import": {
+      "title": "Импорт студентов",
+      "backPlural": "студентам",
+      "steps": {
+        "download": "Шаблон",
+        "upload": "Загрузка",
+        "review": "Проверка",
+        "confirm": "Подтверждение"
+      },
+      "step1": {
+        "title": "Скачайте шаблон",
+        "body": "Шаблон содержит лист «Students» и инструкцию по полям. Заполните данные и вернитесь сюда для загрузки.",
+        "download": "Скачать Excel-шаблон",
+        "next": "Далее"
+      },
+      "step2": {
+        "title": "Загрузите файл",
+        "body": "Поддерживаются .xlsx и .csv до 5 МБ и 5 000 строк.",
+        "drop": "Перетащите файл сюда или нажмите, чтобы выбрать",
+        "choose": "Выбрать файл",
+        "parsing": "Разбираем файл…",
+        "fileTooLarge": "Файл слишком большой (макс. 5 МБ)",
+        "tooManyRows": "Слишком много строк (макс. 5 000)",
+        "wrongFormat": "Неподдерживаемый формат",
+        "parseError": "Не удалось разобрать файл",
+        "next": "Далее",
+        "cancel": "Отмена"
+      },
+      "step3": {
+        "title": "Проверьте данные",
+        "summaryOk_one": "{{count}} строка готова",
+        "summaryOk_few": "{{count}} строки готовы",
+        "summaryOk_many": "{{count}} строк готовы",
+        "summaryOk_other": "{{count}} строк готовы",
+        "summaryErrors_one": "{{count}} строка с ошибкой",
+        "summaryErrors_few": "{{count}} строки с ошибками",
+        "summaryErrors_many": "{{count}} строк с ошибками",
+        "summaryErrors_other": "{{count}} строк с ошибками",
+        "downloadReport": "Скачать отчёт об ошибках",
+        "continue": "Продолжить",
+        "continueDisabled": "Исправьте ошибки, чтобы продолжить",
+        "rowError": "Ошибка",
+        "rowOk": "OK",
+        "columns": {
+          "index": "№",
+          "studentId": "ID",
+          "firstName": "Имя",
+          "lastName": "Фамилия",
+          "departmentPath": "Отделение",
+          "year": "Курс",
+          "educationType": "Форма",
+          "enrollmentDate": "Зачисление",
+          "amount": "Сумма",
+          "dueDate": "Срок",
+          "status": "Статус"
+        },
+        "fieldErrors": {
+          "required": "Обязательное поле",
+          "invalid_date": "Неверный формат даты",
+          "invalid_amount": "Неверная сумма",
+          "duplicate_student_id": "ID уже используется",
+          "unknown_department": "Отделение не найдено",
+          "invalid_education_type": "Неизвестная форма обучения"
+        }
+      },
+      "step4": {
+        "title": "Завершите импорт",
+        "body": "Будет импортировано {{count}} студентов. Это действие нельзя отменить.",
+        "reasonHint": "При импорте более 100 студентов укажите причину (мин. 20 символов).",
+        "commit": "Импортировать {{count}}",
+        "committing": "Импортируем…",
+        "progress": "Импортируем {{done}} из {{total}}",
+        "success": "Импорт завершён",
+        "goToList": "К списку студентов"
+      }
+    },
+    "schedules": {
+      "title": "Шаблоны графиков",
+      "createCta": "Создать шаблон",
+      "emptyTitle": "Шаблонов пока нет",
+      "emptyBody": "Создайте шаблон, чтобы быстро применять график к нескольким студентам.",
+      "card": {
+        "period": "Период",
+        "dueDate": "Срок",
+        "amount": "Сумма",
+        "amountPerDept": "Сумма по отделениям",
+        "appliedTo_one": "Применён к {{count}} студенту",
+        "appliedTo_few": "Применён к {{count}} студентам",
+        "appliedTo_many": "Применён к {{count}} студентам",
+        "appliedTo_other": "Применён к {{count}} студентам",
+        "edit": "Редактировать",
+        "duplicate": "Дублировать",
+        "apply": "Применить",
+        "delete": "Удалить"
+      },
+      "form": {
+        "createTitle": "Новый шаблон",
+        "editTitle": "Редактировать шаблон",
+        "name": "Название",
+        "type": "Тип платежа",
+        "amountMode": "Сумма",
+        "amountModeSingle": "Единая сумма",
+        "amountModePerDept": "Разная по отделениям",
+        "amount": "Сумма",
+        "dueDate": "Срок оплаты",
+        "periodLabel": "Период",
+        "appliesTo": "Применить к",
+        "appliesToDepts": "Отделения",
+        "appliesToYears": "Курсы",
+        "appliesToStudents": "Студенты (необязательно)",
+        "preview_one": "Будет применён к {{count}} студенту",
+        "preview_few": "Будет применён к {{count}} студентам",
+        "preview_many": "Будет применён к {{count}} студентам",
+        "preview_other": "Будет применён к {{count}} студентам",
+        "apply": "Применить шаблон",
+        "save": "Сохранить",
+        "cancel": "Отмена",
+        "savedToast": "Шаблон сохранён"
+      },
+      "apply": {
+        "title": "Применить шаблон",
+        "body": "Шаблон «{{name}}» будет применён к {{count}} студентам.",
+        "reasonHint": "Опишите причину (мин. 20 символов).",
+        "confirm": "Применить",
+        "success_one": "Шаблон применён к {{count}} студенту",
+        "success_few": "Шаблон применён к {{count}} студентам",
+        "success_many": "Шаблон применён к {{count}} студентам",
+        "success_other": "Шаблон применён к {{count}} студентам"
+      },
+      "delete": {
+        "title": "Удалить шаблон?",
+        "body": "Шаблон больше нельзя будет применить. Применённые ранее строки графика сохранятся.",
+        "success": "Шаблон удалён"
+      },
+      "duplicateSuccess": "Создана копия шаблона"
+    },
+    "edit": {
+      "title": "Редактировать студента"
+    }
   }
 }
