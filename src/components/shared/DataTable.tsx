@@ -8,8 +8,19 @@ import {
   getSortedRowModel,
   useReactTable,
   type ColumnDef,
+  type RowData,
   type SortingState,
 } from '@tanstack/react-table';
+
+// Per-column className hooks (e.g. `w-[1%]` to collapse an actions column to content-width,
+// `text-right` for amount columns). Read by DataTable below; consumers attach via columnDef.meta.
+declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  interface ColumnMeta<TData extends RowData, TValue> {
+    headerClassName?: string;
+    cellClassName?: string;
+  }
+}
 import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-react';
 import {
   Table,
@@ -218,8 +229,9 @@ export function DataTable<T>({
                   {hg.headers.map((header) => {
                     const sortable = header.column.getCanSort();
                     const sortDir = header.column.getIsSorted();
+                    const headerClass = header.column.columnDef.meta?.headerClassName;
                     return (
-                      <TableHead key={header.id}>
+                      <TableHead key={header.id} className={headerClass}>
                         {sortable ? (
                           <button
                             type="button"
@@ -293,7 +305,10 @@ export function DataTable<T>({
                     }
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="py-2">
+                      <TableCell
+                        key={cell.id}
+                        className={cn('py-2', cell.column.columnDef.meta?.cellClassName)}
+                      >
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
                       </TableCell>
                     ))}

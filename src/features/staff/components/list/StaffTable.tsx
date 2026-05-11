@@ -94,6 +94,12 @@ export function StaffTable({
       },
       {
         id: 'actions',
+        // w-[1%] collapses the column to content-width so the kebab sits flush right against
+        // the table's right edge across every row (otherwise table-layout: auto distributes
+        // residual width here, which made the dots visually drift when other columns had
+        // varying content). pr-3 trims the default px-4 right padding so the icon-only button
+        // is closer to the edge while keeping a comfortable tap target.
+        meta: { headerClassName: 'w-[1%]', cellClassName: 'pr-3' },
         header: () => (
           <span className="sr-only">{t('staff.list.columns.actions')}</span>
         ),
