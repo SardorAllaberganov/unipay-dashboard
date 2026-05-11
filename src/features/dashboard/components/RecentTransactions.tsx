@@ -15,7 +15,7 @@ import {
   PanelOfflineNote,
   PanelOfflineState,
   PanelPartialNote,
-} from './PanelStates';
+} from '@/components/shared/PanelStates';
 
 function initialsFromName(name: string): string {
   const parts = name.split(/\s+/).filter(Boolean);
@@ -53,7 +53,7 @@ export function RecentTransactions() {
             <PanelErrorState onRetry={() => query.refetch()} />
           )
         ) : !query.data || query.data.items.length === 0 ? (
-          <PanelEmptyState />
+          <PanelEmptyState body={t('dashboard.empty.noData')} />
         ) : (
           <>
             {query.data._meta?.partial ? (

@@ -32,7 +32,7 @@ import {
   PanelErrorState,
   PanelOfflineState,
   PanelPartialNote,
-} from '@/features/dashboard/components/PanelStates';
+} from '@/components/shared/PanelStates';
 import { profileSchema, type ProfileValues } from '../schemas';
 import { useOrganization } from '../hooks/useOrganization';
 import { useUpdateOrganization } from '../hooks/useUpdateOrganization';

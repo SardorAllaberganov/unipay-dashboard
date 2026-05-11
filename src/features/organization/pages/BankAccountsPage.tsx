@@ -10,7 +10,7 @@ import {
   PanelOfflineNote,
   PanelOfflineState,
   PanelPartialNote,
-} from '@/features/dashboard/components/PanelStates';
+} from '@/components/shared/PanelStates';
 import { BankAccountCard } from '../components/BankAccountCard';
 import { useBankAccounts } from '../hooks/useBankAccounts';
 

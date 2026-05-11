@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
-// Shared per-panel state renderings. The 6 states (§0.8) are inline in each panel —
-// these primitives ensure visual consistency across loading / error / empty / offline.
+// Shared per-panel state primitives — the 6 states (§0.8) are inline in each panel,
+// and these renderings give every consumer the same visual rhythm. Promoted from
+// features/dashboard/ on 2026-05-11 so org pages and students module can share without
+// cross-feature imports (per design-system-layers.md import-direction rule).
 
 interface ErrorSlateProps {
   onRetry?: () => void;
@@ -55,7 +57,7 @@ export function PanelEmptyState({ className, body }: EmptySlateProps) {
       )}
     >
       <p className="text-sm text-muted-foreground">
-        {body ?? t('dashboard.empty.noData')}
+        {body ?? t('common.states.noData')}
       </p>
     </div>
   );

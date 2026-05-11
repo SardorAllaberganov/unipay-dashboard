@@ -24,7 +24,7 @@ import {
   PanelErrorState,
   PanelOfflineNote,
   PanelOfflineState,
-} from '@/features/dashboard/components/PanelStates';
+} from '@/components/shared/PanelStates';
 import { brandingSchema, type BrandingValues } from '../schemas';
 import { useBranding } from '../hooks/useBranding';
 import { useUpdateBranding } from '../hooks/useUpdateBranding';

@@ -11,7 +11,7 @@ import {
   PanelOfflineNote,
   PanelOfflineState,
   PanelPartialNote,
-} from './PanelStates';
+} from '@/components/shared/PanelStates';
 
 interface Props {
   range?: DashboardDateRange;

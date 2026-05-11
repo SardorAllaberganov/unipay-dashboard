@@ -23,7 +23,7 @@ import {
   PanelOfflineNote,
   PanelOfflineState,
   PanelPartialNote,
-} from './PanelStates';
+} from '@/components/shared/PanelStates';
 
 export function UnpaidStudents() {
   const { t } = useTranslation();
@@ -85,7 +85,7 @@ export function UnpaidStudents() {
             <PanelErrorState onRetry={() => query.refetch()} />
           )
         ) : students.length === 0 ? (
-          <PanelEmptyState />
+          <PanelEmptyState body={t('dashboard.empty.noData')} />
         ) : (
           <>
             {meta?.partial ? (

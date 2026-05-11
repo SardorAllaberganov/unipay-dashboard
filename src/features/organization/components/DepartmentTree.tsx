@@ -28,7 +28,7 @@ import {
   PanelOfflineNote,
   PanelOfflineState,
   PanelPartialNote,
-} from '@/features/dashboard/components/PanelStates';
+} from '@/components/shared/PanelStates';
 import type { Department } from '@/types/domain';
 import {
   buildTree,
