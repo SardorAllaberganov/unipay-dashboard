@@ -29,6 +29,7 @@
       "shortcuts": "Qaynoq tugmalar",
       "copy": "Nusxalash",
       "copied": "Nusxalandi",
+      "selectAll": "Hammasini tanlash",
       "openMenu": "Menyuni ochish",
       "openSearch": "Qidiruvni ochish",
       "showHelp": "Yordam",
@@ -55,6 +56,14 @@
     "week": "Hafta",
     "month": "Oy",
     "custom": "Davr",
+    "pagination": {
+      "showing": "{{from}}–{{to}} / {{total}}",
+      "pageOf": "{{page}}/{{total}}-bet",
+      "prev": "Orqaga",
+      "next": "Davom etish",
+      "rowsPerPage": "Bir betda",
+      "goToPage": "{{page}}-betga o'tish"
+    },
     "daterange": {
       "title": "Sana oralig'ini tanlang",
       "quick-select": "Tezkor tanlash",
@@ -986,7 +995,25 @@
     }
   },
   "errors": {
-    "generic": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring."
+    "generic": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring.",
+    "codes": {
+      "INSUFFICIENT_FUNDS": {
+        "title": "Mablag' yetarli emas",
+        "body": "Kartada to'lov uchun mablag' yetarli emas."
+      },
+      "CARD_DECLINED": {
+        "title": "Karta rad etildi",
+        "body": "Bank operatsiyani rad etdi. Boshqa kartani sinab ko'ring."
+      },
+      "TIMEOUT": {
+        "title": "Kutish vaqti tugadi",
+        "body": "To'lov provayderi javob bermadi. Keyinroq qayta urinib ko'ring."
+      },
+      "INVALID_AMOUNT": {
+        "title": "Noto'g'ri summa",
+        "body": "To'lov summasi kutilgan summaga mos kelmaydi."
+      }
+    }
   },
   "students": {
     "title": "Talabalar",
@@ -1360,6 +1387,273 @@
     },
     "edit": {
       "title": "Talabani tahrirlash"
+    }
+  },
+  "payments": {
+    "title": "To'lovlar",
+    "backPlural": "tranzaksiyalarga",
+    "list": {
+      "title": "Tranzaksiyalar",
+      "exportCta": "Eksport",
+      "exportCsv": "CSV-ga eksport",
+      "exportXlsx": "Excel-ga eksport",
+      "exportPdf": "PDF-ga eksport",
+      "emptyTitle": "Hozircha tranzaksiyalar yo'q",
+      "emptyBody": "Talabalar to'lov qila boshlaganida bu yerda paydo bo'ladi.",
+      "rowsPerPage": "Sahifadagi qator",
+      "pageOf": "{{page}}/{{total}}-bet",
+      "stuckChip": ">10 daq",
+      "stuckAria": "Osilgan tranzaksiya, 10 daqiqadan ortiq",
+      "manualChip": "Qo'lda",
+      "columns": {
+        "id": "Tranzaksiya ID",
+        "student": "Talaba",
+        "department": "Bo'lim",
+        "amount": "Summa",
+        "commission": "Komissiya",
+        "net": "Hisobga o'tadi",
+        "channel": "Kanal",
+        "status": "Holat",
+        "datetime": "Sana va vaqt",
+        "actions": "Amallar"
+      },
+      "actions": {
+        "view": "Ko'rish",
+        "downloadReceipt": "Chekni yuklab olish",
+        "refund": "Qaytarish",
+        "copyId": "ID nusxa olish"
+      },
+      "summary": {
+        "label": "Filtr bo'yicha jami",
+        "totalCharged": "Jami yechilgan",
+        "totalCommission": "Jami komissiya",
+        "totalNet": "Muassasaga o'tadi"
+      }
+    },
+    "filters": {
+      "searchPlaceholder": "Talaba, ID, bo'lim",
+      "dateRange": "Davr",
+      "status": "Holat",
+      "channel": "Kanal",
+      "department": "Bo'lim",
+      "paymentType": "To'lov turi",
+      "openMobile": "Filtrlar",
+      "reset": "Tozalash",
+      "activeCount": "Tanlandi: {{count}}"
+    },
+    "detail": {
+      "backToList": "Tranzaksiyalarga qaytish",
+      "openFullPage": "To'liq sahifani ochish",
+      "sheetTitle": "Tranzaksiya tafsilotlari",
+      "transactionId": "Tranzaksiya ID",
+      "receiptNumber": "Chek raqami",
+      "noReceiptNumber": "—",
+      "breakdownHeading": "Summa hisobi",
+      "studentHeading": "Talaba",
+      "channelHeading": "Kanal va rekvizitlar",
+      "timelineHeading": "Xronologiya",
+      "receiptHeading": "Chek",
+      "previewReceipt": "Chekni ko'rish",
+      "downloadReceipt": "Chekni yuklab olish",
+      "noReceipt": "Chek mavjud emas",
+      "receipt": {
+        "title": "To'lov kvitansiyasi",
+        "number": "Chek №",
+        "date": "Sana",
+        "payer": "To'lovchi",
+        "studentId": "Talaba ID",
+        "recipient": "Qabul qiluvchi",
+        "tin": "STIR",
+        "items": "Nomi",
+        "amount": "Summa",
+        "tuition": "O'qish to'lovi",
+        "commission": "Komissiya",
+        "subtotal": "Jami to'lov",
+        "toInstitution": "Muassasaga o'tadi",
+        "paymentChannel": "To'lov usuli",
+        "transactionId": "Tranzaksiya ID",
+        "status": "Holat",
+        "paidStatus": "To'langan",
+        "refundedStatus": "Qaytarildi",
+        "thanks": "To'lov uchun rahmat",
+        "disclaimer": "Hujjat avtomatik shakllantirilgan va imzosiz amal qiladi."
+      },
+      "manualEntryNote": "Izoh",
+      "paymentMethod": {
+        "cash": "Naqd",
+        "bank_transfer": "Bank o'tkazmasi",
+        "other": "Boshqa"
+      },
+      "amountLabel": "Summa",
+      "commissionLabel": "Komissiya",
+      "netLabel": "Hisobga o'tadi",
+      "scheduleLabel": "To'lov davri",
+      "events": {
+        "created": "Yaratildi",
+        "processed": "Qayta ishlandi",
+        "settled": "Hisobga o'tdi",
+        "failed": "Xato",
+        "refunded": "Qaytarildi"
+      },
+      "failureBadge": "To'lov xatosi",
+      "failureTooltipPrefix": "Xato kodi"
+    },
+    "pending": {
+      "title": "Kutilayotgan va muddati o'tgan",
+      "tabPending": "Kutilayotgan",
+      "tabOverdue": "Muddati o'tgan",
+      "stats": {
+        "studentsWithDebt_one": "{{count}} talabada qarz mavjud",
+        "studentsWithDebt_other": "{{count}} talabada qarz mavjud",
+        "totalAmount": "umumiy summa: {{amount}}",
+        "overdueOver30_one": "{{count}} talaba 30 kundan ortiq kechiktirgan",
+        "overdueOver30_other": "{{count}} talaba 30 kundan ortiq kechiktirgan",
+        "studentsLabel": "Qarzdor talabalar",
+        "amountLabel": "Umumiy summa",
+        "overdueLabel": "Kechikish >30 kun",
+        "studentsUnitOne": "talaba",
+        "studentsUnitFew": "talaba",
+        "studentsUnitMany": "talaba"
+      },
+      "columns": {
+        "daysOverdue": "Kechikkan kunlar"
+      },
+      "emptyPendingTitle": "Kutilayotgan to'lovlar yo'q",
+      "emptyPendingBody": "Barcha talabalar jadval bo'yicha — ajoyib.",
+      "emptyOverdueTitle": "Muddati o'tgan to'lovlar yo'q",
+      "emptyOverdueBody": "Tanlangan davrda kechikishlar topilmadi.",
+      "bulk": {
+        "selectedCount_one": "{{count}} talaba tanlandi",
+        "selectedCount_other": "{{count}} talaba tanlandi",
+        "remind": "SMS eslatma yuborish",
+        "export": "Ro'yxatni eksport qilish",
+        "manualEntry": "Qo'lda to'langan deb belgilash",
+        "remindTitle": "SMS eslatma yuborish",
+        "remindBody_one": "{{count}} talabaga muassasaning saqlangan shabloni bo'yicha SMS yuboriladi.",
+        "remindBody_other": "{{count}} talabaga muassasaning saqlangan shabloni bo'yicha SMS yuboriladi.",
+        "remindConfirm": "Yuborish",
+        "remindReasonHint": "Yuborish sababini yozing (kamida 20 belgi).",
+        "remindSuccess_one": "{{count}} talabaga eslatma yuborildi",
+        "remindSuccess_other": "{{count}} talabaga eslatmalar yuborildi",
+        "exportSuccess": "Eksport boshlandi. Fayl emailga keladi."
+      }
+    },
+    "manualEntry": {
+      "title": "Qo'lda to'lov",
+      "subtitle": "To'lov provayderlarisiz olingan to'lovni qayd etish.",
+      "openCta": "Qo'lda to'langan deb belgilash",
+      "fields": {
+        "student": "Talaba",
+        "studentPlaceholder": "Ism yoki ID bo'yicha qidirish",
+        "amount": "Summa",
+        "amountPlaceholder": "0",
+        "schedule": "To'lov davri",
+        "schedulePlaceholder": "Davrni tanlang",
+        "noSchedules": "Talabada ochiq davrlar yo'q",
+        "paymentMethod": "To'lov usuli",
+        "paymentDate": "To'lov sanasi",
+        "receiptNumber": "Chek raqami",
+        "receiptNumberPlaceholder": "Ixtiyoriy",
+        "note": "Izoh",
+        "noteHint": "To'lov kontekstini yozing (kamida 20 belgi)."
+      },
+      "submit": "To'lovni saqlash",
+      "success": "To'lov saqlandi",
+      "validation": {
+        "studentRequired": "Talabani tanlang",
+        "amountPositive": "Summa noldan katta bo'lishi kerak",
+        "scheduleRequired": "Davrni tanlang",
+        "dateRequired": "Sanani kiriting",
+        "dateFuture": "Sana kelajakda bo'lishi mumkin emas",
+        "noteMinLength": "Izoh kamida 20 belgi bo'lishi kerak"
+      }
+    },
+    "refund": {
+      "ineligible": {
+        "notPaid": "Qaytarish faqat to'langan tranzaksiyalar uchun mumkin",
+        "tooOld": "Tranzaksiya 90 kundan eski",
+        "alreadyRefunded": "Tranzaksiya allaqachon qaytarilgan"
+      },
+      "dialog": {
+        "step1Title": "Qaytarishni tasdiqlang",
+        "step2Title": "Yakuniy tasdiq",
+        "originalSummary": "Asl tranzaksiya",
+        "amountField": "Qaytarish summasi",
+        "amountHint": "Asl tranzaksiya summasidan ortmasin.",
+        "reasonField": "Sabab",
+        "reasonOption": {
+          "duplicate": "Takroriy to'lov",
+          "wrong_amount": "Noto'g'ri summa",
+          "service_not_provided": "Xizmat ko'rsatilmagan",
+          "other": "Boshqa"
+        },
+        "noteField": "Izoh",
+        "noteHint": "Tafsilotlarni kiriting (kamida 20 belgi).",
+        "step2Body": "Qaytarishni tasdiqlash uchun REFUND so'zini kiriting. Amal qaytarib bo'lmaydi.",
+        "typePhrase": "REFUND",
+        "typePhrasePlaceholder": "REFUND deb kiriting",
+        "nextCta": "Davom etish",
+        "backCta": "Orqaga",
+        "submitCta": "Qaytarish arizasini yuborish",
+        "successToast": "Qaytarish arizasi yuborildi",
+        "validation": {
+          "amountPositive": "Summa noldan katta bo'lishi kerak",
+          "amountExceedsOriginal": "Asl tranzaksiya summasidan oshmasin",
+          "noteMinLength": "Izoh kamida 20 belgi bo'lishi kerak",
+          "typePhraseMismatch": "REFUND so'zini aniq kiriting"
+        }
+      }
+    },
+    "refunds": {
+      "title": "Qaytarishlar",
+      "sections": {
+        "pendingTitle": "Qaytarish arizalari",
+        "pendingBody": "Arizalar ko'rib chiqilishni kutmoqda.",
+        "historyTitle": "Qaytarishlar tarixi",
+        "historyBody": "Yakunlangan va rad etilgan qaytarishlar."
+      },
+      "emptyPendingTitle": "Kutilayotgan arizalar yo'q",
+      "emptyPendingBody": "Yangi qaytarish arizalari bu yerda paydo bo'ladi.",
+      "emptyHistoryTitle": "Tarix bo'sh",
+      "emptyHistoryBody": "Yakunlangan va rad etilgan qaytarishlar bu yerda paydo bo'ladi.",
+      "columns": {
+        "date": "Sana",
+        "student": "Talaba",
+        "originalTx": "Asl tranzaksiya",
+        "refundTx": "Qaytarish tranzaksiyasi",
+        "amount": "Summa",
+        "reason": "Sabab",
+        "status": "Holat",
+        "bankRef": "Bank raqami",
+        "actions": "Amallar"
+      },
+      "reasons": {
+        "duplicate": "Takror",
+        "wrong_amount": "Noto'g'ri summa",
+        "service_not_provided": "Xizmat ko'rsatilmagan",
+        "other": "Boshqa"
+      },
+      "statuses": {
+        "pending": "Kutilmoqda",
+        "approved": "Tasdiqlandi",
+        "rejected": "Rad etildi",
+        "completed": "Yakunlandi"
+      },
+      "approve": {
+        "cta": "Tasdiqlash",
+        "title": "Qaytarishni tasdiqlaysizmi?",
+        "body": "{{amount}} summaga qaytarish bankka yuboriladi.",
+        "confirm": "Qaytarishni tasdiqlash",
+        "success": "Qaytarish tasdiqlandi"
+      },
+      "reject": {
+        "cta": "Rad etish",
+        "title": "Qaytarishni rad etasizmi?",
+        "body": "Ariza rad etilgan deb belgilanadi.",
+        "confirm": "Qaytarishni rad etish",
+        "reasonHint": "Rad etish sababini yozing (kamida 20 belgi).",
+        "success": "Qaytarish rad etildi"
+      }
     }
   }
 }

@@ -29,6 +29,7 @@
       "shortcuts": "Горячие клавиши",
       "copy": "Скопировать",
       "copied": "Скопировано",
+      "selectAll": "Выбрать все",
       "openMenu": "Открыть меню",
       "openSearch": "Открыть поиск",
       "showHelp": "Показать справку",
@@ -55,6 +56,14 @@
     "week": "Неделя",
     "month": "Месяц",
     "custom": "Период",
+    "pagination": {
+      "showing": "Показано {{from}}–{{to}} из {{total}}",
+      "pageOf": "Стр. {{page}} из {{total}}",
+      "prev": "Назад",
+      "next": "Далее",
+      "rowsPerPage": "Строк на стр.",
+      "goToPage": "Перейти на стр. {{page}}"
+    },
     "daterange": {
       "title": "Выберите диапазон дат",
       "quick-select": "Быстрый выбор",
@@ -996,7 +1005,25 @@
     }
   },
   "errors": {
-    "generic": "Что-то пошло не так. Попробуйте ещё раз."
+    "generic": "Что-то пошло не так. Попробуйте ещё раз.",
+    "codes": {
+      "INSUFFICIENT_FUNDS": {
+        "title": "Недостаточно средств",
+        "body": "На карте недостаточно средств для оплаты."
+      },
+      "CARD_DECLINED": {
+        "title": "Карта отклонена",
+        "body": "Банк отклонил операцию. Попробуйте другую карту."
+      },
+      "TIMEOUT": {
+        "title": "Время ожидания истекло",
+        "body": "Платёжный провайдер не ответил вовремя. Попробуйте позже."
+      },
+      "INVALID_AMOUNT": {
+        "title": "Неверная сумма",
+        "body": "Сумма платежа не соответствует ожидаемой."
+      }
+    }
   },
   "students": {
     "title": "Студенты",
@@ -1388,6 +1415,283 @@
     },
     "edit": {
       "title": "Редактировать студента"
+    }
+  },
+  "payments": {
+    "title": "Платежи",
+    "backPlural": "транзакциям",
+    "list": {
+      "title": "Транзакции",
+      "exportCta": "Экспорт",
+      "exportCsv": "Экспорт в CSV",
+      "exportXlsx": "Экспорт в Excel",
+      "exportPdf": "Экспорт в PDF",
+      "emptyTitle": "Транзакций пока нет",
+      "emptyBody": "Здесь появятся платежи, как только студенты начнут оплачивать.",
+      "rowsPerPage": "Строк на страницу",
+      "pageOf": "Стр. {{page}} из {{total}}",
+      "stuckChip": ">10 мин",
+      "stuckAria": "Зависшая транзакция, более 10 минут",
+      "manualChip": "Вручную",
+      "columns": {
+        "id": "ID транзакции",
+        "student": "Студент",
+        "department": "Отделение",
+        "amount": "Сумма",
+        "commission": "Комиссия",
+        "net": "К зачислению",
+        "channel": "Канал",
+        "status": "Статус",
+        "datetime": "Дата и время",
+        "actions": "Действия"
+      },
+      "actions": {
+        "view": "Просмотр",
+        "downloadReceipt": "Скачать чек",
+        "refund": "Возврат",
+        "copyId": "Скопировать ID"
+      },
+      "summary": {
+        "label": "Итого по фильтру",
+        "totalCharged": "Всего списано",
+        "totalCommission": "Всего комиссии",
+        "totalNet": "К зачислению учреждению"
+      }
+    },
+    "filters": {
+      "searchPlaceholder": "Студент, ID, отделение",
+      "dateRange": "Период",
+      "status": "Статус",
+      "channel": "Канал",
+      "department": "Отделение",
+      "paymentType": "Тип оплаты",
+      "openMobile": "Фильтры",
+      "reset": "Сбросить",
+      "activeCount": "Выбрано: {{count}}"
+    },
+    "detail": {
+      "backToList": "Назад к транзакциям",
+      "openFullPage": "Открыть полную страницу",
+      "sheetTitle": "Детали транзакции",
+      "transactionId": "ID транзакции",
+      "receiptNumber": "Номер чека",
+      "noReceiptNumber": "—",
+      "breakdownHeading": "Расчёт суммы",
+      "studentHeading": "Студент",
+      "channelHeading": "Канал и реквизиты",
+      "timelineHeading": "Хронология",
+      "receiptHeading": "Чек",
+      "previewReceipt": "Просмотр чека",
+      "downloadReceipt": "Скачать чек",
+      "noReceipt": "Чек недоступен",
+      "receipt": {
+        "title": "Квитанция об оплате",
+        "number": "Чек №",
+        "date": "Дата",
+        "payer": "Плательщик",
+        "studentId": "ID студента",
+        "recipient": "Получатель",
+        "tin": "ИНН",
+        "items": "Наименование",
+        "amount": "Сумма",
+        "tuition": "Оплата обучения",
+        "commission": "Комиссия",
+        "subtotal": "Итого к оплате",
+        "toInstitution": "К зачислению учреждению",
+        "paymentChannel": "Способ оплаты",
+        "transactionId": "ID транзакции",
+        "status": "Статус",
+        "paidStatus": "Оплачено",
+        "refundedStatus": "Возврат",
+        "thanks": "Спасибо за оплату",
+        "disclaimer": "Документ сформирован автоматически и действителен без подписи."
+      },
+      "manualEntryNote": "Заметка",
+      "paymentMethod": {
+        "cash": "Наличные",
+        "bank_transfer": "Банковский перевод",
+        "other": "Другое"
+      },
+      "amountLabel": "Сумма",
+      "commissionLabel": "Комиссия",
+      "netLabel": "К зачислению",
+      "scheduleLabel": "Период оплаты",
+      "events": {
+        "created": "Создано",
+        "processed": "Обработано",
+        "settled": "Зачислено",
+        "failed": "Ошибка",
+        "refunded": "Возврат"
+      },
+      "failureBadge": "Ошибка платежа",
+      "failureTooltipPrefix": "Код ошибки"
+    },
+    "pending": {
+      "title": "Ожидающие и просроченные",
+      "tabPending": "Ожидающие",
+      "tabOverdue": "Просроченные",
+      "stats": {
+        "studentsWithDebt_one": "{{count}} студент с задолженностью",
+        "studentsWithDebt_few": "{{count}} студента с задолженностью",
+        "studentsWithDebt_many": "{{count}} студентов с задолженностью",
+        "studentsWithDebt_other": "{{count}} студентов с задолженностью",
+        "totalAmount": "общая сумма: {{amount}}",
+        "overdueOver30_one": "{{count}} студент просрочил оплату более 30 дней",
+        "overdueOver30_few": "{{count}} студента просрочили оплату более 30 дней",
+        "overdueOver30_many": "{{count}} студентов просрочили оплату более 30 дней",
+        "overdueOver30_other": "{{count}} студентов просрочили оплату более 30 дней",
+        "studentsLabel": "Студентов с долгом",
+        "amountLabel": "Общая сумма",
+        "overdueLabel": "Просрочка >30 дней",
+        "studentsUnitOne": "студент",
+        "studentsUnitFew": "студента",
+        "studentsUnitMany": "студентов"
+      },
+      "columns": {
+        "daysOverdue": "Дней просрочки"
+      },
+      "emptyPendingTitle": "Нет ожидающих платежей",
+      "emptyPendingBody": "Все студенты в графике — отличная работа.",
+      "emptyOverdueTitle": "Нет просроченных платежей",
+      "emptyOverdueBody": "Просрочек не обнаружено за выбранный период.",
+      "bulk": {
+        "selectedCount_one": "Выбран {{count}} студент",
+        "selectedCount_few": "Выбрано {{count}} студента",
+        "selectedCount_many": "Выбрано {{count}} студентов",
+        "selectedCount_other": "Выбрано {{count}} студентов",
+        "remind": "Отправить SMS-напоминание",
+        "export": "Экспорт списка",
+        "manualEntry": "Отметить как оплачено вручную",
+        "remindTitle": "Отправить SMS-напоминание",
+        "remindBody_one": "Будет отправлено SMS {{count}} студенту по сохранённому шаблону учреждения.",
+        "remindBody_few": "Будет отправлено SMS {{count}} студентам по сохранённому шаблону учреждения.",
+        "remindBody_many": "Будет отправлено SMS {{count}} студентам по сохранённому шаблону учреждения.",
+        "remindBody_other": "Будет отправлено SMS {{count}} студентам по сохранённому шаблону учреждения.",
+        "remindConfirm": "Отправить",
+        "remindReasonHint": "Опишите причину рассылки (мин. 20 символов).",
+        "remindSuccess_one": "Напоминание отправлено {{count}} студенту",
+        "remindSuccess_few": "Напоминания отправлены {{count}} студентам",
+        "remindSuccess_many": "Напоминания отправлены {{count}} студентам",
+        "remindSuccess_other": "Напоминания отправлены {{count}} студентам",
+        "exportSuccess": "Экспорт запущен. Файл придёт на e-mail."
+      }
+    },
+    "manualEntry": {
+      "title": "Ручная оплата",
+      "subtitle": "Зафиксировать платёж, полученный вне платёжных провайдеров.",
+      "openCta": "Отметить оплату вручную",
+      "fields": {
+        "student": "Студент",
+        "studentPlaceholder": "Найти по имени или ID",
+        "amount": "Сумма",
+        "amountPlaceholder": "0",
+        "schedule": "Период оплаты",
+        "schedulePlaceholder": "Выберите период",
+        "noSchedules": "У студента нет открытых периодов",
+        "paymentMethod": "Способ оплаты",
+        "paymentDate": "Дата платежа",
+        "receiptNumber": "Номер чека",
+        "receiptNumberPlaceholder": "Опционально",
+        "note": "Заметка",
+        "noteHint": "Опишите контекст платежа (мин. 20 символов)."
+      },
+      "submit": "Сохранить оплату",
+      "success": "Платёж сохранён",
+      "validation": {
+        "studentRequired": "Выберите студента",
+        "amountPositive": "Сумма должна быть больше нуля",
+        "scheduleRequired": "Выберите период",
+        "dateRequired": "Укажите дату",
+        "dateFuture": "Дата не может быть в будущем",
+        "noteMinLength": "Заметка должна содержать не менее 20 символов"
+      }
+    },
+    "refund": {
+      "ineligible": {
+        "notPaid": "Возврат возможен только для оплаченных транзакций",
+        "tooOld": "Транзакция старше 90 дней",
+        "alreadyRefunded": "Транзакция уже возвращена"
+      },
+      "dialog": {
+        "step1Title": "Подтвердите возврат",
+        "step2Title": "Финальное подтверждение",
+        "originalSummary": "Исходная транзакция",
+        "amountField": "Сумма возврата",
+        "amountHint": "Не больше суммы исходной транзакции.",
+        "reasonField": "Причина",
+        "reasonOption": {
+          "duplicate": "Дублирующий платёж",
+          "wrong_amount": "Неверная сумма",
+          "service_not_provided": "Услуга не оказана",
+          "other": "Другое"
+        },
+        "noteField": "Комментарий",
+        "noteHint": "Укажите детали (мин. 20 символов).",
+        "step2Body": "Введите слово REFUND, чтобы подтвердить возврат. Действие необратимо.",
+        "typePhrase": "REFUND",
+        "typePhrasePlaceholder": "Введите REFUND",
+        "nextCta": "Далее",
+        "backCta": "Назад",
+        "submitCta": "Отправить заявку на возврат",
+        "successToast": "Заявка на возврат отправлена",
+        "validation": {
+          "amountPositive": "Сумма должна быть больше нуля",
+          "amountExceedsOriginal": "Не может превышать сумму исходной транзакции",
+          "noteMinLength": "Комментарий должен содержать не менее 20 символов",
+          "typePhraseMismatch": "Введите слово REFUND точно"
+        }
+      }
+    },
+    "refunds": {
+      "title": "Возвраты",
+      "sections": {
+        "pendingTitle": "Заявки на возврат",
+        "pendingBody": "Заявки ожидают рассмотрения.",
+        "historyTitle": "История возвратов",
+        "historyBody": "Завершённые и отклонённые возвраты."
+      },
+      "emptyPendingTitle": "Нет ожидающих заявок",
+      "emptyPendingBody": "Новые заявки на возврат появятся здесь.",
+      "emptyHistoryTitle": "История пуста",
+      "emptyHistoryBody": "Завершённые и отклонённые возвраты появятся здесь.",
+      "columns": {
+        "date": "Дата",
+        "student": "Студент",
+        "originalTx": "Исходная транзакция",
+        "refundTx": "Транзакция возврата",
+        "amount": "Сумма",
+        "reason": "Причина",
+        "status": "Статус",
+        "bankRef": "Банковский номер",
+        "actions": "Действия"
+      },
+      "reasons": {
+        "duplicate": "Дубль",
+        "wrong_amount": "Неверная сумма",
+        "service_not_provided": "Услуга не оказана",
+        "other": "Другое"
+      },
+      "statuses": {
+        "pending": "В ожидании",
+        "approved": "Одобрено",
+        "rejected": "Отклонено",
+        "completed": "Завершено"
+      },
+      "approve": {
+        "cta": "Одобрить",
+        "title": "Одобрить возврат?",
+        "body": "Возврат на сумму {{amount}} будет отправлен в банк.",
+        "confirm": "Одобрить возврат",
+        "success": "Возврат одобрен"
+      },
+      "reject": {
+        "cta": "Отклонить",
+        "title": "Отклонить возврат?",
+        "body": "Заявка будет помечена как отклонённая.",
+        "confirm": "Отклонить возврат",
+        "reasonHint": "Опишите причину отклонения (мин. 20 символов).",
+        "success": "Возврат отклонён"
+      }
     }
   }
 }

@@ -120,6 +120,11 @@
   * {
     @apply border-border;
   }
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
   html {
     font-family: 'Inter', -apple-system, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;

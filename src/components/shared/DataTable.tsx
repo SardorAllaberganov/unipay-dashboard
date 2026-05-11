@@ -1,6 +1,7 @@
 // STYLE_DISCIPLINE.md §0.6 (data tables) + §0.8 (mandatory state coverage).
 // Encodes: Title Case headers, table headers never stick, mobile card stack, all 6 states.
 import { useState, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
   flexRender,
@@ -34,7 +35,22 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useIsMobile } from '@/hooks/use-breakpoint';
 import { cn } from '@/lib/utils';
 import { LoadingTable } from './LoadingTable';
@@ -57,6 +73,24 @@ interface PaginationProps {
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
+  /** When provided, renders a "Rows per page" Select. */
+  onPageSizeChange?: (pageSize: number) => void;
+  /** Options for the page-size Select. Default: [25, 50, 100]. */
+  pageSizeOptions?: number[];
+}
+
+function buildPageList(current: number, last: number): (number | 'ellipsis-left' | 'ellipsis-right')[] {
+  if (last <= 7) {
+    return Array.from({ length: last }, (_, i) => i + 1);
+  }
+  const pages: (number | 'ellipsis-left' | 'ellipsis-right')[] = [1];
+  if (current > 3) pages.push('ellipsis-left');
+  for (let i = Math.max(2, current - 1); i <= Math.min(last - 1, current + 1); i++) {
+    pages.push(i);
+  }
+  if (current < last - 2) pages.push('ellipsis-right');
+  pages.push(last);
+  return pages;
 }
 
 interface PartialMeta {
@@ -67,6 +101,8 @@ interface PartialMeta {
 interface DataTableProps<T> {
   columns: ColumnDef<T, unknown>[];
   data: T[];
+  /** When true, the inner shell (border / radius / bg) is stripped so a parent surface owns the chrome. */
+  bare?: boolean;
   state?: DataTableState;
   onRetry?: () => void;
   emptyTitle?: string;
@@ -97,6 +133,7 @@ interface DataTableProps<T> {
 export function DataTable<T>({
   columns,
   data,
+  bare = false,
   state = 'data',
   onRetry,
   emptyTitle,
@@ -170,6 +207,7 @@ export function DataTable<T>({
       {state === 'partial' && partial ? <PartialBanner shown={partial.shown} total={partial.total} /> : null}
 
       {isMobile && mobileCardRender ? (
+        <>
         <div className="space-y-3">
           {rows.map((row, idx) => {
             const key = rowKey ? rowKey(row.original) : `row-${idx}`;
@@ -223,8 +261,21 @@ export function DataTable<T>({
             );
           })}
         </div>
+        {pagination ? (
+          <div className="overflow-hidden rounded-lg border border-border bg-card">
+            <DataTablePagination {...pagination} />
+          </div>
+        ) : null}
+        </>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <div
+          className={cn(
+            'overflow-hidden',
+            !bare && 'rounded-lg border border-border bg-card',
+          )}
+        >
+          {/* Table + pagination share the same bordered shell. The pagination's top border
+              supplies the divider between the last table row and the controls. */}
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((hg) => (
@@ -340,44 +391,128 @@ export function DataTable<T>({
               })}
             </TableBody>
           </Table>
+          {pagination ? (
+            <div className="border-t border-border">
+              <DataTablePagination {...pagination} />
+            </div>
+          ) : null}
         </div>
       )}
-
-      {pagination ? <DataTablePagination {...pagination} /> : null}
     </div>
   );
 }
 
-function DataTablePagination({ page, pageSize, total, onPageChange }: PaginationProps) {
+function DataTablePagination({
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+  pageSizeOptions = [25, 50, 100],
+}: PaginationProps) {
+  const { t } = useTranslation();
   const start = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const end = Math.min(total, page * pageSize);
   const lastPage = Math.max(1, Math.ceil(total / pageSize));
+  const pages = buildPageList(page, lastPage);
+
+  const handlePageClick = (n: number) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (n !== page) onPageChange(n);
+  };
+
   return (
-    <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm text-muted-foreground tabular">
-        Показано {start}–{end} из {total}
-      </p>
-      <div className="flex items-center justify-end gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page <= 1}
-          onClick={() => onPageChange(page - 1)}
-        >
-          Назад
-        </Button>
-        <span className="text-sm text-muted-foreground tabular">
-          {page} / {lastPage}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={page >= lastPage}
-          onClick={() => onPageChange(page + 1)}
-        >
-          Далее
-        </Button>
+    <div className="flex flex-col items-stretch gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between md:px-5">
+      {/* Row 1 (mobile): "Showing X-Y of Z" left + "Rows per page [50]" right, space-between.
+          Desktop: same elements but grouped left, gap-x-4. */}
+      <div className="flex items-center justify-between gap-3 sm:flex-wrap sm:justify-start sm:gap-x-4 sm:gap-y-2">
+        <p className="whitespace-nowrap text-sm tabular text-muted-foreground">
+          {t('common.pagination.showing', { from: start, to: end, total })}
+        </p>
+        {onPageSizeChange ? (
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="page-size-select"
+              className="whitespace-nowrap text-sm text-muted-foreground"
+            >
+              {t('common.pagination.rowsPerPage')}
+            </label>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(v) => onPageSizeChange(Number(v))}
+            >
+              <SelectTrigger id="page-size-select" className="h-8 w-[72px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {pageSizeOptions.map((s) => (
+                  <SelectItem key={s} value={String(s)}>
+                    {s}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        ) : null}
       </div>
+
+      {/* Row 2 (mobile): pagination centered. Desktop: right-aligned. */}
+      <Pagination className="mx-0 w-auto justify-center sm:justify-end">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              aria-label={t('common.pagination.prev')}
+              onClick={(e) => {
+                e.preventDefault();
+                if (page > 1) onPageChange(page - 1);
+              }}
+              aria-disabled={page <= 1}
+              className={cn(
+                'cursor-pointer',
+                page <= 1 && 'pointer-events-none opacity-50',
+              )}
+            >
+              <span>{t('common.pagination.prev')}</span>
+            </PaginationPrevious>
+          </PaginationItem>
+          {pages.map((p, i) => {
+            if (p === 'ellipsis-left' || p === 'ellipsis-right') {
+              return (
+                <PaginationItem key={`${p}-${i}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              );
+            }
+            return (
+              <PaginationItem key={p}>
+                <PaginationLink
+                  isActive={p === page}
+                  aria-label={t('common.pagination.goToPage', { page: p })}
+                  onClick={handlePageClick(p)}
+                >
+                  {p}
+                </PaginationLink>
+              </PaginationItem>
+            );
+          })}
+          <PaginationItem>
+            <PaginationNext
+              aria-label={t('common.pagination.next')}
+              onClick={(e) => {
+                e.preventDefault();
+                if (page < lastPage) onPageChange(page + 1);
+              }}
+              aria-disabled={page >= lastPage}
+              className={cn(
+                'cursor-pointer',
+                page >= lastPage && 'pointer-events-none opacity-50',
+              )}
+            >
+              <span>{t('common.pagination.next')}</span>
+            </PaginationNext>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
     </div>
   );
 }
