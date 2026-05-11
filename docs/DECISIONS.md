@@ -15,6 +15,20 @@ A deviation that isn't logged here is a bug.
 
 ---
 
+## 2026-05-11 · Reports — `<KpiCard>` + `<KpiSparkline>` promoted from `features/dashboard/components/` to `src/components/shared/`
+
+1. **Rule** — `design-system-layers.md` import-direction: a Components-layer primitive consumed by ≥ 2 features moves to `src/components/shared/` rather than cross-feature-importing from another `features/` folder.
+2. **Reason** — Prompt 8 (Reports / Summary KPI row) needs the same KPI card visual rhythm as the Dashboard. Two clean options: cross-feature import or shared promotion. The flagged "PanelStates cross-feature import" pattern from Prompt 6 explicitly bumped that primitive to `shared/` for exactly this reason; same precedent here. The component has no dashboard-only props or behavior — it's a pure rendering primitive with `label / value / delta / spark / icon / to` API. No token or API change; only the import path moves. `KpiSparkline` came along since it's `KpiCard`'s only direct dep.
+3. **Scope** — created [`src/components/shared/KpiCard.tsx`](../src/components/shared/KpiCard.tsx) and [`src/components/shared/KpiSparkline.tsx`](../src/components/shared/KpiSparkline.tsx); deleted the originals at `src/features/dashboard/components/`; repointed [`KpiRow.tsx`](../src/features/dashboard/components/KpiRow.tsx) import. Reports module ([`SummaryKpiRow.tsx`](../src/features/reports/components/SummaryKpiRow.tsx)) is the second consumer.
+4. **Review date** — Stable; revisit only if a third feature wants a divergent KPI visual (e.g. different sparkline color tone) — at which point we'd add a `tone` prop, not fork.
+
+## 2026-05-11 · Reports — single canonical `?range=&from=&to=` URL state, shared across Summary and Export tabs
+
+1. **Rule** — Prompt 8 acceptance: "Tab nav between Summary/Export persists range param via URL."
+2. **Reason** — Both tabs need to see the same active date range so the user's "I'm looking at Q1" mental model survives a tab switch. Two ways to wire this: layout-owned state via React Context, or URL as source-of-truth read independently by each page. URL wins because (a) browser back/forward navigates between ranges, (b) deep-link sharing carries the range, (c) tabs nav becomes a plain `<Link>` with the search params copied into the `to` — no React state hand-off. Export's form `dateRange` field is initialized from the URL but doesn't write back (form-local once dirtied), so editing one doesn't surprise the other.
+3. **Scope** — [`src/features/reports/hooks/useReportRangeParam.ts`](../src/features/reports/hooks/useReportRangeParam.ts) (URL parse/serialize), [`ReportsTabsNav.tsx`](../src/features/reports/components/ReportsTabsNav.tsx) (Link preserves search params), [`SummaryPage.tsx`](../src/features/reports/pages/SummaryPage.tsx) + [`ExportForm.tsx`](../src/features/reports/components/ExportForm.tsx) (read).
+4. **Review date** — Stable. Pattern reusable for any future multi-tab feature whose tabs share a primary filter.
+
 ## 2026-05-11 · Students — `StudentPaymentStatus` is a separate type from transaction `PaymentStatus`
 
 1. **Rule** — `PaymentStatus` in [`src/types/domain.ts`](../src/types/domain.ts) was the only payment-status enum. The Prompt 6 spec calls for student-level filters / chips "Все / Paid / Pending / Overdue / Partial" — but `PaymentStatus` doesn't include `'partial'` and does include `'processing'` / `'failed'` / `'refunded'` which only make sense for individual transactions.

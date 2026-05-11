@@ -4,6 +4,66 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-12 — Reports module polish round (ExportForm spacing + data-type radio width + Department donut sizing/legend)
+
+**Summary.** Five small visual fixes on the Reports module surfaces that landed the previous day, all driven by user feedback. None touch logic / data flow — pure layout and typography corrections.
+
+**Files modified.**
+- [`src/features/reports/components/ExportForm.tsx`](../src/features/reports/components/ExportForm.tsx) — three `space-y-2` → `flex flex-col gap-2` swaps on the label-over-control blocks (dateRange / format / grouping). Root cause: shadcn's `<Label>` renders `<label>` which defaults to `display: inline`; Tailwind's `space-y-*` puts `margin-top` on siblings, and vertical margin is ignored on inline elements, so the gap visually collapsed to zero. `flex flex-col gap-2` works regardless of child display. The data-type `<fieldset>` keeps `space-y-2` (legend is block by default).
+- [`src/features/reports/components/ExportForm.tsx`](../src/features/reports/components/ExportForm.tsx) — data-type `<RadioGroup>` className bumped from `grid-cols-1 sm:grid-cols-2` to `grid-cols-1 sm:grid-cols-2 md:grid-cols-4` so Transactions / Students / Overdue / Payouts sit in one row on `md+`.
+- [`src/features/reports/components/DepartmentBreakdownChart.tsx`](../src/features/reports/components/DepartmentBreakdownChart.tsx) — center label was overflowing the donut hole. `formatUZS(298_436_322)` at `text-2xl font-mono` is wider than the 128px inner-circle diameter. Fix: switched to `formatCompact` ("298,4 млн"); moved the currency code "UZS" to the smaller label line below ("Всего получено · UZS"); container gets `px-4 text-center`; big number gets `max-w-[7.5rem] truncate` clamp. Imported `formatCompact` from [`lib/format`](../src/lib/format.ts).
+- [`src/features/reports/components/DepartmentBreakdownChart.tsx`](../src/features/reports/components/DepartmentBreakdownChart.tsx) — donut size bumped: container `h-56` → `h-72` (224 → 288px) across all 5 state placeholders (data / loading / error / offline / empty) so reflow stays consistent; `innerRadius` 64 → 80 / `outerRadius` 92 → 120; max-width clamp loosened from `max-w-[7.5rem]` to `max-w-[9.5rem]` now that the inner hole grew to 160px; big number bumped to `text-2xl md:text-3xl`.
+- [`src/features/reports/components/DepartmentBreakdownChart.tsx`](../src/features/reports/components/DepartmentBreakdownChart.tsx) — legend list restructured from a centered wrapping chip row (`flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm`) to a vertical list. Each row is `flex items-center gap-3` with color dot + dept name on the left (`min-w-0 flex-1 truncate`) and amount right-aligned (`whitespace-nowrap tabular`). Long department names truncate; amount column always sits at a stable right edge.
+
+**Files updated for doc sync.**
+- [`docs/product_states.md`](../docs/product_states.md) — `/reports` flipped from `❌ Placeholder` to `✅` with full scope description for `/reports/summary` and `/reports/export`. Added Foundation rows for the Reports module, the new `reports.ts` MSW handler, the shared KpiCard/KpiSparkline promotion, `<ExpiryCountdown>`, and the `useReportRangeParam` hook. "Outstanding follow-ups" updated: Reports MSW handler does `bucketsInRange` windowing — port to dashboard handler when convenient; recent-exports download links point at placeholder `/mock-downloads/{fileName}`.
+- [`ai_context/AI_CONTEXT.md`](AI_CONTEXT.md) — new "Last updated" entry summarizing the polish round; the Reports feature-module section updated in place to reflect the new donut sizing, center-label clamp behavior, legend layout, and ExportForm spacing rules.
+
+**Verifications.** `npx tsc -b` clean. `npm run lint --max-warnings 0` clean (one earlier `react-hooks/exhaustive-deps` warning on `ByDayTable.items` was fixed by wrapping the initialization in `useMemo`). No build run — no source-of-truth code changed, only visual tweaks.
+
+---
+
+## 2026-05-11 — Prompt 8 (Reports module) shipped end-to-end
+
+**Summary.** Built the Reports / Analytics feature module per spec §10 — two sub-routes under `/reports/*` (Summary and Export), a nested `<ReportsLayout>` with tabs that preserve `?range=&from=&to=` across switches, three Recharts visualizations using scale tokens only (no hex), a sortable paginated by-day DataTable that follows the column-meta header/cell mirroring lesson, an export-job lifecycle with inline polling status (never spinner-only), and a 6-state recent-exports list with `<ExpiryCountdown>`.
+
+**Files added.**
+- `src/features/reports/pages/`: `ReportsLayout.tsx`, `SummaryPage.tsx`, `ExportPage.tsx`.
+- `src/features/reports/components/`: `ReportsTabsNav.tsx`, `SummaryKpiRow.tsx`, `RevenueOverTimeChart.tsx`, `ChannelBreakdownChart.tsx`, `DepartmentBreakdownChart.tsx`, `ByDayTable.tsx`, `ExportForm.tsx`, `RecentExportsList.tsx`, `ExpiryCountdown.tsx`.
+- `src/features/reports/hooks/`: `useSummary.ts`, `useByDay.ts`, `useGenerateExport.ts`, `useExportsList.ts` (+ `useDeleteExport`), `useExportPolling.ts`, `useReportRangeParam.ts`.
+- `src/features/reports/`: `api.ts`, `schemas.ts`.
+- `src/mocks/handlers/reports.ts` — 6 endpoints, 90-day deterministic per-day bucket fixture, in-memory exports `Map` with `setTimeout`-free wall-clock auto-flip from `processing → ready` after 3s.
+
+**Files moved (KpiCard promotion).**
+- New: `src/components/shared/KpiCard.tsx`, `src/components/shared/KpiSparkline.tsx`.
+- Deleted: `src/features/dashboard/components/KpiCard.tsx`, `src/features/dashboard/components/KpiSparkline.tsx`.
+- Repointed: [`features/dashboard/components/KpiRow.tsx`](../src/features/dashboard/components/KpiRow.tsx) import.
+- Logged in [`docs/DECISIONS.md`](../docs/DECISIONS.md) 2026-05-11.
+
+**Files modified.**
+- [`src/router.tsx`](../src/router.tsx) — replaced the `/reports` Placeholder with a nested `<ReportsLayout>` carrying `index → Navigate to "summary"` + `summary → <SummaryPage>` + `export → <ExportPage>`.
+- [`src/mocks/handlers/index.ts`](../src/mocks/handlers/index.ts) — spreads `reportsHandlers`.
+- [`src/lib/i18n/locales/ru.json`](../src/lib/i18n/locales/ru.json) + [`uz.json`](../src/lib/i18n/locales/uz.json) — new `reports.*` namespace, ~110 keys including ICU-plural sets (`kpis.payoutCountUnit`, `recent.rowsLabel`, `expiry.days`, `expiry.hours`).
+- [`docs/DECISIONS.md`](../docs/DECISIONS.md) — two new entries (KpiCard promotion + shared URL range across tabs).
+
+**Lesson-aware details.**
+- ByDayTable columns follow the column-meta rule from `LESSONS.md` (2026-05-11 entry): date + payout columns get `w-[1%] whitespace-nowrap` on BOTH header AND cell; amount + transactions columns mirror `text-right whitespace-nowrap` on both sides. No headers wrap to two lines; no cells break at digit-group spaces.
+- All Money arithmetic in components reads `Number(money.amount) / 100` (per the BigInt-on-the-wire-is-actually-a-number lesson). `formatMoney` not used directly because Reports works in UZS major units via `formatUZS(tiyinsToUzs(n))` for consistency with Dashboard.
+- No `position: sticky` on any chrome — DateRangePicker triggers, ReportsTabsNav, the ExportForm submit button all flow inline.
+- `<WriteButton>` on every write action (Сгенерировать, Удалить in recent exports). Offline tooltip auto-handled.
+- All chart fills via `hsl(var(--brand-600))` / `hsl(var(--success-600))` / etc. — zero hex in new code.
+- Recharts `tick.fontSize: 13` everywhere; tooltip `contentStyle.fontSize: 13`.
+- Every chart, KPI row, by-day table, recent-exports list implements all 6 states (loading / empty / error+retry / offline / partial / data) via `<PanelStates>` primitives.
+- `?range=&from=&to=` URL state is the single source of truth shared across tabs — switching from Summary to Export keeps the active range. ExportForm initializes its `dateRange` field from URL state and remains form-local after first edit. Logged in DECISIONS.
+
+**Verifications.** `npx tsc -b` clean. `npm run lint --max-warnings 0` clean. `npm run build` clean (only chunk-size advisory unchanged). §0.9 audit greps clean across the new code (all `text-xs` hits map to allow-list: payout pill chip body, KpiCard uppercase tracking-wider category label). Repo-wide regression greps (`text-[1[012]px]`, `h-screen`, `sticky.*thead`, `<svg`) zero. Dev server boots without compile errors.
+
+**Open follow-ups.**
+- Recent-exports download links target `/mock-downloads/{fileName}` — no actual file generation; wire client-side CSV/NDJSON or backend stream when exporting becomes real.
+- Dashboard MSW handler still ignores `from/to`; Reports handler shows the windowed-bucket pattern that could be ported when convenient.
+
+---
+
 ## 2026-05-11 — Build fix: `<StudentsTable>` `pagination` prop type missing `onPageSizeChange` / `pageSizeOptions`
 
 **Summary.** `npm run build` failed with `TS2322: Object literal may only specify known properties, but 'onPageSizeChange' does not exist...` at [`StudentsListPage.tsx:225`](../src/features/students/pages/StudentsListPage.tsx#L225). `<StudentsListPage>` was already wired with the URL-synced per-page selector (the Payments-module polish round propagated this to Students / Transactions / Staff / Pending), but `<StudentsTable>`'s local `pagination` prop interface at [`StudentsTable.tsx:22-27`](../src/features/students/components/list/StudentsTable.tsx#L22-L27) was a stale subset carrying only `page / pageSize / total / onPageChange`. The underlying `<DataTable>` `PaginationProps` already accepts the two optional fields, and `<StudentsTable>` just forwards `pagination={pagination}` verbatim — so the fix is a pure type-level extension on the wrapper. No runtime change.
