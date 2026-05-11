@@ -133,7 +133,10 @@ export function StudentsTable({
       },
       {
         id: 'amount',
-        meta: { cellClassName: 'text-right' },
+        meta: {
+          headerClassName: 'text-right',
+          cellClassName: 'text-right whitespace-nowrap',
+        },
         header: () => t('students.list.columns.amount'),
         cell: ({ row }) => <AmountDisplay value={row.original.currentBalance} />,
       },
@@ -145,7 +148,10 @@ export function StudentsTable({
       },
       {
         id: 'lastPayment',
-        meta: { headerClassName: 'w-[1%]' },
+        meta: {
+          headerClassName: 'w-[1%] whitespace-nowrap',
+          cellClassName: 'whitespace-nowrap',
+        },
         header: () => t('students.list.columns.lastPayment'),
         cell: ({ row }) =>
           row.original.lastPaymentAt ? (

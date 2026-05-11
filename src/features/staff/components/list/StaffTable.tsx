@@ -25,6 +25,8 @@ interface Props {
     pageSize: number;
     total: number;
     onPageChange: (p: number) => void;
+    onPageSizeChange?: (size: number) => void;
+    pageSizeOptions?: number[];
   };
 }
 

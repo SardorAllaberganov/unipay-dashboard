@@ -15,6 +15,9 @@ import {
 import { StaffTable } from '../components/list/StaffTable';
 import { InviteStaffDialog } from '../components/list/InviteStaffDialog';
 
+const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+const DEFAULT_PAGE_SIZE = 50;
+
 const ALLOWED_ROLES: Array<Role | 'all'> = [
   'all',
   'owner',
@@ -52,9 +55,13 @@ export default function StaffListPage() {
     [params]
   );
   const page = Math.max(1, Number(params.get('page') ?? '1'));
+  const pageSizeParam = Number(params.get('pageSize') ?? DEFAULT_PAGE_SIZE);
+  const pageSize = (PAGE_SIZE_OPTIONS as readonly number[]).includes(pageSizeParam)
+    ? pageSizeParam
+    : DEFAULT_PAGE_SIZE;
 
   const updateParams = useCallback(
-    (next: Partial<StaffFiltersValue & { page: number }>) => {
+    (next: Partial<StaffFiltersValue & { page: number; pageSize: number }>) => {
       setParams((prev) => {
         const sp = new URLSearchParams(prev);
         if (next.search !== undefined) {
@@ -69,12 +76,17 @@ export default function StaffListPage() {
           if (next.status !== 'all') sp.set('status', next.status);
           else sp.delete('status');
         }
+        if (next.pageSize !== undefined) {
+          sp.set('pageSize', String(next.pageSize));
+          sp.delete('page');
+        }
         if (next.page !== undefined) {
           if (next.page > 1) sp.set('page', String(next.page));
           else sp.delete('page');
         }
         if (
           next.page === undefined &&
+          next.pageSize === undefined &&
           (next.search !== undefined ||
             next.role !== undefined ||
             next.status !== undefined)
@@ -92,7 +104,7 @@ export default function StaffListPage() {
     status: filters.status,
     search: filters.search,
     page,
-    pageSize: 50,
+    pageSize,
   });
 
   const items = data?.items ?? [];
@@ -135,12 +147,14 @@ export default function StaffListPage() {
             : undefined
         }
         pagination={
-          total > 50
+          total > Math.min(...PAGE_SIZE_OPTIONS)
             ? {
                 page,
-                pageSize: 50,
+                pageSize,
                 total,
                 onPageChange: (p) => updateParams({ page: p }),
+                onPageSizeChange: (ps) => updateParams({ pageSize: ps }),
+                pageSizeOptions: [...PAGE_SIZE_OPTIONS],
               }
             : undefined
         }

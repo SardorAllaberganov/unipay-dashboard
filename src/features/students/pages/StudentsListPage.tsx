@@ -18,6 +18,8 @@ import { ChangeDepartmentDialog } from '../components/list/ChangeDepartmentDialo
 
 const VALID_PAYMENT_STATUSES = new Set<StudentPaymentStatus>(['paid', 'partial', 'pending', 'overdue']);
 const VALID_EDU_TYPES = new Set<EducationType>(['full-time', 'part-time', 'evening', 'remote']);
+const PAGE_SIZE_OPTIONS = [25, 50, 100] as const;
+const PAGE_SIZE_DEFAULT = 50;
 
 function parseListFromParam(value: string | null): string[] {
   if (!value) return [];
@@ -67,6 +69,10 @@ export default function StudentsListPage() {
 
   const filters = useMemo(() => parseFiltersFromParams(params), [params]);
   const page = Math.max(1, Number(params.get('page') ?? '1'));
+  const pageSizeParam = Number(params.get('pageSize') ?? PAGE_SIZE_DEFAULT);
+  const pageSize = (PAGE_SIZE_OPTIONS as readonly number[]).includes(pageSizeParam)
+    ? pageSizeParam
+    : PAGE_SIZE_DEFAULT;
 
   const setFilters = useCallback(
     (next: StudentsFiltersValue) => {
@@ -87,6 +93,18 @@ export default function StudentsListPage() {
     [setParams],
   );
 
+  const setPageSize = useCallback(
+    (next: number) => {
+      setParams((prev) => {
+        const sp = new URLSearchParams(prev);
+        sp.set('pageSize', String(next));
+        sp.delete('page');
+        return sp;
+      });
+    },
+    [setParams],
+  );
+
   const departmentsQuery = useDepartments();
   const departments = departmentsQuery.data?.items ?? [];
 
@@ -97,7 +115,7 @@ export default function StudentsListPage() {
     paymentStatuses: filters.paymentStatuses,
     educationTypes: filters.educationTypes,
     page,
-    pageSize: 50,
+    pageSize,
   });
 
   const items = studentsQuery.data?.items ?? [];
@@ -198,8 +216,15 @@ export default function StudentsListPage() {
             : undefined
         }
         pagination={
-          total > 50
-            ? { page, pageSize: 50, total, onPageChange: setPage }
+          total > Math.min(...PAGE_SIZE_OPTIONS)
+            ? {
+                page,
+                pageSize,
+                total,
+                onPageChange: setPage,
+                onPageSizeChange: setPageSize,
+                pageSizeOptions: [...PAGE_SIZE_OPTIONS],
+              }
             : undefined
         }
         selectedIds={selectedIds}
