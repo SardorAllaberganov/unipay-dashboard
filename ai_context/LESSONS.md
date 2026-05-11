@@ -6,6 +6,68 @@ Review at session start (or via `/start_task`). Most recent on top.
 
 ---
 
+## 2026-05-11 · MSW responses containing `Money.amount: bigint` throw on `HttpResponse.json` — patch `BigInt.prototype.toJSON` globally
+
+**Rule.** Any MSW handler that serializes domain models containing `Money` (or any other `bigint` field) needs JSON to know how to handle bigint. The standard fix: patch `BigInt.prototype.toJSON` once in [`src/main.tsx`](../src/main.tsx) before anything else runs:
+
+```ts
+(BigInt.prototype as unknown as { toJSON: (this: bigint) => number }).toJSON = function (this: bigint) {
+  return Number(this);
+};
+```
+
+This converts bigint to a JSON number when `JSON.stringify` runs (which `HttpResponse.json` and our `send` request body use). Safe for UZS tiyins / USD cents because the values fit comfortably under `Number.MAX_SAFE_INTEGER` (9e15) — a 10 billion UZS payment is 1e12 tiyins.
+
+**Why.** Default JavaScript `JSON.stringify({ amount: 5n })` throws `TypeError: Do not know how to serialize a BigInt`. The Students module hit this immediately: every list / detail / schedule / transactions endpoint embeds `Money` objects with bigint amounts, and the list-page query failed before rendering. The visible symptom was the `<ErrorState>` rendering with literal text "states.errorTitle" / "states.errorDescription" because those keys are stale (the component used pre-`common.states.*` paths). Two bugs stacked: the underlying fetch failure, AND the i18n keys in `<ErrorState>` / `<OfflineState>` that prevent the user from seeing a real error message.
+
+**How to apply.** When designing a new MSW handler that uses Money: relax — the global patch covers it. When designing a real backend API: the wire format for Money should be `{ amount: <number>, currency: 'UZS' | 'USD' }` with raw tiyins/cents as a JS number (since UZS amounts stay well below 2^53). `formatMoney` in [`src/lib/format.ts`](../src/lib/format.ts) already accepts both `bigint` and `number` — the type system still says `bigint` is the canonical in-memory form, but at runtime through MSW the value is `number`. No need to rehydrate at the client unless a consumer explicitly needs `typeof === 'bigint'` (rare; only `formatMoney` checks, and it handles both cases).
+
+Also fixed in this batch: [`<ErrorState>`](../src/components/shared/ErrorState.tsx) and [`<OfflineState>`](../src/components/shared/OfflineState.tsx) referenced `t('states.errorTitle')` / `t('states.errorDescription')` / `t('states.offlineTitle')` / `t('states.offlineDescription')` / `t('common.retry')` — all stale. The canonical keys live at `common.states.errorTitle` / `common.states.errorBody` / `system.offline.title` / `system.offline.body` / `common.actions.retry`. When i18next can't find a key, it renders the key path verbatim, which is what masked the underlying serialization bug. **If a user reports "literal key text on screen," the i18n key is wrong AND there's likely a real error underneath bringing that state into view.**
+
+---
+
+## 2026-05-11 · Collapse "actions" columns to content via `meta: { headerClassName: 'w-[1%]' }` — never trust `table-layout: auto` to keep icon-only cells flush right
+
+**Rule.** Whenever a `<DataTable>` column holds a single icon-only control (kebab, status badge, year number, narrow chip) and the consumer wants it flush against the table's right edge, set `meta: { headerClassName: 'w-[1%]', cellClassName: 'pr-3' }` on the column. The `w-[1%]` is a known table-layout idiom that tells the browser "collapse this column to its content"; `pr-3` trims the default `px-4` right padding so the icon's optical center is closer to the visible right edge.
+
+This requires the `ColumnMeta` declaration-merge in [`DataTable.tsx`](../src/components/shared/DataTable.tsx) (`declare module '@tanstack/react-table' { interface ColumnMeta<TData, TValue> { headerClassName?: string; cellClassName?: string } }`) and DataTable's `<TableHead>` / `<TableCell>` reading those into `className`.
+
+**Why.** With `table { width: 100% }` and `table-layout: auto` (default), the browser distributes residual width to columns based on content sizing. An actions column with an `sr-only` header and only a 36×36 kebab inside is the smallest column, but `auto` still gives it whatever's left over after other columns claim theirs — which on narrow viewports + many other columns drifts the kebab position visibly between rows. User reported: "some kebabs are not properly right-aligned." With `w-[1%]`, the column collapses to its content + padding, the kebab sits at a stable position next to the right edge, and every row's kebab lines up vertically.
+
+**How to apply.** Touched the staff page in this batch ([`StaffTable.tsx`](../src/features/staff/components/list/StaffTable.tsx) actions column). Re-applied across the entire Students module for actions / select-checkbox / year / status / channel / receipt / row-index columns. Also useful for `text-right` amount columns — `meta: { cellClassName: 'text-right' }` keeps them right-aligned without inline className overrides. Default reaching: any column with content shorter than its label + padding-rhythm.
+
+---
+
+## 2026-05-11 · NBSP in JS regex character classes triggers `no-irregular-whitespace` ESLint — use ` ` escape
+
+**Rule.** When you write a regex that needs to match the non-breaking space (U+00A0) — typically because you're parsing a UZS amount like `"5 000 000"` where the digit-group separator may be NBSP — write the character class as `[\s ]` (with the escape sequence) rather than `[\s ]` (with a literal NBSP). ESLint's `no-irregular-whitespace` rule fires on the literal NBSP and points at column 35 with an inscrutable "Irregular whitespace not allowed" error.
+
+**Why.** Russian and Uzbek locale formatting uses NBSP between digit groups (`Intl.NumberFormat('ru', ...).format(5000000)` → `"5 000 000"` with NBSPs). The regex needs to strip both regular whitespace AND NBSP to convert back to `Number`. The literal-NBSP form looks indistinguishable from a regular space in most editors, so the lint error is the first visible signal something's wrong. The ` ` escape is functionally identical to the matching engine but trivially auditable in source.
+
+**How to apply.** Any amount-parsing helper that handles user input from a `<Input>` whose displayed value flowed through `formatMoney` / `Intl.NumberFormat` needs this — see [`parseAmountToMoney` in AddStudentPage](../src/features/students/pages/AddStudentPage.tsx) and the parallel helpers in [`ScheduleTab.tsx`](../src/features/students/components/profile/ScheduleTab.tsx) + [`TemplateForm.tsx`](../src/features/students/components/schedules/TemplateForm.tsx). If the lint error fires on a regex line, `od -c` the line to confirm `302 240` bytes (UTF-8 for U+00A0) — if you see them, replace the literal with ` `.
+
+---
+
+## 2026-05-11 · §0.9 audit "Unicode arrows" false-positives on Cyrillic + Russian em-dashes — known limitation, log new noise in MSW fixtures
+
+**Rule.** The `git grep -rnE '[←→↑↓»]'` audit (run via [`scripts/audit-discipline.sh`](../scripts/audit-discipline.sh)) reports byte-collision matches on Cyrillic letters and idiomatic Russian em-dashes (`—`) when grep operates in byte mode. **These are false positives.** Real Unicode arrows (`←→↑↓`) in source code must still be zero, but the audit's reported hits inside Cyrillic strings and em-dashes inside Russian copy are NOT actionable.
+
+**Why.** macOS / Linux `grep` defaults vary by locale. Even with `LC_ALL=en_US.UTF-8`, the character class `[←→↑↓»]` expanded as bytes can overlap with Cyrillic UTF-8 byte sequences (Cyrillic codepoints in U+0400..U+04FF encode as `0xD0 0x80..0xD3 0xBF`, and the arrow codepoints encode as `0xE2 0x86 0x90..0xE2 0x86 0x93`). Some intermediate bytes alias. Em-dashes (`—`, U+2014) and en-dashes (`–`, U+2013) also fire under the same grep pattern in some configurations. Pre-existing repo state.
+
+**How to apply.** When the audit reports "Unicode arrows in copy" hits, scan the output for ACTUAL `←→↑↓»` characters (rare) — those are real violations. Cyrillic lines and em-dashes in Russian-language fixture copy can be ignored. For my own new code (TypeScript/JSX), strip em-dashes from line comments to minimize false positives, but leave them in Russian user-facing strings (em-dash is correct Russian typography in copy). Long term: replace the audit's `grep` with a Python or Node script that respects UTF-8 boundaries.
+
+---
+
+## 2026-05-11 · Generic `<TreePicker>` over flat `TreeItem<TMeta>[]` is the right primitive — one component, four call sites
+
+**Rule.** A tree-shaped picker (department / category / region) with multi-select-with-subtree-toggle / single-select / leafOnly / search-with-ancestor-expand / optional renderMeta — all in one component. API: `TreeItem<TMeta>[]` flat array (each item has `parentId: string | null`), `mode: 'single' | 'multi'`, optional `subtreeToggle`, `leafOnly`, `renderMeta`. Lives at [`src/components/shared/TreePicker.tsx`](../src/components/shared/TreePicker.tsx).
+
+**Why.** Three feature modules currently render department-tree pickers: organization (drag-drop tree editor — different problem), staff (multi-select access picker), students (filter / Add / Apply Template / Change Department — 4 separate call sites in one module). Forking the component per use case multiplies the surface area; a generic shape supports all four students cases without per-site code. The `TMeta` generic lets callers attach domain data (e.g. `Department` with `studentCount`) that `renderMeta` can surface as a trailing chip without baking it into the picker's core.
+
+**How to apply.** New picker need? Use `<TreePicker>` first. Adapt the data into a `TreeItem[]` shape with `id`, `parentId`, `label`, optional `meta`, optional `disabled`. Pick `mode` and constraints. The picker handles search, expand-on-match, subtree-toggle, single-select highlight (brand-50 / brand-700), and `disabled` row state for free. Promotion: when the staff feature's `DepartmentTreePicker` gets touched again, refactor it to consume the shared TreePicker (its multi-select-with-subtree-toggle semantics are exactly what students uses for filter).
+
+---
+
 ## 2026-05-11 · No `position: sticky` on scroll headers — filter bars, page-level toolbars, anything that pins to viewport top
 
 **Rule.** Headers and filter bars inside scrollable surfaces (`<main>`, page tabs, list pages) **flow with content** — do not pin them with `position: sticky` (or any `top-0 z-*` + `backdrop-blur` recipe). When the user scrolls down past the filter row, it scrolls away with everything else.

@@ -15,6 +15,48 @@ A deviation that isn't logged here is a bug.
 
 ---
 
+## 2026-05-11 · Students — `StudentPaymentStatus` is a separate type from transaction `PaymentStatus`
+
+1. **Rule** — `PaymentStatus` in [`src/types/domain.ts`](../src/types/domain.ts) was the only payment-status enum. The Prompt 6 spec calls for student-level filters / chips "Все / Paid / Pending / Overdue / Partial" — but `PaymentStatus` doesn't include `'partial'` and does include `'processing'` / `'failed'` / `'refunded'` which only make sense for individual transactions.
+2. **Reason** — A student's overall position is an aggregate of multiple schedule rows. The natural states are paid (all rows paid), partial (some rows paid), pending (no rows paid yet, no overdue), overdue (any row overdue). Reusing `PaymentStatus` would force `'partial'` into it (polluting transaction tone-mapping with a state that doesn't apply to individual txns) or invent a label override. Cleanest: a separate `StudentPaymentStatus = 'paid'|'partial'|'pending'|'overdue'`. Same 4 values reused for `ScheduleRowStatus`. Added `'partial'` variant to `<StatusBadge>` (`CircleDot` icon + `info` tone).
+3. **Scope** — [`src/types/domain.ts`](../src/types/domain.ts), [`src/components/shared/StatusBadge.tsx`](../src/components/shared/StatusBadge.tsx), [`src/lib/i18n/locales/{ru,uz}.json`](../src/lib/i18n/locales/).
+4. **Review date** — Stable. Revisit only if the backend collapses transaction-status + aggregate-status into a single field (unlikely; they have different lifecycles).
+
+## 2026-05-11 · Students — Year/Class/Group as a single `<TreePicker leafOnly>` leaf-select, not 3 cascading Selects
+
+1. **Rule** — PRD §8.3 says "Year / Class / Group — cascading dropdowns based on department structure" which reads as three parallel `<Select>` fields.
+2. **Reason** — The org fixture organizes departments as a 4-level tree (Faculty → Department → Year → Group); year and group are NODES inside that tree, not parallel attributes on a student. Three cascading Selects would hard-code the 4-level shape — but `Department.type` is just a label, not a structural guarantee. Picking a group-leaf in the `<TreePicker>` resolves year via the leaf's parent. One field, one validation, naturally adapts to deeper or shallower trees. Same picker handles the "Change Department" bulk action and the "Apply Template" department targeting (multi mode there).
+3. **Scope** — [`src/features/students/components/add/AcademicInfoSection.tsx`](../src/features/students/components/add/AcademicInfoSection.tsx), [`src/features/students/components/list/ChangeDepartmentDialog.tsx`](../src/features/students/components/list/ChangeDepartmentDialog.tsx), [`src/features/students/components/schedules/TemplateForm.tsx`](../src/features/students/components/schedules/TemplateForm.tsx), [`src/features/students/components/list/StudentsFilters.tsx`](../src/features/students/components/list/StudentsFilters.tsx), [`src/features/students/components/profile/EditStudentSheet.tsx`](../src/features/students/components/profile/EditStudentSheet.tsx).
+4. **Review date** — Revisit if compliance / ministry exports need year + class + group as discrete fields on a student record.
+
+## 2026-05-11 · Students — Mobile bottom tab nav acceptance check passes vacuously
+
+1. **Rule** — Prompt 6 acceptance: "Student profile route on mobile: bottom tab nav hidden (verify `appShellContext.isDetailRoute === true`), `<DetailActionBar>` visible at bottom."
+2. **Reason** — The app has no mobile bottom tab nav today (AI_CONTEXT.md documents this). `<AppShellContext>` exposes `onboardingActive` only — no `isDetailRoute`. The acceptance check is vacuously satisfied: there is nothing to hide, and `<StudentDetailActionBar>` correctly renders as the only fixed-bottom chrome. Adding `setIsDetailRoute` as forward-compat invents an API no consumer needs yet — postponed until the tab nav actually ships.
+3. **Scope** — [`src/components/layout/AppShellContext.tsx`](../src/components/layout/AppShellContext.tsx) (unchanged). [`src/features/students/pages/StudentProfilePage.tsx`](../src/features/students/pages/StudentProfilePage.tsx) does NOT call any `setIsDetailRoute`.
+4. **Review date** — When mobile bottom tab nav lands (post-Prompt 12), extend AppShellContext with `isDetailRoute` + setter and mirror the onboarding pattern.
+
+## 2026-05-11 · Students — `xlsx` dependency added (dynamic-imported only)
+
+1. **Rule** — Each new top-level dependency widens the supply-chain surface; needs explicit justification.
+2. **Reason** — Import wizard Step 1 generates a downloadable xlsx template (Students + Instructions sheets); Step 3 generates an error-report xlsx for the user to fix offline. Both are user-facing requirements from §8.4. Hand-rolling xlsx is hostile to the binary format; `xlsx` (SheetJS Community) is the industry-standard reader/writer. Mitigation: every consumer uses `await import('xlsx')` at the call site, so the library ships as its own ~142 KB gzip chunk that loads only when the user clicks "Скачать Excel-шаблон" or "Скачать отчёт об ошибках". Main bundle unaffected.
+3. **Scope** — [`package.json`](../package.json), [`src/features/students/components/import/Step1Download.tsx`](../src/features/students/components/import/Step1Download.tsx), [`src/features/students/pages/ImportStudentsPage.tsx`](../src/features/students/pages/ImportStudentsPage.tsx).
+4. **Review date** — Stable. The dynamic-import discipline matches the existing `canvas-confetti` pattern.
+
+## 2026-05-11 · Students — `useDepartments` consumed cross-feature (deferred shared promotion)
+
+1. **Rule** — `.claude/rules/design-system-layers.md` import direction: features should not consume other features' Components, Patterns, or Screens.
+2. **Reason** — `useDepartments` is a data hook, not a presentation primitive. Department state is a single org-level resource that multiple features need (staff already imports it; students needs it for 4 separate pickers). Promoting to `src/hooks/` requires deciding the right location and a small refactor of organization's own consumer. Acceptable velocity tradeoff — flagged for cleanup when a third consumer needs it. Same call as the earlier `PanelStates` deviation (now resolved).
+3. **Scope** — students imports `useDepartments` from `@/features/organization/hooks/useDepartments` in 5 places (list, Add, EditSheet, TemplateForm, ChangeDeptDialog); staff does the same in `DepartmentTreePicker`.
+4. **Review date** — Promote when Prompt 7 (Transactions) ships and needs department filtering. Organization's `DepartmentsPage` becomes the canonical writer; everyone else reads via the shared hook.
+
+## 2026-05-11 · Students — `TemplateForm` defers per-department amounts + individual studentIds picker
+
+1. **Rule** — Prompt 6 / PRD §8.5: template form supports amountMode 'single' OR 'per-department' (different amounts per kafedra), and the appliesTo selection should include "individual student multi-select" alongside departments + years.
+2. **Reason** — Both are real future requirements but neither is exercised by any of the current 3 pre-seeded templates or the typical demo flow. Per-dept amount editing requires a sub-form (per-row Combobox for department + Input for amount, with add/remove); individual studentIds picker requires a searchable multi-select Combobox over 200+ students. Both add real surface area and review time. The MSW handler + `studentsApi.applyTemplate` + `useApplyTemplate` already accept the full shape (`perDepartmentAmounts: Array<{ departmentId, amount }>` and `appliesTo.studentIds: string[]`) — only the UI is deferred. Single-mode amount editing covers the canonical "Tuition 2026 S1, 5 000 000 UZS" template, which is the realistic 80% case.
+3. **Scope** — [`src/features/students/components/schedules/TemplateForm.tsx`](../src/features/students/components/schedules/TemplateForm.tsx) — `amountMode='per-department'` toggle still renders but shows a "use post-save editing" hint instead of per-dept inputs. `appliesTo.studentIds` always submitted as `[]`.
+4. **Review date** — When a customer asks for non-uniform tuition per kafedra, add the per-dept amount sub-form. When the use case "apply this template to these 5 specific students" comes up, add a `<StudentMultiPicker>` searchable Combobox over `useStudents`.
+
 ## 2026-05-11 · Deploy — MSW ships in production builds (demo deploy)
 
 1. **Rule** — Implicit convention from Prompt 0 v2.0: MSW is a dev-time mock, gated to `import.meta.env.DEV` in [`src/main.tsx`](../src/main.tsx). Reinforced by `STYLE_DISCIPLINE.md` posture that production builds talk to a real backend.
