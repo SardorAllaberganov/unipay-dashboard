@@ -4,6 +4,23 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-11 — DataTable per-row cell merging (`meta.cellColSpan`) + staff pending-row badge/kebab merge
+
+**Summary.** Reported alignment issue: in the staff list, the "Ожидает" badge in pending rows sat further from the kebab than the wider "Активен"/"Неактивен" badges did in non-pending rows. After several iterations (right-align, layout-only spacer column), settled on a structural fix: merge the last two `<td>`s for pending rows. Added a new `meta.cellColSpan: (row) => number` field to the shared `DataTable`'s `ColumnMeta` augmentation. The body row renderer walks cells with a `skip` counter — when a cell sets `cellColSpan > 1` for that row, the next N-1 cells are skipped and the rendered `<TableCell>` gets a `colSpan` attribute. Staff table's status column now uses `cellColSpan: (row) => row.status === 'pending' ? 2 : 1`; the pending-row status cell renders a `flex items-center justify-between` container with the badge on the left and the kebab on the right, sharing the right-edge of the row. Non-pending rows keep the standard 6-column layout (badge in status td, kebab in actions td). The intermediate `inviteResend` spacer column was removed entirely.
+
+**Files written.**
+- Modified: [`src/components/shared/DataTable.tsx`](../src/components/shared/DataTable.tsx) — `ColumnMeta.cellColSpan` declaration; body row mapping replaced with an imperative `for` loop that respects `skip` counter and emits `colSpan` on the rendered TableCell.
+- Modified: [`src/features/staff/components/list/StaffTable.tsx`](../src/features/staff/components/list/StaffTable.tsx) — status column meta `{ cellColSpan, cellClassName: 'pr-3' }`; cell renderer branches on `row.status === 'pending'` (merged badge+kebab vs plain badge).
+- i18n: `staff.row.resendAria` key added in RU + UZ (leftover from a discarded resend-button iteration; harmless, no consumer).
+
+**Verifications.** typecheck · `eslint --max-warnings 0` — clean.
+
+**Lessons.**
+- TanStack React Table doesn't expose per-row colSpan directly, but `ColumnMeta` can carry a `(row) => number` callback that the DataTable body renderer evaluates per row. A `skip` counter on the cell loop is enough to honor it without touching column definitions globally.
+- "Merge cells to align tail content" is sometimes the cleanest fix when adjacent columns have varying widths and want to share a right edge — beats fiddling with text-align / spacer columns / cell padding.
+
+---
+
 ## 2026-05-11 — Students module: second polish round (Edit-as-page, action-bar grouping, mobile overflow fix, native date input, Transactions mobile card)
 
 **Summary.** Another full sweep of the Students module driven by a surface-by-surface review by the user. Highlights:
