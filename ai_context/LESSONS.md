@@ -6,6 +6,22 @@ Review at session start (or via `/start_task`). Most recent on top.
 
 ---
 
+## 2026-05-11 · No `position: sticky` on scroll headers — filter bars, page-level toolbars, anything that pins to viewport top
+
+**Rule.** Headers and filter bars inside scrollable surfaces (`<main>`, page tabs, list pages) **flow with content** — do not pin them with `position: sticky` (or any `top-0 z-*` + `backdrop-blur` recipe). When the user scrolls down past the filter row, it scrolls away with everything else.
+
+This extends the existing §0.5 rule ("No sticky on detail-page header") and §0.9 rule ("No `position: sticky` on `<thead>`") to **all** page-level chrome: filter rows, search bars, action toolbars above tables, etc. The only sticky element currently sanctioned in the app is the onboarding step indicator inside `<OnboardingLayout>` — that's a wizard chrome, not a content header.
+
+**Why.** Sticky filter bars feel useful in theory but cause real problems in practice:
+- They eat ~50–60px of vertical viewport, which matters most on mobile where the user has 600–800px to begin with.
+- The `bg-background/95 backdrop-blur` recipe creates a translucent strip that obscures the first row of data underneath as the user scrolls.
+- They make `position: sticky` z-index conflicts likely with dropdowns, sheets, and toasts that render through portals.
+- Users on small screens have already adapted to scrolling back up to filter — the sticky bar doesn't save real time, it just adds layout fragility.
+
+**How to apply.** When adding a filter row above a table or list, render it as a normal flow element with `mb-4` (or whatever gap looks right) above the data. Do **not** add `sticky top-0`, `z-10`, `backdrop-blur`, or `bg-background/95` to lock it in place. Audit grep before merging: `git grep -nE 'sticky\\s+top-' src/features/` should return only the onboarding step indicator. If a new use case truly needs sticky chrome, log it as a §0.5 deviation in DECISIONS.md with a screen-recording justification.
+
+---
+
 ## 2026-05-11 · MSW under a Vite sub-path deploy — pass `serviceWorker.url` built from `BASE_URL`
 
 **Rule.** Whenever `vite.config` sets `base` to anything other than `/` (GitHub Pages sub-path, Netlify alias, sub-directory CDN), the MSW worker registration must point at the same prefix. Pass `serviceWorker: { url: \`${import.meta.env.BASE_URL}mockServiceWorker.js\` }` to `worker.start()`. The default registration at `/mockServiceWorker.js` will 404 silently and MSW will no-op every request, masquerading as "the backend doesn't respond."

@@ -4,6 +4,71 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-11 — Horizontal-padding alignment: Dashboard / Org / Staff use main's padding only
+
+**Summary.** Reported visual inconsistency: staff pages had more horizontal padding than Dashboard and Organization at every viewport. Root cause: Dashboard's `<DashboardPage>` and `<OrganizationLayout>` wrap their content in `<div className="space-y-6">` (no horizontal padding), letting `<main>` `p-4 md:p-6` provide the only horizontal rhythm. Staff pages added `px-4 md:px-6` on TOP of main's padding — doubling it. Fixed by removing the wrapper `px-*` from both [`StaffListPage`](../src/features/staff/pages/StaffListPage.tsx) (now just `pb-8`) and the 4 wrapper variants of [`StaffDetailPage`](../src/features/staff/pages/StaffDetailPage.tsx) (loading / not-found / error / data — now just `pb-12`). All three modules now render at 16px each side on mobile and 24px each side on desktop. Established convention: page wrappers contribute no horizontal padding; they only manage vertical/bottom space (e.g. `pb-12` for Pattern B's no-action-bar clearance).
+
+**Files written.**
+- Modified: [`src/features/staff/pages/StaffListPage.tsx`](../src/features/staff/pages/StaffListPage.tsx) — wrapper `px-4 pb-8 md:px-6` → `pb-8`.
+- Modified: [`src/features/staff/pages/StaffDetailPage.tsx`](../src/features/staff/pages/StaffDetailPage.tsx) — all 4 wrapper variants `px-4 pb-12 md:px-6` → `pb-12`.
+
+**Verifications.** typecheck · lint --max-warnings 0 — both clean.
+
+**Lessons.**
+- Page-level wrappers should NOT add horizontal padding when `<main>` already provides it. The double-padding pattern is easy to introduce when copy-pasting from older code; the fix is to lean on the shell for horizontal rhythm and only override per-page when there's a specific reason (max-width container, edge-to-edge tables, etc.).
+
+---
+
+## 2026-05-11 — Prompt 5 (Staff Members module) + drag-drop UX overhaul + DataTable extension + shared primitives
+
+**Summary.** Shipped the Staff Members module end-to-end in two passes. The first build did the spec literally (list + detail page + a quick-view Sheet from list rows). The user then asked for a rebuild: drop the Sheet, list rows navigate to the full detail page, identity card merged into Profile tab, 4 tabs (Profile / Role & Permissions / Activity / Sessions), proper 2-step destructive flows (DeleteAccount with type-email-to-confirm, TransferOwnership with type-`TRANSFER`-to-confirm), live permission diff in EditRoleDialog, cross-tab sessions sync. Along the way: `<DataTable>` was extended with `rowHref` (cmd/middle/keyboard-click semantics) so staff list rows are real links; `<DetailPageSkeleton>` shared primitive added; `<ConfirmDialog>` had a long-standing default-label bug fixed (`common.cancel` / `common.confirm` returned the literal key strings — the actual keys live at `common.actions.cancel` / `common.actions.confirm`); Departments drag-drop UX overhauled (split sensors so desktop drag is instant, `<DragOverlay>` portaled, root drop banner absolute-positioned to eliminate layout shift). Sticky-on-scroll lesson added — the staff filter bar had `sticky top-0 backdrop-blur` which was wrong; new rule: only the onboarding step indicator is allowed to be sticky.
+
+**Files written.**
+- New module: [`src/features/staff/`](../src/features/staff/) — 2 pages, 7 detail components (`StaffDetailHeader`, `StaffDetailKebab`, `ProfileTab`, `RoleAndPermissionsTab`, `ActivityLogTab`, `SessionsTab`, plus an internal IdentityCard that was later merged into ProfileTab and deleted), 5 list components (`StaffFilters`, `StaffTable`, `StaffMobileCard`, `StaffRowKebab`, `InviteStaffDialog`), 9 dialogs (`EditRoleDialog` rewritten as single-screen RadioGroup, `EditAccessDialog` with mode toggle, `DeactivateStaffDialog`, `DeleteInviteDialog`, `DeleteAccountDialog` 2-step, `TransferOwnershipDialog` 2-step, `RevokeSessionDialog`, `RevokeAllOthersDialog`), 3 shared sub-components (`StaffAvatar`, `DepartmentTreePicker`, `DepartmentsAccessChips`), 9 hooks (`useStaff` paginated list, `useStaffById`, `useStaffActivity` w/ filter params, `useStaffSessions` w/ cross-tab sync, `useStaffMutations` exporting all mutation hooks), `schemas.ts` (Zod factories for invite/role/access/profile/delete/transfer/revoke), `api.ts` (typed fetch wrappers for 15 endpoints).
+- New MSW: [`src/mocks/handlers/staff.ts`](../src/mocks/handlers/staff.ts) — 15 endpoints, ~180 activity entries with `ip` + `device`, 10 sessions, fixtures of 1 owner + 2 finance + 3 operators + 1 viewer + 2 pending invites. Registered in [`mocks/handlers/index.ts`](../src/mocks/handlers/index.ts).
+- New shared: [`src/components/shared/DetailPageSkeleton.tsx`](../src/components/shared/DetailPageSkeleton.tsx) — configurable §0.5-shaped skeleton.
+- Modified: [`src/types/domain.ts`](../src/types/domain.ts) (extended `StaffMember`; added `StaffStatus`, `StaffActivityAction`, `StaffActivityEntry`, `StaffSession`, `StaffResource`, `StaffPermission`, `StaffPermissionMatrix`, `STAFF_INVITABLE_ROLES`, `ROLE_PERMISSIONS`), [`src/components/shared/DataTable.tsx`](../src/components/shared/DataTable.tsx) (new `rowHref` + `getRowNavigateState` + `onRowClick` + `rowClassName` props; uses `useNavigate`; modifier-key + middle-click + keyboard handling), [`src/components/shared/ConfirmDialog.tsx`](../src/components/shared/ConfirmDialog.tsx) (fixed default labels), [`src/router.tsx`](../src/router.tsx) (registered `/staff` + `/staff/:id` inside `AuthGuard`), [`src/lib/i18n/locales/{ru,uz}.json`](../src/lib/i18n/locales/) (full `staff.*` namespace — list/filters/columns/kebab/invite/detail/tabs/profileTab/role/access/sessions/activity/editRole/editAccess/delete/transfer/identityCard/extendedActivity/chips/row), [`src/features/organization/components/{DepartmentNode,DepartmentTree}.tsx`](../src/features/organization/components/) (drag-drop UX rebuild — see below).
+- Deleted: `StaffDetailSheet.tsx`, `StaffDetailTabs.tsx`, `StaffProfileTab.tsx`, `StaffAccessTab.tsx`, `StaffActivityTab.tsx`, `StaffIdentityCard.tsx`, `EditContactDialog.tsx` (all obsoleted during the rebuild — single canonical detail page + ProfileTab absorbs identity + email/phone edited inline, not via a separate kebab dialog).
+
+**Layout details on `/staff/:id`.**
+- §0.5 Pattern B. Custom `<StaffDetailHeader>` (bypasses generic `<DetailHeader>` because staff carries too much chrome): avatar | (title col w/ kebab pinned top-right; badges wrap inside title col); chips row below. BackLink reads `location.state.from` to return to the same filtered list URL.
+- Tabs styled to match `<OrgTabsNav>` (underline + brand-600 underline on active + brand-700 text on active, NOT segment pills). Class strings centralized in `TAB_LIST_CLASS` / `TAB_TRIGGER_CLASS` constants.
+- Profile tab is a single Card with three sections separated by `border-b`: identity header (large avatar + name + email) → editable form (RHF + Zod: fullName / email / phone / locale / timezone, toggle between read/edit) → system metadata (memberId with copy-button, createdAt, lastLoginAt, createdBy which is now a `<Link>` to the inviter's profile, rendered as "Name [ID]" via `useStaffById(invitedBy)`).
+- Role & Permissions tab = 3 cards: role badge + description + EditRole button; 6×3 permissions matrix table; access summary chips + EditAccess button.
+- Activity tab = filters card (action Select + DateRangePicker) + DataTable. Filters compose. Reset-filters CTA in filtered-empty.
+- Sessions tab (own profile or Owner only) = header card with title + Revoke-all-others button + DataTable with per-row Revoke. Cross-tab sync via storage event.
+
+**Departments drag-drop overhaul** ([`DepartmentTree.tsx`](../src/features/organization/components/DepartmentTree.tsx), [`DepartmentNode.tsx`](../src/features/organization/components/DepartmentNode.tsx)). User reported "the item is gone from the UI" + "ui's position changing" + "doesn't move to the root". Three issues, three fixes:
+- **Source row disappeared on drag.** Was using `CSS.Translate.toString(transform)` to translate the row itself + `opacity: 0.4`, so it both faded AND moved away from its tree slot. Replaced with `<DragOverlay>` (portaled to `document.body`, `zIndex={40}`); source row keeps its slot at `opacity: 0.4`, the overlay floats with the cursor with a 180ms snap-back drop animation.
+- **Position not updating with cursor.** Two sub-causes: `PointerSensor { delay: 250 }` was eating quick desktop drags, AND the overlay was inline-rendered so any ancestor stacking context could clip it. Fixed by splitting sensors (`MouseSensor { distance: 4 }` instant on desktop + `TouchSensor { delay: 250, tolerance: 8 }` per LESSONS.md touch-scroll-vs-drag rule) and portaling the overlay via `createPortal(..., document.body)`.
+- **Root drop banner caused layout shift + drop didn't register.** Banner was conditionally rendered → its DOM element didn't exist at drag start → @dnd-kit couldn't measure its rect → drop on root silently failed. Compounded by `closestCorners` fighting between the banner and the first tree row. Fixed by always rendering the banner inside a `relative` wrapper as `absolute inset-x-1 top-0`, fading in via `opacity-0 → opacity-100` only when dragging (zero layout shift); switched collision detection to `closestCenter` + `measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}` so the rect is tracked even as it fades in. Lowered overlay `zIndex={40}` (below Radix Dialog z-50) so the post-drop ConfirmDialog renders on top.
+
+**EditRoleDialog rebuild.** Was a 2-step preview-then-confirm flow with a `<Select>` for the role and per-resource permission blocks. User said "not accessible and comfortable". Rebuilt as single-screen:
+- Current role banner anchored at top.
+- `<RadioGroup>` of 4 large tap-target cards (role badge + inline description per option). Selected card highlighted in brand-50 + brand-600 border.
+- Live permission diff: flat (resource, capability) pairs in two compact sections (`success-700` added with `Check` icon + count; `danger-700` removed with `Minus` + count).
+- Reason textarea always visible with char counter that turns `success-700` at ≥20. Disabled when role is unchanged.
+- Cancel / Confirm at footer. Confirm enabled only when role differs AND reason valid.
+
+**EditAccessDialog improvement.** Added explicit "Full access vs Specific departments" mode toggle at the top — two large card buttons. Specific mode renders the `<DepartmentTreePicker>` below with a live selected-count and Clear button. "Empty = full access" rule is now visible up-front instead of buried in a hint.
+
+**Sticky-on-scroll removal.** `<StaffFilters>` had `sticky top-0 z-10 bg-background/95 backdrop-blur` — wrong per new rule. Removed. New lesson logged: filter bars / page chrome / anything-that-pins-to-viewport-top flows with content. Only sanctioned exception is `<OnboardingLayout>`'s step indicator.
+
+**Verifications.** typecheck · `eslint --max-warnings 0` · `vite build` — all clean across every checkpoint. §0.9 audit on the staff module: every `text-xs` hit maps to allow-list (chip body / avatar fallback / definition label / mono staff ID). No Unicode arrows. No `<svg>`. No sticky thead. No `h-screen`. No `max-w` on `<main>`.
+
+**Lessons (appended to [LESSONS.md](../ai_context/LESSONS.md)).**
+- Don't `position: sticky` on filter bars / page-level toolbars / scroll-headers. Only the onboarding step indicator is sanctioned. Audit grep: `git grep -nE 'sticky\s+top-' src/features/`.
+- `<DragOverlay>` needs to be portaled to `document.body` for cursor tracking to feel right across the scroll `<main>`. Source row should NOT translate (dim only — overlay does the floating).
+- Split `MouseSensor` + `TouchSensor` instead of a unified `PointerSensor` when desktop wants instant drag (distance) but touch needs delay (scroll vs drag).
+- Conditionally-rendered droppables miss @dnd-kit's initial rect measurement at drag start. Always render the droppable; control visibility via opacity. Pair with `MeasuringStrategy.Always` if its size changes during the drag.
+- `closestCenter` beats `closestCorners` when multiple droppables overlap (e.g. a banner over the first row).
+- `<DragOverlay>`'s `zIndex` defaults to 999 (very high). Set lower than Radix Dialog's z-50 if a confirm dialog opens immediately after drop.
+- 2-step destructive flows benefit from a typed-confirmation step (email for delete-account, literal `TRANSFER` phrase for ownership transfer) — protects against muscle-memory mistakes.
+- `<DataTable>` extension pattern for clickable rows: `rowHref` + handler that checks `e.metaKey || e.ctrlKey || e.shiftKey` for new-tab, `onAuxClick` for middle-click, `onKeyDown` for Enter/Space, `role="link"` + `tabIndex={0}` for a11y.
+- The single-step Edit dialog with live preview (role change) is more accessible than the two-step preview-then-confirm pattern. Show the consequences inline, not behind a Next click.
+
+---
+
 ## 2026-05-11 — Deployed Pages demo gets a working sign-in (MSW in prod + form pre-fill always-on)
 
 **Summary.** Reported bug: sign-in didn't work on the deployed GitHub Pages build. Two root causes: (1) MSW was gated to `import.meta.env.DEV` in [`src/main.tsx`](../src/main.tsx) so the prod build had no mock backend, and `POST /api/auth/sign-in` hit nothing. (2) Even after enabling MSW in prod, the worker registers at `/mockServiceWorker.js` by default — which 404s on Pages because the app is served under `/unipay-dashboard/`. Fixed by dropping the DEV gate and passing `serviceWorker: { url: \`${import.meta.env.BASE_URL}mockServiceWorker.js\` }` to `worker.start()` so the URL resolves to `/mockServiceWorker.js` in dev and `/unipay-dashboard/mockServiceWorker.js` on Pages. Vite already copies `public/mockServiceWorker.js` to `dist/` so no extra build step. Followed up by collapsing the `defaultValues: import.meta.env.DEV ? prefilled : empty` ternary in [`SignInForm.tsx`](../src/features/auth/components/SignInForm.tsx) to the prefilled branch unconditionally — the demo deploy needs the form pre-populated with `owner@unipay.dev` / `demo1234` so a visitor can click "Войти" once and be inside.
