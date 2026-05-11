@@ -4,6 +4,19 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-11 — Build fix: `<StudentsTable>` `pagination` prop type missing `onPageSizeChange` / `pageSizeOptions`
+
+**Summary.** `npm run build` failed with `TS2322: Object literal may only specify known properties, but 'onPageSizeChange' does not exist...` at [`StudentsListPage.tsx:225`](../src/features/students/pages/StudentsListPage.tsx#L225). `<StudentsListPage>` was already wired with the URL-synced per-page selector (the Payments-module polish round propagated this to Students / Transactions / Staff / Pending), but `<StudentsTable>`'s local `pagination` prop interface at [`StudentsTable.tsx:22-27`](../src/features/students/components/list/StudentsTable.tsx#L22-L27) was a stale subset carrying only `page / pageSize / total / onPageChange`. The underlying `<DataTable>` `PaginationProps` already accepts the two optional fields, and `<StudentsTable>` just forwards `pagination={pagination}` verbatim — so the fix is a pure type-level extension on the wrapper. No runtime change.
+
+**Files written.**
+- Modified: [`StudentsTable.tsx`](../src/features/students/components/list/StudentsTable.tsx) — added `onPageSizeChange?: (pageSize: number) => void` + `pageSizeOptions?: number[]` to the `pagination` prop interface so it mirrors `DataTable.PaginationProps`.
+
+**Verifications.** `npm run build` (tsc -b && vite build) clean. `npm run lint` clean.
+
+**Lessons.** Not added to LESSONS.md — this is a one-shot wrapper-drift defect. Generalization for future passes: when extending `DataTable.PaginationProps` (or any shared primitive's prop interface) with new optional fields, audit per-feature wrapper types that duplicate a subset of the shape — `<StaffTable>`, `<TransactionsTable>`, `<PendingTable>`, `<RefundsTable>`, `<StudentsTable>` all define local `pagination` props. Either re-export `PaginationProps` from `DataTable` and consume by name, or duplicate the full interface; never define a subset.
+
+---
+
 ## 2026-05-11 — Payments module polish round 2 + pagination/banner refinements (cross-cutting)
 
 **Summary.** Second wave of user-driven polish on the Payments module, plus several cross-cutting fixes to the shared `<DataTable>` pagination block that now propagate to Students / Staff / Pending list pages too.
