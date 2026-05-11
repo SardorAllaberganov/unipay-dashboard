@@ -27,6 +27,8 @@ import BankAccountsPage from '@/features/organization/pages/BankAccountsPage';
 import BrandingPage from '@/features/organization/pages/BrandingPage';
 import AddBankAccountPage from '@/features/organization/pages/AddBankAccountPage';
 import AddDepartmentPage from '@/features/organization/pages/AddDepartmentPage';
+import StaffListPage from '@/features/staff/pages/StaffListPage';
+import StaffDetailPage from '@/features/staff/pages/StaffDetailPage';
 import Placeholder from '@/pages/Placeholder';
 
 const KNOWN_PATH_PREFIXES = [
@@ -129,7 +131,8 @@ function AppRoutes() {
             path="/organization/departments/new"
             element={<AddDepartmentPage />}
           />
-          <Route path="/staff" element={<Placeholder />} />
+          <Route path="/staff" element={<StaffListPage />} />
+          <Route path="/staff/:id" element={<StaffDetailPage />} />
           <Route path="/students" element={<Placeholder />} />
           <Route path="/students/:id" element={<Placeholder />} />
           <Route path="/payments/transactions" element={<Placeholder />} />

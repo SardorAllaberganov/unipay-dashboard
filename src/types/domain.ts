@@ -140,6 +140,124 @@ export interface Branding {
   receiptFooter: string;
 }
 
+export type StaffStatus = 'active' | 'inactive' | 'pending';
+
+export const STAFF_INVITABLE_ROLES = ['finance_manager', 'operator', 'viewer'] as const;
+export type StaffInvitableRole = (typeof STAFF_INVITABLE_ROLES)[number];
+
+export interface StaffMember {
+  id: string;
+  email: string;
+  fullName: string;
+  phone?: string;
+  locale?: Locale;
+  timezone?: string;
+  role: Role;
+  status: StaffStatus;
+  departmentIds: string[];
+  createdAt: string;
+  lastLoginAt?: string;
+  invitedAt?: string;
+  invitedBy?: string;
+  isOwner: boolean;
+}
+
+export type StaffActivityAction =
+  | 'login'
+  | 'role_changed'
+  | 'access_changed'
+  | 'contact_updated'
+  | 'student_added'
+  | 'transaction_created'
+  | 'report_exported'
+  | 'invite_sent'
+  | 'invite_resent'
+  | 'invite_cancelled'
+  | 'deactivated'
+  | 'reactivated'
+  | 'password_reset'
+  | 'session_revoked'
+  | 'sessions_revoked_all_others';
+
+export interface StaffActivityEntry {
+  id: string;
+  staffId: string;
+  action: StaffActivityAction;
+  target?: string;
+  ip?: string;
+  device?: string;
+  createdAt: string;
+}
+
+export interface StaffSession {
+  id: string;
+  staffId: string;
+  device: string;
+  os?: string;
+  browser?: string;
+  ip: string;
+  location?: string;
+  lastActiveAt: string;
+  createdAt: string;
+  current: boolean;
+}
+
+export type StaffResource =
+  | 'students'
+  | 'payments'
+  | 'reports'
+  | 'staff'
+  | 'settings'
+  | 'audit';
+
+export interface StaffPermission {
+  resource: StaffResource;
+  read: boolean;
+  write: boolean;
+  destructive: boolean;
+}
+
+export type StaffPermissionMatrix = StaffPermission[];
+
+/**
+ * Static role → capability mapping. Source of truth for the permission matrix
+ * surfaced on the staff detail page until the backend exposes a real `permissions` API.
+ */
+export const ROLE_PERMISSIONS: Record<Role, StaffPermissionMatrix> = {
+  owner: [
+    { resource: 'students', read: true, write: true, destructive: true },
+    { resource: 'payments', read: true, write: true, destructive: true },
+    { resource: 'reports', read: true, write: true, destructive: true },
+    { resource: 'staff', read: true, write: true, destructive: true },
+    { resource: 'settings', read: true, write: true, destructive: true },
+    { resource: 'audit', read: true, write: true, destructive: true },
+  ],
+  finance_manager: [
+    { resource: 'students', read: true, write: true, destructive: false },
+    { resource: 'payments', read: true, write: true, destructive: true },
+    { resource: 'reports', read: true, write: true, destructive: false },
+    { resource: 'staff', read: true, write: false, destructive: false },
+    { resource: 'settings', read: true, write: false, destructive: false },
+    { resource: 'audit', read: true, write: false, destructive: false },
+  ],
+  operator: [
+    { resource: 'students', read: true, write: true, destructive: false },
+    { resource: 'payments', read: true, write: true, destructive: false },
+    { resource: 'reports', read: true, write: false, destructive: false },
+    { resource: 'staff', read: true, write: false, destructive: false },
+    { resource: 'settings', read: false, write: false, destructive: false },
+    { resource: 'audit', read: false, write: false, destructive: false },
+  ],
+  viewer: [
+    { resource: 'students', read: true, write: false, destructive: false },
+    { resource: 'payments', read: true, write: false, destructive: false },
+    { resource: 'reports', read: true, write: false, destructive: false },
+    { resource: 'staff', read: true, write: false, destructive: false },
+    { resource: 'settings', read: false, write: false, destructive: false },
+    { resource: 'audit', read: false, write: false, destructive: false },
+  ],
+};
+
 export interface Payout {
   id: string;
   periodFrom: string;

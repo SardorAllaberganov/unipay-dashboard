@@ -595,6 +595,385 @@
       "deleteCascadeBody": "«{{name}}» ni {{children}} ta tobe bo'linma va {{students}} ta talaba bilan birga o'chirasizmi? Bu amalni qaytarib bo'lmaydi."
     }
   },
+  "staff": {
+    "title": "Hodimlar",
+    "backPlural": "hodimlarga",
+    "list": {
+      "inviteCta": "Ishtirokchini taklif qilish",
+      "emptyTitle": "Hozircha ishtirokchilar yo'q",
+      "emptyBody": "Birgalikda ishlash uchun hamkasblarni taklif qiling.",
+      "searchPlaceholder": "Ism yoki email",
+      "roleAll": "Barcha rollar",
+      "statusAll": "Barcha holatlar",
+      "pendingChip": "Qabul qilishni kutmoqda",
+      "lastLoginNever": "Kirmagan",
+      "departmentsAccessCount_one": "{{count}} bo'linma",
+      "departmentsAccessCount_other": "{{count}} bo'linma",
+      "departmentsAccessAll": "Barcha bo'linmalar",
+      "departmentsMore": "+{{count}}",
+      "columns": {
+        "name": "Hodim",
+        "role": "Rol",
+        "departments": "Ruxsat",
+        "lastLogin": "Oxirgi kirish",
+        "status": "Holat",
+        "actions": "Amallar"
+      },
+      "rowActions": {
+        "open": "Profilni ochish",
+        "editRole": "Rolni o'zgartirish",
+        "deactivate": "Faolsizlashtirish",
+        "reactivate": "Faollashtirish",
+        "resetPassword": "Parolni tiklash",
+        "resendInvite": "Taklifnomani qayta yuborish",
+        "cancelInvite": "Taklifnomani o'chirish",
+        "delete": "O'chirish",
+        "openMenu": "Amallar menyusini ochish"
+      }
+    },
+    "kebab": {
+      "editRole": "Rolni o'zgartirish",
+      "editAccess": "Ruxsatni o'zgartirish",
+      "resetPassword": "Parolni tiklash",
+      "resendInvite": "Taklifnomani qayta yuborish",
+      "deactivate": "Faolsizlashtirish",
+      "reactivate": "Faollashtirish",
+      "cancelInvite": "Taklifnomani o'chirish",
+      "delete": "O'chirish",
+      "transferOwnership": "Egalikni o'tkazish",
+      "openMenu": "Amallar menyusini ochish",
+      "ownerLocked": "Egasini faolsizlashtirib bo'lmaydi",
+      "ownerDeleteLocked": "Egasini o'chirib bo'lmaydi",
+      "permissionRequired": "Owner yoki Finance Manager roli kerak",
+      "actionsLabel": "Amallar"
+    },
+    "invite": {
+      "title": "Ishtirokchini taklif qilish",
+      "description": "Email orqali taklifnoma yuboramiz. Ruxsatni keyin o'zgartirishingiz mumkin.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "hamkas@example.com",
+      "fullNameLabel": "To'liq ism",
+      "fullNamePlaceholder": "Ivan Ivanov",
+      "roleLabel": "Rol",
+      "departmentsLabel": "Bo'linmalarga ruxsat",
+      "departmentsHint": "Bo'sh = barcha bo'linmalarga ruxsat",
+      "noteLabel": "Izoh (ixtiyoriy)",
+      "notePlaceholder": "Qabul qiluvchiga ko'rinadi",
+      "submit": "Taklifnoma yuborish",
+      "successToast": "Taklifnoma {{email}} manziliga yuborildi",
+      "errorToast": "Taklifnoma yuborib bo'lmadi",
+      "emailInvalid": "To'g'ri email kiriting",
+      "required": "Majburiy maydon",
+      "noteTooLong": "300 belgidan ko'p emas"
+    },
+    "detail": {
+      "openFullPage": "To'liq sahifani ochish",
+      "registered": "Ro'yxatdan o'tgan: {{date}}",
+      "lastLoginRelative": "Oxirgi kirish: {{relative}}",
+      "backToList": "Hodimlar ro'yxatiga qaytish",
+      "notFoundTitle": "Hodim topilmadi",
+      "notFoundBody": "Ehtimol u o'chirilgan yoki profilga ruxsatingiz yo'q.",
+      "tabs": {
+        "profile": "Profil",
+        "access": "Ruxsat",
+        "activity": "Faollik jurnali"
+      },
+      "profile": {
+        "fullName": "To'liq ism",
+        "email": "Email",
+        "phone": "Telefon",
+        "role": "Rol",
+        "status": "Holat",
+        "createdAt": "Ro'yxatga olingan sana",
+        "lastLoginAt": "Oxirgi kirish",
+        "phoneEmpty": "Ko'rsatilmagan"
+      },
+      "access": {
+        "title": "Bo'linmalarga ruxsat",
+        "empty": "Tashkilotning barcha bo'linmalariga ruxsat.",
+        "editCta": "Ruxsatni o'zgartirish"
+      },
+      "actions": {
+        "editRole": "Rolni o'zgartirish",
+        "deactivate": "Faolsizlashtirish",
+        "reactivate": "Faollashtirish"
+      }
+    },
+    "activity": {
+      "title": "Faollik jurnali",
+      "emptyTitle": "Amallar yo'q",
+      "emptyBody": "Hodim birinchi amalni bajargach, tarix shu yerda ko'rinadi.",
+      "columns": {
+        "action": "Amal",
+        "target": "Obyekt",
+        "createdAt": "Vaqt"
+      },
+      "actions": {
+        "login": "Tizimga kirish",
+        "role_changed": "Rol o'zgartirildi",
+        "access_changed": "Ruxsat o'zgartirildi",
+        "student_added": "Talaba qo'shildi",
+        "transaction_created": "Tranzaksiya yaratildi",
+        "report_exported": "Hisobot eksport qilindi",
+        "invite_sent": "Taklifnoma yuborildi",
+        "deactivated": "Faolsizlashtirildi",
+        "reactivated": "Faollashtirildi"
+      }
+    },
+    "editRole": {
+      "previewTitle": "Rolni o'zgartirish",
+      "previewBody": "Tasdiqlashdan oldin joriy va yangi ruxsatlar to'plamini solishtiring.",
+      "currentLabel": "Joriy rol",
+      "newLabel": "Yangi rol",
+      "addedTitle": "Qo'shiladigan ruxsatlar",
+      "removedTitle": "Olib tashlanadigan ruxsatlar",
+      "noChange": "O'zgarishlarsiz",
+      "next": "Davom etish",
+      "back": "Orqaga",
+      "confirmTitle": "Rolni o'zgartirishni tasdiqlang",
+      "confirmBody": "Hodim rol o'zgarishi haqida bildirishnoma oladi.",
+      "confirmCta": "O'zgarishni tasdiqlash",
+      "reasonLabel": "O'zgartirish sababi (kamida 20 belgi)",
+      "reasonPlaceholder": "Masalan, lavozim ko'tarilishi, bo'lim qayta tashkil etilishi",
+      "successToast": "Rol yangilandi",
+      "errorToast": "Rolni o'zgartirib bo'lmadi",
+      "sameRole": "Boshqa rolni tanlang"
+    },
+    "editAccess": {
+      "title": "Bo'linmalarga ruxsat",
+      "description": "Bo'linmalarni tanlang. Bo'sh = barchaga ruxsat.",
+      "submit": "Saqlash",
+      "successToast": "Ruxsat yangilandi",
+      "errorToast": "Ruxsatni yangilab bo'lmadi",
+      "allAccessHint": "Hech narsa tanlanmasa — hodimga to'liq ruxsat beriladi.",
+      "searchPlaceholder": "Bo'linmalarni qidirish"
+    },
+    "deactivate": {
+      "title": "Hodimni faolsizlashtirish",
+      "body": "{{name}} UNIPAY tizimiga kira olmaydi. Amalni keyin hodimni faollashtirib bekor qilish mumkin.",
+      "reasonLabel": "Sabab (kamida 20 belgi)",
+      "reasonPlaceholder": "Nima uchun kirishni o'chirayotganingizni yozing",
+      "confirmCta": "Faolsizlashtirish",
+      "successToast": "Hodim faolsizlashtirildi",
+      "errorToast": "Faolsizlashtirib bo'lmadi"
+    },
+    "reactivate": {
+      "successToast": "Hodim faollashtirildi",
+      "errorToast": "Faollashtirib bo'lmadi"
+    },
+    "resetPassword": {
+      "title": "Parolni tiklash",
+      "body": "Hodimga parolni tiklash uchun havola yuboriladi.",
+      "confirmCta": "Havola yuborish",
+      "successToast": "Havola yuborildi",
+      "errorToast": "Yuborib bo'lmadi"
+    },
+    "resendInvite": {
+      "successToast": "Taklifnoma qayta yuborildi",
+      "errorToast": "Taklifnoma yuborib bo'lmadi"
+    },
+    "cancelInvite": {
+      "title": "Taklifnomani o'chirish",
+      "body": "{{email}} uchun taklifnoma o'chiriladi. Hodim kira olmaydi.",
+      "confirmCta": "O'chirish",
+      "successToast": "Taklifnoma o'chirildi",
+      "errorToast": "Taklifnomani o'chirib bo'lmadi"
+    },
+    "transferOwnership": {
+      "title": "Egalikni o'tkazish",
+      "body": "Egalikni o'tkazish joriy versiyada mavjud emas. Jarayonni boshlash uchun qo'llab-quvvatlash xizmatiga murojaat qiling.",
+      "contactSupport": "Qo'llab-quvvatlash bilan bog'lanish",
+      "close": "Yopish"
+    },
+    "permissions": {
+      "owner": [
+        "Tashkilotni boshqarish",
+        "Hodimlarni boshqarish",
+        "Moliya va to'lovlar",
+        "Talabalar va bo'linmalar",
+        "Hisobot va audit"
+      ],
+      "finance_manager": [
+        "Moliya va to'lovlar",
+        "Talabalar va bo'linmalar",
+        "Hisobotlar"
+      ],
+      "operator": [
+        "Talabalar va bo'linmalar",
+        "Tranzaksiyalarni tasdiqlash"
+      ],
+      "viewer": [
+        "O'zgarishlarsiz ma'lumotlarni ko'rish"
+      ]
+    },
+    "row": {
+      "tooltip": {
+        "ownerCannotDeactivate": "Egasini faolsizlashtirib bo'lmaydi",
+        "ownerCannotDelete": "Egasini o'chirib bo'lmaydi",
+        "selfCannotAct": "Bu amalni o'z hisobingiz uchun bajarib bo'lmaydi",
+        "needsRole": "Owner yoki Finance Manager roli kerak"
+      }
+    },
+    "role": {
+      "title": "Rol va ruxsatlar",
+      "editButton": "Rolni o'zgartirish",
+      "descriptions": {
+        "owner": "Barcha funksiyalarga to'liq ruxsat, jumladan hodimlar va billingni boshqarish.",
+        "finance_manager": "Moliya, to'lovlar, talabalar va bo'linmalarni boshqarish.",
+        "operator": "Talabalar, bo'linmalar va tranzaksiyalarni tasdiqlash bilan ishlash.",
+        "viewer": "Faqat ma'lumotlarni ko'rish. O'zgarishlarsiz."
+      },
+      "matrix": {
+        "title": "Bo'limlar bo'yicha ruxsatlar",
+        "read": "Ko'rish",
+        "write": "Tahrirlash",
+        "destructive": "O'chirish",
+        "yes": "Ha",
+        "no": "Yo'q",
+        "resources": {
+          "students": "Talabalar",
+          "payments": "To'lovlar",
+          "reports": "Hisobotlar",
+          "staff": "Hodimlar",
+          "settings": "Sozlamalar",
+          "audit": "Audit"
+        }
+      }
+    },
+    "access": {
+      "title": "Bo'linmalarga ruxsat",
+      "editButton": "Ruxsatni o'zgartirish",
+      "summary_one": "{{count}} bo'linmaga ruxsat ({{total}} dan)",
+      "summary_other": "{{count}} bo'linmaga ruxsat ({{total}} dan)",
+      "summaryAll": "Barcha bo'linmalarga to'liq ruxsat"
+    },
+    "profileTab": {
+      "title": "Profil",
+      "editButton": "Tahrirlash",
+      "saveButton": "Saqlash",
+      "cancelButton": "Bekor qilish",
+      "fullNameLabel": "To'liq ism",
+      "phoneLabel": "Telefon",
+      "phonePlaceholder": "+998 90 123-45-67",
+      "localeLabel": "Interfeys tili",
+      "timezoneLabel": "Vaqt mintaqasi",
+      "successToast": "Profil yangilandi",
+      "errorToast": "Saqlab bo'lmadi"
+    },
+    "editContact": {
+      "title": "Aloqa ma'lumotlarini o'zgartirish",
+      "body": "Email kirish uchun ishlatiladi. O'zgarish keyingi kirishdan keyin qo'llaniladi.",
+      "emailLabel": "Email",
+      "phoneLabel": "Telefon",
+      "submit": "Saqlash",
+      "successToast": "Aloqa yangilandi",
+      "errorToast": "Aloqani yangilab bo'lmadi"
+    },
+    "delete": {
+      "title": "Hisobni o'chirish",
+      "body": "{{name}} hisobi qaytarib bo'lmaydigan tarzda o'chiriladi. Faollik jurnali yozuvlari saqlanadi.",
+      "reasonLabel": "O'chirish sababi (kamida 20 belgi)",
+      "reasonPlaceholder": "O'chirish kontekstini yozing",
+      "confirmEmailLabel": "Tasdiqlash uchun hodim emailini kiriting",
+      "confirmEmailHint": "Tasodifiy o'chirishdan himoya.",
+      "confirmEmailMismatch": "Email mos kelmaydi",
+      "next": "Davom etish",
+      "back": "Orqaga",
+      "confirmSubmit": "Hisobni o'chirish",
+      "successToast": "Hisob o'chirildi",
+      "errorToast": "Hisobni o'chirib bo'lmadi"
+    },
+    "transfer": {
+      "title": "Egalikni o'tkazish",
+      "body": "Joriy egasi Finance Manager bo'ladi. {{name}} Owner bo'ladi va billing hamda hisoblarni o'chirishni boshqaradi.",
+      "reasonLabel": "O'tkazish sababi (kamida 20 belgi)",
+      "reasonPlaceholder": "Egalikni o'tkazish kontekstini yozing",
+      "confirmPhraseLabel": "Tasdiqlash uchun TRANSFER kiriting",
+      "confirmPhraseValue": "TRANSFER",
+      "confirmPhraseMismatch": "TRANSFER so'zini bosh harflar bilan kiriting",
+      "next": "Davom etish",
+      "back": "Orqaga",
+      "confirmSubmit": "Egalikni o'tkazish",
+      "successToast": "Egalik {{name}}'ga o'tkazildi",
+      "errorToast": "Egalikni o'tkazib bo'lmadi",
+      "kebabDisabled": "Egalikni o'tkazish faqat joriy egasi uchun mavjud."
+    },
+    "sessions": {
+      "title": "Faol sessiyalar",
+      "emptyTitle": "Faol sessiyalar yo'q",
+      "emptyBody": "Sessiyalar hodim birinchi marta kirgandan keyin paydo bo'ladi.",
+      "columns": {
+        "device": "Qurilma",
+        "ip": "IP",
+        "location": "Joylashuv",
+        "lastActive": "Faollik",
+        "actions": "Amallar"
+      },
+      "currentBadge": "Joriy",
+      "revokeOne": "Bekor qilish",
+      "revokeOneTitle": "Sessiyani bekor qilish",
+      "revokeOneBody": "«{{device}}» qurilmasi uziladi. Hodim qaytadan kirishi kerak bo'ladi.",
+      "revokeOneReasonLabel": "Sabab (kamida 20 belgi)",
+      "revokeOneConfirm": "Sessiyani bekor qilish",
+      "revokeAllOthers": "Boshqa sessiyalarni bekor qilish",
+      "revokeAllOthersTitle": "Boshqa sessiyalarni bekor qilish",
+      "revokeAllOthersBody": "Joriy sessiyadan tashqari barcha sessiyalar tugatiladi. Hodim boshqa qurilmalarda qaytadan kirishi kerak bo'ladi.",
+      "revokeAllOthersReasonLabel": "Sabab (kamida 20 belgi)",
+      "revokeAllOthersConfirm": "Boshqalarini bekor qilish",
+      "revokeSuccessToast": "Sessiya bekor qilindi",
+      "revokeErrorToast": "Sessiyani bekor qilib bo'lmadi",
+      "revokeAllSuccessToast_one": "{{count}} sessiya bekor qilindi",
+      "revokeAllSuccessToast_other": "{{count}} sessiya bekor qilindi",
+      "revokeAllErrorToast": "Sessiyalarni bekor qilib bo'lmadi",
+      "visibilityLocked": "Sessiyalar faqat hisob egasiga yoki Owner'ga ko'rinadi."
+    },
+    "identityCard": {
+      "title": "Profil",
+      "fullName": "To'liq ism",
+      "email": "Email",
+      "phone": "Telefon",
+      "phoneEmpty": "Ko'rsatilmagan",
+      "createdAt": "Yaratilgan sana",
+      "lastLoginAt": "Oxirgi kirish",
+      "lastLoginNever": "Kirmagan",
+      "memberId": "Hodim ID si",
+      "createdBy": "Taklif qilgan",
+      "createdByUnknown": "Tizim tomonidan",
+      "lastModified": "Oxirgi o'zgarish"
+    },
+    "activityFilters": {
+      "actionLabel": "Amal turi",
+      "actionAll": "Barcha amallar",
+      "dateLabel": "Davr",
+      "reset": "Filtrlarni tiklash",
+      "emptyFiltered": "Tanlangan davr uchun amallar yo'q.",
+      "emptyResetCta": "Filtrlarni tiklash"
+    },
+    "extendedActivity": {
+      "actions": {
+        "contact_updated": "Aloqa o'zgartirildi",
+        "invite_resent": "Taklifnoma qayta yuborildi",
+        "invite_cancelled": "Taklifnoma bekor qilindi",
+        "password_reset": "Parol tiklash",
+        "session_revoked": "Sessiya bekor qilindi",
+        "sessions_revoked_all_others": "Qolgan sessiyalar bekor qilindi"
+      },
+      "columns": {
+        "ip": "IP",
+        "device": "Qurilma"
+      }
+    },
+    "kebabExtended": {
+      "editContact": "Aloqa ma'lumotlarini o'zgartirish",
+      "deleteAccount": "Hisobni o'chirish"
+    },
+    "chips": {
+      "inviteSent": "Taklifnoma yuborilgan {{relative}}"
+    },
+    "tabsExtended": {
+      "sessions": "Sessiyalar"
+    }
+  },
   "errors": {
     "generic": "Nimadir noto'g'ri ketdi. Qayta urinib ko'ring."
   }

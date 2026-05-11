@@ -599,6 +599,391 @@
       "deleteCascadeBody": "Удалить «{{name}}» вместе с {{children}} дочерними и {{students}} студентами? Это действие нельзя отменить."
     }
   },
+  "staff": {
+    "title": "Сотрудники",
+    "backPlural": "сотрудникам",
+    "list": {
+      "inviteCta": "Пригласить участника",
+      "emptyTitle": "Пока нет участников",
+      "emptyBody": "Пригласите коллег для совместной работы.",
+      "searchPlaceholder": "Имя или email",
+      "roleAll": "Все роли",
+      "statusAll": "Все статусы",
+      "pendingChip": "Ожидает принятия",
+      "lastLoginNever": "Не входил",
+      "departmentsAccessCount_one": "{{count}} подразделение",
+      "departmentsAccessCount_few": "{{count}} подразделения",
+      "departmentsAccessCount_many": "{{count}} подразделений",
+      "departmentsAccessCount_other": "{{count}} подразделений",
+      "departmentsAccessAll": "Все подразделения",
+      "departmentsMore": "+{{count}}",
+      "columns": {
+        "name": "Сотрудник",
+        "role": "Роль",
+        "departments": "Доступ",
+        "lastLogin": "Последний вход",
+        "status": "Статус",
+        "actions": "Действия"
+      },
+      "rowActions": {
+        "open": "Открыть профиль",
+        "editRole": "Изменить роль",
+        "deactivate": "Деактивировать",
+        "reactivate": "Активировать",
+        "resetPassword": "Сбросить пароль",
+        "resendInvite": "Отправить приглашение повторно",
+        "cancelInvite": "Удалить приглашение",
+        "delete": "Удалить",
+        "openMenu": "Открыть меню действий"
+      }
+    },
+    "kebab": {
+      "editRole": "Изменить роль",
+      "editAccess": "Изменить доступ",
+      "resetPassword": "Сбросить пароль",
+      "resendInvite": "Отправить приглашение повторно",
+      "deactivate": "Деактивировать",
+      "reactivate": "Активировать",
+      "cancelInvite": "Удалить приглашение",
+      "delete": "Удалить",
+      "transferOwnership": "Передать владение",
+      "openMenu": "Открыть меню действий",
+      "ownerLocked": "Владельца нельзя деактивировать",
+      "ownerDeleteLocked": "Владельца нельзя удалить",
+      "permissionRequired": "Требуется роль Owner или Finance Manager",
+      "actionsLabel": "Действия"
+    },
+    "invite": {
+      "title": "Пригласить участника",
+      "description": "Отправим приглашение по email. Доступ можно изменить позже.",
+      "emailLabel": "Email",
+      "emailPlaceholder": "kolleg@example.com",
+      "fullNameLabel": "Полное имя",
+      "fullNamePlaceholder": "Иван Иванов",
+      "roleLabel": "Роль",
+      "departmentsLabel": "Доступ к подразделениям",
+      "departmentsHint": "Пусто = доступ ко всем подразделениям",
+      "noteLabel": "Заметка (опционально)",
+      "notePlaceholder": "Видна получателю приглашения",
+      "submit": "Отправить приглашение",
+      "successToast": "Приглашение отправлено на {{email}}",
+      "errorToast": "Не удалось отправить приглашение",
+      "emailInvalid": "Введите корректный email",
+      "required": "Обязательное поле",
+      "noteTooLong": "Не более 300 символов"
+    },
+    "detail": {
+      "openFullPage": "Открыть полную страницу",
+      "registered": "Зарегистрирован {{date}}",
+      "lastLoginRelative": "Последний вход {{relative}}",
+      "backToList": "Назад к списку сотрудников",
+      "notFoundTitle": "Сотрудник не найден",
+      "notFoundBody": "Возможно, его удалили или у вас нет доступа к профилю.",
+      "tabs": {
+        "profile": "Профиль",
+        "access": "Доступ",
+        "activity": "Журнал активности"
+      },
+      "profile": {
+        "fullName": "Полное имя",
+        "email": "Email",
+        "phone": "Телефон",
+        "role": "Роль",
+        "status": "Статус",
+        "createdAt": "Дата регистрации",
+        "lastLoginAt": "Последний вход",
+        "phoneEmpty": "Не указан"
+      },
+      "access": {
+        "title": "Доступ к подразделениям",
+        "empty": "Доступ ко всем подразделениям организации.",
+        "editCta": "Изменить доступ"
+      },
+      "actions": {
+        "editRole": "Изменить роль",
+        "deactivate": "Деактивировать",
+        "reactivate": "Активировать"
+      }
+    },
+    "activity": {
+      "title": "Журнал активности",
+      "emptyTitle": "Нет действий",
+      "emptyBody": "История появится после первого действия сотрудника.",
+      "columns": {
+        "action": "Действие",
+        "target": "Объект",
+        "createdAt": "Время"
+      },
+      "actions": {
+        "login": "Вход в систему",
+        "role_changed": "Изменена роль",
+        "access_changed": "Изменён доступ",
+        "student_added": "Добавлен студент",
+        "transaction_created": "Создана транзакция",
+        "report_exported": "Экспортирован отчёт",
+        "invite_sent": "Отправлено приглашение",
+        "deactivated": "Деактивирован",
+        "reactivated": "Активирован"
+      }
+    },
+    "editRole": {
+      "previewTitle": "Изменение роли",
+      "previewBody": "Сравните текущий и новый набор доступов перед подтверждением.",
+      "currentLabel": "Текущая роль",
+      "newLabel": "Новая роль",
+      "addedTitle": "Появятся доступы",
+      "removedTitle": "Будут убраны",
+      "noChange": "Без изменений",
+      "next": "Продолжить",
+      "back": "Назад",
+      "confirmTitle": "Подтвердите изменение роли",
+      "confirmBody": "Сотрудник получит уведомление об изменении роли.",
+      "confirmCta": "Подтвердить изменение",
+      "reasonLabel": "Причина изменения (минимум 20 символов)",
+      "reasonPlaceholder": "Например, повышение, реорганизация отдела",
+      "successToast": "Роль обновлена",
+      "errorToast": "Не удалось изменить роль",
+      "sameRole": "Выберите другую роль"
+    },
+    "editAccess": {
+      "title": "Доступ к подразделениям",
+      "description": "Выберите подразделения. Пусто = доступ ко всем.",
+      "submit": "Сохранить",
+      "successToast": "Доступ обновлён",
+      "errorToast": "Не удалось обновить доступ",
+      "allAccessHint": "Если ничего не выбрано — у сотрудника будет полный доступ.",
+      "searchPlaceholder": "Поиск подразделений"
+    },
+    "deactivate": {
+      "title": "Деактивировать сотрудника",
+      "body": "{{name}} потеряет доступ к UNIPAY. Действие можно отменить, активировав сотрудника позже.",
+      "reasonLabel": "Причина (минимум 20 символов)",
+      "reasonPlaceholder": "Опишите, почему отключаете доступ",
+      "confirmCta": "Деактивировать",
+      "successToast": "Сотрудник деактивирован",
+      "errorToast": "Не удалось деактивировать"
+    },
+    "reactivate": {
+      "successToast": "Сотрудник активирован",
+      "errorToast": "Не удалось активировать"
+    },
+    "resetPassword": {
+      "title": "Сбросить пароль",
+      "body": "Сотруднику будет отправлена ссылка для сброса пароля.",
+      "confirmCta": "Отправить ссылку",
+      "successToast": "Ссылка отправлена",
+      "errorToast": "Не удалось отправить"
+    },
+    "resendInvite": {
+      "successToast": "Приглашение отправлено повторно",
+      "errorToast": "Не удалось отправить приглашение"
+    },
+    "cancelInvite": {
+      "title": "Удалить приглашение",
+      "body": "Приглашение для {{email}} будет удалено. Сотрудник не сможет войти.",
+      "confirmCta": "Удалить",
+      "successToast": "Приглашение удалено",
+      "errorToast": "Не удалось удалить приглашение"
+    },
+    "transferOwnership": {
+      "title": "Передача владения",
+      "body": "Передача владения недоступна в текущей версии. Свяжитесь со службой поддержки, чтобы инициировать процесс.",
+      "contactSupport": "Связаться с поддержкой",
+      "close": "Закрыть"
+    },
+    "permissions": {
+      "owner": [
+        "Управление организацией",
+        "Управление сотрудниками",
+        "Финансы и выплаты",
+        "Студенты и подразделения",
+        "Отчёты и аудит"
+      ],
+      "finance_manager": [
+        "Финансы и выплаты",
+        "Студенты и подразделения",
+        "Отчёты"
+      ],
+      "operator": [
+        "Студенты и подразделения",
+        "Подтверждение транзакций"
+      ],
+      "viewer": [
+        "Просмотр данных без изменений"
+      ]
+    },
+    "row": {
+      "tooltip": {
+        "ownerCannotDeactivate": "Владельца нельзя деактивировать",
+        "ownerCannotDelete": "Владельца нельзя удалить",
+        "selfCannotAct": "Нельзя выполнить это действие для собственного аккаунта",
+        "needsRole": "Требуется роль Owner или Finance Manager"
+      }
+    },
+    "role": {
+      "title": "Роль и права",
+      "editButton": "Изменить роль",
+      "descriptions": {
+        "owner": "Полный доступ ко всем функциям, включая управление сотрудниками и биллингом.",
+        "finance_manager": "Управление финансами, выплатами, студентами и подразделениями.",
+        "operator": "Работа со студентами, подразделениями и подтверждение транзакций.",
+        "viewer": "Только просмотр данных. Никаких изменений."
+      },
+      "matrix": {
+        "title": "Разрешения по разделам",
+        "read": "Просмотр",
+        "write": "Редактирование",
+        "destructive": "Удаление",
+        "yes": "Да",
+        "no": "Нет",
+        "resources": {
+          "students": "Студенты",
+          "payments": "Платежи",
+          "reports": "Отчёты",
+          "staff": "Сотрудники",
+          "settings": "Настройки",
+          "audit": "Аудит"
+        }
+      }
+    },
+    "access": {
+      "title": "Доступ к подразделениям",
+      "editButton": "Изменить доступ",
+      "summary_one": "Доступ к {{count}} подразделению из {{total}}",
+      "summary_few": "Доступ к {{count}} подразделениям из {{total}}",
+      "summary_many": "Доступ к {{count}} подразделениям из {{total}}",
+      "summary_other": "Доступ к {{count}} подразделениям из {{total}}",
+      "summaryAll": "Полный доступ ко всем подразделениям"
+    },
+    "profileTab": {
+      "title": "Профиль",
+      "editButton": "Редактировать",
+      "saveButton": "Сохранить",
+      "cancelButton": "Отмена",
+      "fullNameLabel": "Полное имя",
+      "phoneLabel": "Телефон",
+      "phonePlaceholder": "+998 90 123-45-67",
+      "localeLabel": "Язык интерфейса",
+      "timezoneLabel": "Часовой пояс",
+      "successToast": "Профиль обновлён",
+      "errorToast": "Не удалось сохранить"
+    },
+    "editContact": {
+      "title": "Изменить контактные данные",
+      "body": "Email используется для входа. Изменение применится после следующего входа.",
+      "emailLabel": "Email",
+      "phoneLabel": "Телефон",
+      "submit": "Сохранить",
+      "successToast": "Контакты обновлены",
+      "errorToast": "Не удалось обновить контакты"
+    },
+    "delete": {
+      "title": "Удалить аккаунт",
+      "body": "Аккаунт {{name}} будет удалён без возможности восстановления. Все записи в журнале активности сохранятся.",
+      "reasonLabel": "Причина удаления (минимум 20 символов)",
+      "reasonPlaceholder": "Опишите контекст удаления",
+      "confirmEmailLabel": "Введите email сотрудника для подтверждения",
+      "confirmEmailHint": "Защита от случайного удаления.",
+      "confirmEmailMismatch": "Email не совпадает",
+      "next": "Продолжить",
+      "back": "Назад",
+      "confirmSubmit": "Удалить аккаунт",
+      "successToast": "Аккаунт удалён",
+      "errorToast": "Не удалось удалить аккаунт"
+    },
+    "transfer": {
+      "title": "Передача владения",
+      "body": "Текущий владелец станет Finance Manager. {{name}} станет Owner и сможет управлять биллингом и удалять аккаунты.",
+      "reasonLabel": "Причина передачи (минимум 20 символов)",
+      "reasonPlaceholder": "Опишите контекст передачи владения",
+      "confirmPhraseLabel": "Введите TRANSFER для подтверждения",
+      "confirmPhraseValue": "TRANSFER",
+      "confirmPhraseMismatch": "Введите слово TRANSFER заглавными буквами",
+      "next": "Продолжить",
+      "back": "Назад",
+      "confirmSubmit": "Передать владение",
+      "successToast": "Владение передано {{name}}",
+      "errorToast": "Не удалось передать владение",
+      "kebabDisabled": "Передача владения доступна только текущему владельцу."
+    },
+    "sessions": {
+      "title": "Активные сессии",
+      "emptyTitle": "Нет активных сессий",
+      "emptyBody": "Сессии появятся после первого входа сотрудника.",
+      "columns": {
+        "device": "Устройство",
+        "ip": "IP",
+        "location": "Локация",
+        "lastActive": "Активность",
+        "actions": "Действия"
+      },
+      "currentBadge": "Текущая",
+      "revokeOne": "Отозвать",
+      "revokeOneTitle": "Отозвать сессию",
+      "revokeOneBody": "Устройство «{{device}}» будет отключено. Сотрудник должен будет войти заново.",
+      "revokeOneReasonLabel": "Причина (минимум 20 символов)",
+      "revokeOneConfirm": "Отозвать сессию",
+      "revokeAllOthers": "Отозвать остальные сессии",
+      "revokeAllOthersTitle": "Отозвать остальные сессии",
+      "revokeAllOthersBody": "Все сессии, кроме текущей, будут завершены. Сотрудник должен будет войти заново на других устройствах.",
+      "revokeAllOthersReasonLabel": "Причина (минимум 20 символов)",
+      "revokeAllOthersConfirm": "Отозвать остальные",
+      "revokeSuccessToast": "Сессия отозвана",
+      "revokeErrorToast": "Не удалось отозвать сессию",
+      "revokeAllSuccessToast_one": "Отозвана {{count}} сессия",
+      "revokeAllSuccessToast_few": "Отозвано {{count}} сессии",
+      "revokeAllSuccessToast_many": "Отозвано {{count}} сессий",
+      "revokeAllSuccessToast_other": "Отозвано {{count}} сессий",
+      "revokeAllErrorToast": "Не удалось отозвать сессии",
+      "visibilityLocked": "Сессии видны только владельцу аккаунта или Owner."
+    },
+    "identityCard": {
+      "title": "Профиль",
+      "fullName": "Полное имя",
+      "email": "Email",
+      "phone": "Телефон",
+      "phoneEmpty": "Не указан",
+      "createdAt": "Дата создания",
+      "lastLoginAt": "Последний вход",
+      "lastLoginNever": "Не входил",
+      "memberId": "ID сотрудника",
+      "createdBy": "Приглашён",
+      "createdByUnknown": "Системой",
+      "lastModified": "Последнее изменение"
+    },
+    "activityFilters": {
+      "actionLabel": "Тип действия",
+      "actionAll": "Все действия",
+      "dateLabel": "Период",
+      "reset": "Сбросить фильтры",
+      "emptyFiltered": "Нет действий за выбранный период.",
+      "emptyResetCta": "Сбросить фильтры"
+    },
+    "extendedActivity": {
+      "actions": {
+        "contact_updated": "Изменены контакты",
+        "invite_resent": "Приглашение отправлено повторно",
+        "invite_cancelled": "Приглашение отменено",
+        "password_reset": "Сброс пароля",
+        "session_revoked": "Сессия отозвана",
+        "sessions_revoked_all_others": "Отозваны остальные сессии"
+      },
+      "columns": {
+        "ip": "IP",
+        "device": "Устройство"
+      }
+    },
+    "kebabExtended": {
+      "editContact": "Изменить контактные данные",
+      "deleteAccount": "Удалить аккаунт"
+    },
+    "chips": {
+      "inviteSent": "Приглашение отправлено {{relative}}"
+    },
+    "tabsExtended": {
+      "sessions": "Сессии"
+    }
+  },
   "errors": {
     "generic": "Что-то пошло не так. Попробуйте ещё раз."
   }
