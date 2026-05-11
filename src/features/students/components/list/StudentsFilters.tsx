@@ -11,11 +11,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Toggle } from '@/components/ui/toggle';
 import { TreePicker, type TreeItem } from '@/components/shared/TreePicker';
+import { FilterStack, ChipGroup } from '@/components/shared/FilterStack';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useIsMobile } from '@/hooks/use-breakpoint';
-import { cn } from '@/lib/utils';
 import type {
   Department,
   EducationType,
@@ -315,57 +314,3 @@ function FilterGroup({ label, children }: { label: string; children: React.React
   );
 }
 
-// ---------- FilterStack (desktop: uppercase tracking-wider label on top, chips below) ----------
-// `text-xs uppercase tracking-wider` is §0.2 allow-listed (category 5: definition labels).
-
-function FilterStack({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="inline-flex flex-col items-start gap-1.5">
-      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </span>
-      <div className="inline-flex items-center">{children}</div>
-    </div>
-  );
-}
-
-// ---------- ChipGroup (multi-select chip toggles using shadcn Toggle) ----------
-
-interface ChipGroupProps {
-  items: Array<{ id: string; label: string }>;
-  value: string[];
-  onChange: (next: string[]) => void;
-}
-
-function ChipGroup({ items, value, onChange }: ChipGroupProps) {
-  const selectedSet = useMemo(() => new Set(value), [value]);
-  return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {items.map((it) => {
-        const selected = selectedSet.has(it.id);
-        return (
-          <Toggle
-            key={it.id}
-            size="sm"
-            pressed={selected}
-            onPressedChange={(pressed) => {
-              const next = new Set(value);
-              if (pressed) next.add(it.id);
-              else next.delete(it.id);
-              onChange([...next]);
-            }}
-            className={cn(
-              'h-9 rounded-md border px-3 text-sm font-medium transition-colors',
-              selected
-                ? 'border-brand-600 bg-brand-50 text-brand-700 data-[state=on]:border-brand-600 data-[state=on]:bg-brand-50 data-[state=on]:text-brand-700'
-                : 'border-border bg-card text-foreground hover:bg-muted/40',
-            )}
-            aria-pressed={selected}
-          >
-            {it.label}
-          </Toggle>
-        );
-      })}
-    </div>
-  );
-}
