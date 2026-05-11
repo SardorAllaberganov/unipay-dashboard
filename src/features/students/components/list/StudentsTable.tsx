@@ -24,6 +24,8 @@ interface Props {
     pageSize: number;
     total: number;
     onPageChange: (p: number) => void;
+    onPageSizeChange?: (pageSize: number) => void;
+    pageSizeOptions?: number[];
   };
   selectedIds: Set<string>;
   onToggleRow: (id: string) => void;
