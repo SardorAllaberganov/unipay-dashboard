@@ -168,7 +168,7 @@ export function PendingTable({
               >
                 {row.studentName}
               </Link>
-              <p className="text-xs text-muted-foreground">{row.period}</p>
+              <p className="text-sm text-muted-foreground">{row.period}</p>
             </div>
             <span className="font-mono font-semibold tabular text-foreground">
               <AmountDisplay value={row.remaining} />

@@ -105,7 +105,7 @@ export function PaymentSetupSection({ form, templates }: Props) {
                       {t('students.add.rowPeriod')}
                     </FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Семестр 1 2026" />
+                      <Input {...field} placeholder={t('students.add.rowPeriodPlaceholder')} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

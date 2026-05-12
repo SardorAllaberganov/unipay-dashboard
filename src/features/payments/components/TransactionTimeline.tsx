@@ -82,7 +82,7 @@ export function TransactionTimeline({ events, upcomingTypes = [], className }: P
                 {t(`payments.detail.events.${step.type}`)}
               </p>
               {step.at ? (
-                <p className="text-xs tabular text-muted-foreground">
+                <p className="text-sm tabular text-muted-foreground">
                   {formatDateTime(step.at)}
                 </p>
               ) : null}

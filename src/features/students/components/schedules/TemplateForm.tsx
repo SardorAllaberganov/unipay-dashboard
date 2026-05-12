@@ -243,7 +243,7 @@ export function TemplateForm({ open, onOpenChange, template }: Props) {
                 <FormItem>
                   <FormLabel>{t('students.schedules.form.periodLabel')} *</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Семестр 1 2026" />
+                    <Input {...field} placeholder={t('students.add.rowPeriodPlaceholder')} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

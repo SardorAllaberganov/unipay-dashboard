@@ -30,14 +30,14 @@ export function StepActionBar({
             {t('onboarding.actions.back')}
           </Button>
         ) : null}
-        <Button
+        <WriteButton
           type="button"
           variant="outline"
           onClick={onSaveExit}
           disabled={isSubmitting || saveExitDisabled}
         >
           {t('onboarding.actions.saveExit')}
-        </Button>
+        </WriteButton>
         <div className="flex-1" />
         {isFinal ? (
           <WriteButton type="button" onClick={onNext} loading={isSubmitting}>
@@ -45,10 +45,10 @@ export function StepActionBar({
             {t('onboarding.actions.finish')}
           </WriteButton>
         ) : (
-          <Button type="button" onClick={onNext} loading={isSubmitting}>
+          <WriteButton type="button" onClick={onNext} loading={isSubmitting}>
             {t('onboarding.actions.next')}
             <ArrowRight className="size-4" aria-hidden />
-          </Button>
+          </WriteButton>
         )}
       </div>
     </div>

@@ -34,7 +34,7 @@ export function TransactionMobileCard({ tx, isStuck }: Props) {
         <span className="text-base font-semibold tabular text-foreground">
           <AmountDisplay value={tx.amount} />
         </span>
-        <DateDisplay value={tx.createdAt} format="datetime" className="text-xs text-muted-foreground" />
+        <DateDisplay value={tx.createdAt} format="datetime" className="text-sm text-muted-foreground" />
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <StatusBadge variant={STATUS_TO_VARIANT[tx.status]} />

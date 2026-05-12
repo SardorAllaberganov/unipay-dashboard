@@ -186,7 +186,7 @@ export function RefundsTable({ mode, data, state, onRetry }: Props) {
                 <span className="block text-sm font-medium text-foreground">
                   {refund.studentName}
                 </span>
-                <span className="block text-xs text-muted-foreground">
+                <span className="block text-sm text-muted-foreground">
                   {t(`payments.refunds.reasons.${refund.reason}`)}
                 </span>
               </div>
@@ -202,7 +202,7 @@ export function RefundsTable({ mode, data, state, onRetry }: Props) {
               <DateDisplay
                 value={refund.requestedAt}
                 format="datetime"
-                className="text-xs text-muted-foreground"
+                className="text-sm text-muted-foreground"
               />
             </div>
             {mode === 'pending' ? (
