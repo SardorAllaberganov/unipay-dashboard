@@ -31,6 +31,32 @@ const ROUTE_TITLES: Record<string, { titleKey: string; sectionKey?: string }> = 
   '/settings': { titleKey: 'nav.settings', sectionKey: 'nav.section.system' },
 };
 
+// Per-section tab slug → localized label key. When the path is exactly
+// `/{section}/{tab}` (a nested-tab layout) we surface the active tab as the
+// third breadcrumb level so users see e.g. "Система › Настройки › Общие".
+const NESTED_TAB_LABELS: Record<string, Record<string, string>> = {
+  '/settings': {
+    general: 'settings.tabs.general',
+    security: 'settings.tabs.security',
+    api: 'settings.tabs.api',
+    integrations: 'settings.tabs.integrations',
+    notifications: 'settings.tabs.notifications',
+    billing: 'settings.tabs.billing',
+    audit: 'settings.tabs.audit',
+    preferences: 'settings.tabs.preferences',
+  },
+  '/organization': {
+    profile: 'organization.tabs.profile',
+    departments: 'organization.tabs.departments',
+    'bank-accounts': 'organization.tabs.bankAccounts',
+    branding: 'organization.tabs.branding',
+  },
+  '/reports': {
+    summary: 'reports.tabs.summary',
+    export: 'reports.tabs.export',
+  },
+};
+
 function titleCaseSegment(seg: string): string {
   return seg
     .split('-')
@@ -71,6 +97,18 @@ function getBreadcrumbs(pathname: string, t: (k: string) => string): Crumb[] {
     }
   }
 
+  // /locked/:feature — Coming Soon landings. Title resolves from the feature
+  // content registry via i18n; unknown slugs fall back to the generic "Скоро"
+  // label so the crumb stays localized regardless.
+  const lockedMatch = pathname.match(/^\/locked\/([^/]+)$/);
+  if (lockedMatch) {
+    const slug = lockedMatch[1]!;
+    const titleKey = `comingSoon.features.${slug}.title`;
+    const resolved = t(titleKey);
+    const label = resolved === titleKey ? t('comingSoon.fallback.title') : resolved;
+    return [{ label: t('comingSoon.badge') }, { label }];
+  }
+
   const route = ROUTE_TITLES[pathname];
   if (route) {
     return [
@@ -79,9 +117,39 @@ function getBreadcrumbs(pathname: string, t: (k: string) => string): Crumb[] {
     ];
   }
 
+  // Nested-tab layouts (`/settings/security`, `/organization/profile`,
+  // `/reports/summary`, etc.) fall through the exact-match lookup. Resolve via
+  // the parent section so the breadcrumb stays localized; if the path is
+  // exactly `/{section}/{tab}` and the tab has a registered label, surface the
+  // tab as a third crumb so users see "Section › Page › Tab".
+  const parentRoute = findParentRoute(pathname);
+  if (parentRoute) {
+    const cfg = ROUTE_TITLES[parentRoute]!;
+    const parts = pathname.split('/').filter(Boolean);
+    const parentParts = parentRoute.split('/').filter(Boolean);
+    const isImmediateChildTab = parts.length === parentParts.length + 1;
+    const tabSlug = isImmediateChildTab ? parts[parts.length - 1] : undefined;
+    const tabLabelKey = tabSlug ? NESTED_TAB_LABELS[parentRoute]?.[tabSlug] : undefined;
+    return [
+      ...(cfg.sectionKey ? [{ label: t(cfg.sectionKey) }] : []),
+      { label: t(cfg.titleKey), to: parentRoute },
+      ...(tabLabelKey ? [{ label: t(tabLabelKey) }] : []),
+    ];
+  }
+
   const parts = pathname.split('/').filter(Boolean);
   if (parts.length === 0) return [{ label: t('app.name') }];
   return parts.map((p) => ({ label: titleCaseSegment(p) }));
+}
+
+function findParentRoute(pathname: string): string | null {
+  // Walk path prefixes longest-first so `/payments/transactions` wins over `/payments`.
+  const parts = pathname.split('/').filter(Boolean);
+  for (let i = parts.length - 1; i > 0; i--) {
+    const candidate = '/' + parts.slice(0, i).join('/');
+    if (candidate in ROUTE_TITLES) return candidate;
+  }
+  return null;
 }
 
 interface TopBarProps {

@@ -3,14 +3,19 @@
 import {
   ArrowLeftRight,
   Banknote,
+  Bot,
   Building2,
   ChevronLeft,
   ChevronRight,
   Clock,
   FileBarChart,
+  FileText,
   GraduationCap,
   LayoutDashboard,
+  Lock,
+  MessageSquare,
   Settings,
+  Smartphone,
   Undo2,
   Users,
   type LucideIcon,
@@ -28,6 +33,8 @@ interface NavItem {
   to: string;
   labelKey: string;
   icon: LucideIcon;
+  /** Coming-soon items route to /locked/:feature; visually muted + lock overlay. */
+  status?: 'coming-soon';
 }
 interface NavSection {
   titleKey: string;
@@ -48,7 +55,15 @@ const SECTIONS: NavSection[] = [
   },
   {
     titleKey: 'nav.section.students',
-    items: [{ to: '/students', labelKey: 'nav.students', icon: GraduationCap }],
+    items: [
+      { to: '/students', labelKey: 'nav.students', icon: GraduationCap },
+      {
+        to: '/locked/documents',
+        labelKey: 'nav.documents',
+        icon: FileText,
+        status: 'coming-soon',
+      },
+    ],
   },
   {
     titleKey: 'nav.section.payments',
@@ -56,6 +71,12 @@ const SECTIONS: NavSection[] = [
       { to: '/payments/transactions', labelKey: 'nav.transactions', icon: ArrowLeftRight },
       { to: '/payments/pending', labelKey: 'nav.pending', icon: Clock },
       { to: '/payments/refunds', labelKey: 'nav.refunds', icon: Undo2 },
+      {
+        to: '/locked/sms-campaigns',
+        labelKey: 'nav.smsCampaigns',
+        icon: MessageSquare,
+        status: 'coming-soon',
+      },
     ],
   },
   {
@@ -63,11 +84,25 @@ const SECTIONS: NavSection[] = [
     items: [
       { to: '/reports', labelKey: 'nav.reports', icon: FileBarChart },
       { to: '/payouts', labelKey: 'nav.payouts', icon: Banknote },
+      {
+        to: '/locked/ai-insights',
+        labelKey: 'nav.aiInsights',
+        icon: Bot,
+        status: 'coming-soon',
+      },
     ],
   },
   {
     titleKey: 'nav.section.system',
-    items: [{ to: '/settings', labelKey: 'nav.settings', icon: Settings }],
+    items: [
+      { to: '/settings', labelKey: 'nav.settings', icon: Settings },
+      {
+        to: '/locked/mobile-app',
+        labelKey: 'nav.mobileApp',
+        icon: Smartphone,
+        status: 'coming-soon',
+      },
+    ],
   },
 ];
 
@@ -173,6 +208,7 @@ function NavItemView({
   const { onboardingActive } = useAppShell();
   const Icon = item.icon;
   const label = t(item.labelKey);
+  const isComingSoon = item.status === 'coming-soon';
 
   if (onboardingActive) {
     return (
@@ -194,6 +230,52 @@ function NavItemView({
           </TooltipTrigger>
           <TooltipContent side="right">
             {t('onboarding.sidebarLockedTooltip')}
+          </TooltipContent>
+        </Tooltip>
+      </li>
+    );
+  }
+
+  // Coming-soon items: muted + lock badge, but still clickable so users
+  // can land on /locked/:feature for full content. aria-label reinforces
+  // the state for screen readers. Active state stays NEUTRAL (bg-muted +
+  // text-foreground) — never brand-active — because these aren't "real"
+  // routes the user "is on" in the normal navigational sense; they're
+  // placeholders for features that don't exist yet.
+  if (isComingSoon) {
+    const ariaLabel = `${label} — ${t('comingSoon.badge')}`;
+    return (
+      <li>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <NavLink
+              to={item.to}
+              onClick={onClick}
+              aria-label={collapsed ? ariaLabel : ariaLabel}
+              title={collapsed ? ariaLabel : undefined}
+              className={({ isActive }) =>
+                cn(
+                  'group relative grid h-9 grid-cols-[auto_1fr_auto] items-center gap-2.5 rounded-md px-3 text-sm font-medium transition-colors',
+                  'hover:bg-slate-100 dark:hover:bg-slate-800',
+                  collapsed && 'flex justify-center px-0',
+                  isActive ? 'bg-muted' : '',
+                )
+              }
+            >
+              <Icon className="size-4 shrink-0 text-muted-foreground/70" aria-hidden />
+              {!collapsed ? (
+                <>
+                  <span className="truncate text-muted-foreground/70">{label}</span>
+                  <Lock
+                    className="size-3.5 shrink-0 text-muted-foreground/60"
+                    aria-hidden
+                  />
+                </>
+              ) : null}
+            </NavLink>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {t('comingSoon.sidebarTooltip')}
           </TooltipContent>
         </Tooltip>
       </li>

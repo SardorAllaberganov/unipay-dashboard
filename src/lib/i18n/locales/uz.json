@@ -29,13 +29,28 @@
       "shortcuts": "Qaynoq tugmalar",
       "copy": "Nusxalash",
       "copied": "Nusxalandi",
+      "copyFailed": "Nusxalab bo'lmadi. Qo'lda nusxalang.",
       "selectAll": "Hammasini tanlash",
       "openMenu": "Menyuni ochish",
       "openSearch": "Qidiruvni ochish",
       "showHelp": "Yordam",
       "toggleTheme": "Mavzuni almashtirish",
       "collapse": "Yig`ish",
-      "expand": "Yoyish"
+      "expand": "Yoyish",
+      "done": "Tayyor",
+      "show": "Ko'rsatish",
+      "actions": "Amallar"
+    },
+    "validation": {
+      "required": "Majburiy maydon",
+      "email": "To'g'ri email kiriting",
+      "phone": "To'g'ri telefon kiriting",
+      "minLength": "Kamida {{count}} belgi",
+      "maxLength": "Ko'pi bilan {{count}} belgi",
+      "reasonMinLength": "Kamida {{count}} belgi"
+    },
+    "errors": {
+      "saveFailed": "Saqlab bo'lmadi. Qayta urinib ko'ring."
     },
     "states": {
       "loading": "Yuklanmoqda…",
@@ -115,6 +130,10 @@
     "reports": "Hisobotlar",
     "payouts": "Yechib olishlar",
     "settings": "Sozlamalar",
+    "documents": "Hujjatlar",
+    "smsCampaigns": "SMS-tarqatmalar",
+    "aiInsights": "AI tahlillari",
+    "mobileApp": "Mobil ilova",
     "more": "Yana"
   },
   "auth": {
@@ -1111,6 +1130,7 @@
       "applyTemplateHint": "Saqlangan shablondan foydalaning yoki qatorlarni qo'lda kiriting",
       "pickTemplate": "Shablonni tanlang",
       "rowPeriod": "Davr",
+      "rowPeriodPlaceholder": "1-semestr 2026",
       "rowType": "Turi",
       "rowAmount": "Summa",
       "rowDueDate": "Muddat",
@@ -1928,6 +1948,542 @@
       "body": "Hisobingiz avtomatik to'lovlar rejimida. Jadvalni o'zgartirish uchun qo'llab-quvvatlash xizmatiga murojaat qiling.",
       "nextLabel": "Keyingi to'lov",
       "contactSupport": "Qo'llab-quvvatlashga yozish"
+    }
+  },
+  "comingSoon": {
+    "badge": "Tez orada",
+    "sidebarTooltip": "Tez orada. Ochish uchun sotuv bo'limiga murojaat qiling.",
+    "notifyMe": {
+      "label": "Sizning email",
+      "placeholder": "you@university.uz",
+      "submit": "Tayyor bo'lganda xabar bering",
+      "successTitle": "Rahmat! Ishga tushganda yozamiz",
+      "successBody": "{{email}} kutish ro'yxatiga qo'shildi.",
+      "anotherEmail": "Boshqa email kiritish",
+      "contactSales": "Sotuv bo'limi bilan bog'lanish"
+    },
+    "fallback": {
+      "title": "Tez orada",
+      "subtitle": "Bu imkoniyat yaqin yangilanishlarda paydo bo'ladi. Obuna bo'ling — tayyor bo'lishi bilan xabar beramiz.",
+      "bullets": {
+        "0": "Biz bu imkoniyat ustida faol ishlamoqdamiz",
+        "1": "Ertaroq kirish uchun sotuv bo'limiga yozing",
+        "2": "Obuna bo'ling — emailga taklif yuboramiz"
+      }
+    },
+    "dashboardTeaser": {
+      "title": "AI tahlillari",
+      "body": "Qarzlar, anomal to'lov harakatlari va muddati o'tgan to'lovlar haqida avtomatik signallar — qo'l bilan tahlil qilishga vaqt sarflanmaydi.",
+      "cta": "Xabar bering"
+    },
+    "features": {
+      "sms-campaigns": {
+        "title": "Ota-onalar va talabalarga SMS-tarqatmalar",
+        "subtitle": "Qarzlar, to'lov jadvali va to'lov tasdiqlari haqida ommaviy va aniq SMS bildirishnomalar.",
+        "bullets": {
+          "0": "Bo'lim, kurs va to'lov holati bo'yicha segmentlar",
+          "1": "Talaba va summa o'zgaruvchilari bilan shablonlar",
+          "2": "Yetkazish jurnali va holatlar bo'yicha hisobot"
+        }
+      },
+      "documents": {
+        "title": "Hujjatlar aylanmasi va ma'lumotnomalar",
+        "subtitle": "1С yoki Word'ga o'tmasdan shablonlar bo'yicha o'qish to'g'risida ma'lumotnoma, shartnoma va kvitansiyalarni yaratish.",
+        "bullets": {
+          "0": "Talaba kartochkasidagi o'zgaruvchilar bilan .docx shablonlar",
+          "1": "Imzolash (elektron imzo + tashkilot muhri)",
+          "2": "Berilgan barcha hujjatlar arxivi qidiruv bilan"
+        }
+      },
+      "ai-insights": {
+        "title": "To'lovlar bo'yicha AI tahlillari",
+        "subtitle": "To'lov xulq-atvorini tahlil qiladi va xavflarni yoritadi: kechikish zonasidagi talabalar, anomal cho'qqilar, kanallar samaradorligi.",
+        "bullets": {
+          "0": "To'lovsizlik haqida 7–14 kun oldin ogohlantirish",
+          "1": "Xavf bo'yicha talabalarni avto-segmentlash",
+          "2": "Tariflar va to'lov jadvali bo'yicha tavsiyalar"
+        }
+      },
+      "integrations-hemis": {
+        "title": "HEMIS bilan integratsiya",
+        "subtitle": "Talabalar, bo'limlar va to'lov jadvalini davlat HEMIS tizimi bilan ikki tomonlama sinxronlashtirish.",
+        "bullets": {
+          "0": "Talabalar va guruhlar ro'yxatini bir tugma bilan import",
+          "1": "Chetlatish va ko'chirish holatlarini avto-sinxronlash",
+          "2": "Alohida autentifikatsiya va sinxronlash jurnali"
+        }
+      },
+      "integrations-1c": {
+        "title": "1С bilan integratsiya",
+        "subtitle": "Tranzaksiyalar va to'lovlarni 1С: Buxgalteriyaga jadval bo'yicha yoki so'rov bo'yicha uzatish — qo'l bilan eksportsiz.",
+        "bullets": {
+          "0": "Hisoblar va daromad moddalarini sozlamalar darajasida mapping",
+          "1": "Operatsiyalarni kuniga bir marta avto-eksport",
+          "2": "1С 8.3 va bulutli versiyalar bilan mosligi"
+        }
+      },
+      "mobile-app": {
+        "title": "UNIPAY mobil ilovasi",
+        "subtitle": "Ota-onalar va talabalar uchun iOS va Android ilova — to'lovlar, tarix, to'lov bildirishnomalari.",
+        "bullets": {
+          "0": "Apple Pay va Google Pay qo'shimcha sozlashsiz",
+          "1": "Qarzlar haqida push-bildirishnomalar",
+          "2": "Ma'lumotnomalarni ilovadan to'g'ridan-to'g'ri so'rash"
+        }
+      },
+      "multi-currency": {
+        "title": "Ko'p valyutali to'lovlar (USD)",
+        "subtitle": "Chet ellik talabalardan AQSh dollarida to'lov qabul qilish — O'zbekiston Markaziy banki kursi bo'yicha avtomatik konvertatsiya bilan.",
+        "bullets": {
+          "0": "USD hamyoni va alohida to'lovlar jadvali",
+          "1": "Markaziy bank kursi qo'lda sozlashsiz",
+          "2": "UZS va USD bo'yicha alohida hisobot"
+        }
+      },
+      "custom-roles": {
+        "title": "Maxsus rollar va huquqlar",
+        "subtitle": "Resurslar va amallar bo'yicha aniq sozlash bilan o'z rollaringizni yarating — to'rtta oldindan o'rnatilgan rollar bilan cheklanmang.",
+        "bullets": {
+          "0": "Huquqlar konstruktor: resurs × {read, write, destructive}",
+          "1": "Bo'lim va guruhlarga granular kirish",
+          "2": "Huquqlar o'zgarishi Audit jurnalida"
+        }
+      },
+      "billing-upgrade": {
+        "title": "Tarifni yaxshilash",
+        "subtitle": "Biznes yoki Enterprise rejaga o'tish: ko'proq kanallar, pastroq komissiya, kunlik to'lovlar, SLA bo'yicha qo'llab-quvvatlash.",
+        "bullets": {
+          "0": "Rekvizitlarni tekshirish bilan mustaqil yaxshilash",
+          "1": "Oylik va choraklik bilingga to'lov",
+          "2": "O'tish oldidan yangi imkoniyatni sinov davri"
+        }
+      }
+    }
+  },
+  "settings": {
+    "title": "Sozlamalar",
+    "subtitle": "Tashkilot, xavfsizlik, integratsiya va bildirishnomalarni boshqaring.",
+    "tabs": {
+      "aria": "Sozlamalar bo'limlari",
+      "general": "Umumiy",
+      "security": "Xavfsizlik",
+      "api": "API va Webhook",
+      "integrations": "Integratsiyalar",
+      "notifications": "Bildirishnomalar",
+      "billing": "Tarif",
+      "audit": "Audit jurnali",
+      "preferences": "Imtiyozlar"
+    },
+    "integrations": {
+      "title": "Tashqi integratsiyalar",
+      "subtitle": "UNIPAYni o'quv muassasangizning hisobot tizimlariga ulang.",
+      "requestAccess": "Kirish so'rash",
+      "hemis": {
+        "description": "HEMIS davlat tizimi — talabalar, guruhlar va to'lov jadvalini sinxronlash."
+      },
+      "oneC": {
+        "description": "1С: Buxgalteriya — tranzaksiyalar va to'lovlar bo'yicha avto-eksport."
+      },
+      "custom": {
+        "name": "Maxsus ERP",
+        "description": "REST yoki fayl almashinuvi orqali ulanish. Vazifani tasvirlab bering — integratsiyani yig'amiz."
+      }
+    },
+    "passwordConfirm": {
+      "label": "Joriy parol",
+      "invalid": "Parol noto'g'ri. Qayta urinib ko'ring."
+    },
+    "general": {
+      "title": "Umumiy sozlamalar",
+      "subtitle": "Aloqa ma'lumotlari, vaqt mintaqasi va interfeys tili.",
+      "savedToast": "Sozlamalar saqlandi",
+      "orgName": {
+        "label": "Muassasa nomi",
+        "readonlyHint": "Tashkilot profilida o'zgartiriladi",
+        "editLink": "Profilda tahrirlash"
+      },
+      "tin": {
+        "label": "STIR",
+        "readonlyHint": "Tashkilot profilida o'zgartiriladi"
+      },
+      "email": {
+        "label": "Aloqa email"
+      },
+      "phone": {
+        "label": "Aloqa telefoni"
+      },
+      "timezone": {
+        "label": "Vaqt mintaqasi"
+      },
+      "language": {
+        "label": "Interfeys tili",
+        "ru": "Русский",
+        "uz": "O‘zbekcha"
+      },
+      "timezones": {
+        "tashkent": "Toshkent (UTC+5)",
+        "almaty": "Almati (UTC+5)",
+        "moscow": "Moskva (UTC+3)",
+        "utc": "UTC"
+      }
+    },
+    "security": {
+      "password": {
+        "title": "Parol",
+        "subtitle": "Parolni muntazam yangilang — kamida 8 belgi, harf va raqam aralash.",
+        "current": "Joriy parol",
+        "new": "Yangi parol",
+        "confirm": "Yangi parolni takrorlang",
+        "hint": "Kamida 8 belgi, harf va raqam aralash.",
+        "minLength": "Kamida {{count}} belgi",
+        "mixed": "Harf va raqam bo'lishi kerak",
+        "mismatch": "Parollar mos kelmadi",
+        "updateCta": "Parolni yangilash",
+        "savedToast": "Parol yangilandi",
+        "invalidCurrent": "Joriy parol noto'g'ri"
+      },
+      "twoFa": {
+        "title": "Ikki bosqichli autentifikatsiya (2FA)",
+        "subtitle": "Autentifikator ilovasi orqali qo'shimcha tasdiqlash.",
+        "enabled": "2FA yoqilgan",
+        "disabled": "2FA o'chirilgan",
+        "enabledHelp": "Kirish autentifikator kodi talab qiladi.",
+        "disabledHelp": "Yoqishni tavsiya qilamiz — parol o'g'irlanishidan himoya.",
+        "enableCta": "2FA yoqish",
+        "disableCta": "O'chirish",
+        "regenerateCodes": "Zaxira kodlarini qayta yaratish",
+        "enableTitle": "2FA-ni yoqish",
+        "scanHelp": "QR-kodni autentifikator ilovasi orqali skanerlang (Google Authenticator, Authy, 1Password).",
+        "qrAlt": "2FA sozlash uchun QR-kod",
+        "manualEntry": "Yoki kalitni qo'lda kiriting",
+        "verifyHelp": "Sozlashni yakunlash uchun ilovadan 6 xonali kod kiriting.",
+        "codeLabel": "Tasdiqlash kodi",
+        "codeFormat": "6 ta raqam kiriting",
+        "codeInvalid": "Kod noto'g'ri. Qayta urinib ko'ring.",
+        "verifyCta": "Tasdiqlash",
+        "codesIntro": "Mana shu 8 ta zaxira kod ilovaga kirish imkoni yo'qolsa kerak bo'ladi. Xavfsiz joyda saqlang — qayta ko'rsatilmaydi.",
+        "codesHelp": "Zaxira kodlarni saqlang — ular faqat bir marta ko'rsatiladi.",
+        "copyAndSaved": "Nusxalash va saqlash",
+        "copiedAndSaved": "Nusxalandi — saqlang",
+        "codesDone": "Kodlarni saqladim",
+        "disableTitle": "2FA-ni o'chirish?",
+        "disableDescription": "O'chirilgandan keyin ikki bosqichli himoya ishlamaydi. Parol va sababni kiriting.",
+        "regenerateTitle": "Zaxira kodlarini qayta yaratasizmi?",
+        "regenerateDescription": "Eski kodlar ishlamaydi. Yangi to'plamni olish uchun parol kiriting.",
+        "regenerateCta": "Qayta yaratish",
+        "newCodesTitle": "Yangi zaxira kodlar",
+        "newCodesDescription": "Eski kodlar bekor qilindi. Yangi to'plamni saqlang."
+      },
+      "sessions": {
+        "title": "Faol seanslar",
+        "subtitle": "UNIPAY-ga kirgan qurilmalaringiz.",
+        "currentBadge": "Joriy",
+        "revokeOne": "Tugatish",
+        "revokeAll": "Boshqalarini tugatish",
+        "revokedToast": "Seans tugatildi",
+        "revokedAllToast": "Tugatilgan seanslar: {{count}}",
+        "cols": {
+          "device": "Qurilma",
+          "ip": "IP-manzil",
+          "location": "Joylashuv",
+          "lastActive": "So'nggi faollik",
+          "actions": "Amallar"
+        },
+        "emptyTitle": "Faol seanslar yo'q",
+        "emptyBody": "Boshqa qurilmada kirsangiz, u shu yerda paydo bo'ladi.",
+        "revokeTitle": "«{{device}}» qurilmasidagi seansni tugatasizmi?",
+        "revokeDescription": "Qurilma darhol uziladi. Audit uchun sababni ko'rsating.",
+        "revokeCta": "Seansni tugatish",
+        "revokeAllTitle": "Boshqa hamma seanslarni tugatasizmi?",
+        "revokeAllDescription": "Joriy seansdan tashqari hammasi uziladi ({{count}} ta).",
+        "revokeAllCta": "Hammasini tugatish"
+      },
+      "history": {
+        "title": "Kirish tarixi",
+        "subtitle": "Hisobga oxirgi 30 ta kirish urinishlari.",
+        "cols": {
+          "timestamp": "Vaqt",
+          "ip": "IP-manzil",
+          "device": "Qurilma",
+          "outcome": "Natija"
+        },
+        "success": "Muvaffaqiyatli",
+        "failed": "Xatolik",
+        "emptyTitle": "Tarix bo'sh",
+        "emptyBody": "Keyingi kirishlardan keyin yozuvlar paydo bo'ladi."
+      }
+    },
+    "api": {
+      "title": "API-kalitlar",
+      "subtitle": "Server integratsiyalari uchun. Bir marta ko'rsatiladi — xavfsiz joyda saqlang.",
+      "newKeyCta": "Kalit yaratish",
+      "rowMenuAria": "«{{name}}» kaliti uchun amallar",
+      "permLabels": {
+        "read:transactions": "Tranzaksiyalarni o'qish",
+        "write:transactions": "Tranzaksiyalarni yozish",
+        "read:students": "Talabalarni o'qish",
+        "write:students": "Talabalarni yozish",
+        "read:payouts": "To'lovlarni o'qish",
+        "write:payouts": "To'lovlarni yozish",
+        "read:reports": "Hisobotlarni o'qish"
+      },
+      "permissionsCount_one": "{{count}} huquq",
+      "permissionsCount_other": "{{count}} huquq",
+      "permissionsRequired": "Kamida bitta huquq tanlang",
+      "neverUsed": "Ishlatilmagan",
+      "deletedToast": "Kalit o'chirildi",
+      "cols": {
+        "name": "Nomi",
+        "permissions": "Huquqlar",
+        "createdAt": "Yaratildi",
+        "lastUsedAt": "So'nggi foydalanish"
+      },
+      "emptyTitle": "API-kalitlar yo'q",
+      "emptyBody": "API'dan foydalanish uchun kalit yarating.",
+      "generateTitle": "Yangi API-kalit",
+      "generateDescription": "Kalitga tushunarli nom bering va huquqlarni tanlang. Plaintext-token faqat bir marta ko'rsatiladi.",
+      "generatedTitle": "Kalit yaratildi",
+      "generatedDescription": "Bu yagona safar plaintext qiymatini ko'rmoqdasiz. Nusxalab parol menejerida saqlang.",
+      "nameLabel": "Nomi",
+      "namePlaceholder": "Backoffice reporting",
+      "permissionsLabel": "Huquqlar",
+      "generateCta": "Kalit yaratish",
+      "doneCta": "Tayyor, kalitni saqladim",
+      "copyOrLoseDescription": "Plaintext qiymati serverda saqlanmaydi va qayta ko'rsatilmaydi. Hozir nusxalang.",
+      "closeWarnTitle": "Saqlamasdan yopish?",
+      "closeWarnBody": "Kalitning plaintext qiymati abadiy yo'qoladi. Uni allaqachon nusxalaganingizni tasdiqlang.",
+      "closeWarnConfirm": "Yopish",
+      "closeWarnCancel": "Qolish",
+      "revealCta": "Ko'rsatish",
+      "revealTitle": "Kalitni ko'rsatish",
+      "revealDescription": "«{{name}}» kalitining plaintext qiymatini ko'rish uchun parol kiriting.",
+      "revealConfirm": "Kalitni ko'rsatish",
+      "revealedTitle": "Plaintext qiymati",
+      "revealedDescription": "Nusxalang — dialog nusxa qoldirmaydi.",
+      "regenerateCta": "Qayta yaratish",
+      "regenerateTitle": "Kalitni qayta yaratish",
+      "regenerateDescription": "Qayta yaratilgandan keyin «{{name}}» eski qiymati ishlamaydi. Parol kiriting.",
+      "regenerateConfirm": "Qayta yaratish",
+      "regeneratedTitle": "Kalitning yangi qiymati",
+      "regeneratedDescription": "Eski qiymat bekor qilindi. Yangi kalitni saqlang — u bir marta ko'rsatiladi.",
+      "deleteCta": "O'chirish",
+      "deleteTitle": "«{{name}}» kalitini o'chirasizmi?",
+      "deleteDescription": "Bu kalitdan foydalanayotgan barcha integratsiyalar ishlamaydi.",
+      "deleteConfirm": "Kalitni o‘chirish"
+    },
+    "webhook": {
+      "title": "Webhook",
+      "subtitle": "UNIPAY hodisalar ro'y berganda chaqiradigan server endpoint-i.",
+      "urlLabel": "Endpoint URL",
+      "urlHttps": "URL https:// bilan boshlanishi kerak",
+      "eventsLabel": "Hodisalar",
+      "eventsRequired": "Kamida bitta hodisani tanlang",
+      "eventLabels": {
+        "payment": {
+          "completed": "To'lov yakunlandi",
+          "failed": "To'lov amalga oshmadi",
+          "refunded": "Qaytarish"
+        },
+        "payout": {
+          "settled": "To'lov amalga oshirildi"
+        },
+        "student": {
+          "created": "Talaba qo'shildi",
+          "updated": "Talaba yangilandi"
+        }
+      },
+      "enabledLabel": "Yoqilgan",
+      "enabledHelp": "O'chirilganda hodisalar yuborilmaydi.",
+      "testCta": "Webhook testi",
+      "testSuccess": "Test muvaffaqiyatli — kod {{code}}, {{ms}} ms",
+      "testFailed": "Xatolik — kod {{code}}, {{ms}} ms",
+      "savedToast": "Webhook saqlandi",
+      "retryToast": "Yetkazib berish qayta yuborildi",
+      "secretLabel": "Imzo (signing secret)",
+      "secretHelp": "Webhook hodisalarining haqiqiyligini tekshirish uchun ishlatiladi.",
+      "secretRotatedToast": "Imzo yangilandi",
+      "rotateCta": "Aylantirish",
+      "revealTitle": "Imzoni ko'rsatish",
+      "revealDescription": "Signing secret-ni ko'rish uchun parol kiriting.",
+      "secretShown": "Joriy imzo",
+      "secretShownHelp": "Parol menejerida saqlang — dialog nusxa qoldirmaydi.",
+      "rotateTitle": "Imzoni aylantirish",
+      "rotateDescription": "Aylantirgandan keyin eski imzo ishlamaydi. Uni server tomonida yangilang.",
+      "rotatedTitle": "Yangi imzo",
+      "rotatedDescription": "Eski qiymat bekor qilindi. Yangisini saqlang — bir marta ko'rsatiladi.",
+      "deliveries": {
+        "title": "Yetkazish jurnali",
+        "subtitle": "So'nggi 20 ta yuborish urinishi.",
+        "success": "Muvaffaqiyatli",
+        "failed": "Xatolik",
+        "retryCta": "Qayta yuborish",
+        "cols": {
+          "timestamp": "Vaqt",
+          "event": "Hodisa",
+          "status": "Holat",
+          "responseCode": "Kod",
+          "duration": "Davomiyligi"
+        },
+        "emptyTitle": "Hozircha yetkazishlar yo'q",
+        "emptyBody": "Birinchi yozuv uchun webhook testini ishga tushiring."
+      }
+    },
+    "notifications": {
+      "title": "Yetkazish kanallari",
+      "subtitle": "UNIPAY hodisalar haqida sizni qaerda xabardor qiladi.",
+      "savedToast": "Bildirishnomalar saqlandi",
+      "eventHeader": "Hodisa",
+      "channels": {
+        "email": "Email",
+        "sms": "SMS",
+        "in_app": "Ilovada"
+      },
+      "events": {
+        "payment": {
+          "received": "To'lov qabul qilindi",
+          "failed": "To'lov amalga oshmadi"
+        },
+        "overdue": {
+          "alert": "Muddati o'tgan"
+        },
+        "payout": {
+          "sent": "To'lov yuborildi"
+        },
+        "refund": {
+          "processed": "Qaytarish bajarildi"
+        },
+        "staff": {
+          "invited": "Xodim taklif qilindi"
+        },
+        "weekly": {
+          "summary": "Haftalik sarhisob"
+        }
+      },
+      "overdueTitle": "Muddati o'tgan to'lov qoidalari",
+      "overdueSubtitle": "Muddati o'tgan to'lov haqida qachon eslatma yuborish.",
+      "overdueLabel": "Muddatdan keyin necha kun",
+      "overdueHelp": "1 dan 90 kungacha. Bildirishnomani talaba va moliya menejeri oladi."
+    },
+    "billing": {
+      "currentTitle": "Joriy tarif",
+      "currentSubtitle": "Faol reja va komissiya.",
+      "upgradeCta": "Rejani yaxshilash",
+      "planLabel": "Reja",
+      "feeLabel": "Oylik to'lov",
+      "feeSuffix": "har oyda",
+      "commissionLabel": "Tranzaksiya komissiyasi",
+      "scheduleLabel": "To'lovlar jadvali",
+      "schedules": {
+        "daily": "Har kuni",
+        "weekly": "Har hafta",
+        "on_request": "So'rov bo'yicha"
+      },
+      "compareTitle": "Tariflarni taqqoslash",
+      "compareSubtitle": "To'lov hajmiga mos tarifni tanlang.",
+      "featureCol": "Imkoniyatlar",
+      "currentBadge": "Joriy",
+      "included": "Kiritilgan",
+      "notIncluded": "Kiritilmagan",
+      "features": {
+        "unlimited_students": "Cheksiz talabalar",
+        "all_channels": "Barcha to'lov kanallari",
+        "api_keys": "API-kalitlar",
+        "webhooks": "Webhook-lar",
+        "priority_support": "Birinchi navbatda yordam",
+        "sla_99_9": "SLA 99.9%",
+        "dedicated_csm": "Shaxsiy menejer"
+      }
+    },
+    "audit": {
+      "title": "Audit jurnali",
+      "subtitle": "Tizim holatini o'zgartiradigan barcha amallar. Append-only.",
+      "reasonNote": "Sabab",
+      "toggleReasonAria": "Sababni ko'rsatish yoki yashirish",
+      "cols": {
+        "timestamp": "Vaqt",
+        "actor": "Kim",
+        "action": "Amal",
+        "target": "Ob'ekt",
+        "ip": "IP",
+        "expand": "Yoyish"
+      },
+      "emptyTitle": "Yozuvlar yo'q",
+      "emptyBody": "Xodimlar amallar bajarsa, ular shu yerda ko'rinadi.",
+      "filters": {
+        "actorLabel": "Xodim",
+        "actorPlaceholder": "Ism bo'yicha qidirish",
+        "actionLabel": "Amal",
+        "actionAll": "Barcha amallar",
+        "rangeLabel": "Davr",
+        "fromLabel": "Dan",
+        "toLabel": "Gacha",
+        "clear": "Tozalash"
+      },
+      "actions": {
+        "staff": {
+          "invited": "Xodim taklif qilindi",
+          "role_changed": "Rol o'zgartirildi",
+          "deactivated": "Xodim o'chirildi",
+          "session_revoked": "Seans tugatildi"
+        },
+        "payment": {
+          "refunded": "To'lov qaytarildi"
+        },
+        "payout": {
+          "requested": "To'lov so'raldi",
+          "cancelled": "To'lov bekor qilindi"
+        },
+        "apikey": {
+          "created": "API-kalit yaratildi",
+          "regenerated": "API-kalit qayta yaratildi",
+          "deleted": "API-kalit o'chirildi",
+          "revealed": "API-kalit ko'rsatildi"
+        },
+        "webhook": {
+          "updated": "Webhook yangilandi",
+          "secret_rotated": "Webhook imzosi yangilandi"
+        },
+        "settings": {
+          "general_updated": "Umumiy sozlamalar yangilandi",
+          "notifications_updated": "Bildirishnomalar yangilandi"
+        },
+        "security": {
+          "password_changed": "Parol yangilandi",
+          "2fa_enabled": "2FA yoqildi",
+          "2fa_disabled": "2FA o'chirildi"
+        }
+      }
+    },
+    "preferences": {
+      "density": {
+        "title": "Interfeys zichligi",
+        "description": "Jadvallardagi qator balandligi va ro'yxatlardagi bo'sh joyga ta'sir qiladi.",
+        "comfortable": {
+          "label": "Keng",
+          "help": "44 px qator — ko'proq joy"
+        },
+        "compact": {
+          "label": "Ixcham",
+          "help": "40 px qator — ko'proq ma'lumot"
+        }
+      },
+      "tabular": {
+        "title": "Jadval raqamlari",
+        "description": "Raqamlar monoshrift to'rda joylashadi — jadvaldagi sonlar «sakramaydi».",
+        "toggleLabel": "Jadval raqamlaridan foydalanish",
+        "toggleHelp": "Matndagi raqamlar shriftini monoshriftga aylantiradi."
+      },
+      "preview": {
+        "title": "Oldindan ko'rish",
+        "description": "Jadval namunasi — o'zgarishlarga darhol javob beradi.",
+        "cols": {
+          "id": "ID",
+          "period": "Davr",
+          "gross": "Brutto",
+          "net": "Netto"
+        }
+      },
+      "localNote": "Ushbu sozlamalar mahalliy va faqat ushbu brauzerda qo'llaniladi."
     }
   }
 }

@@ -7,6 +7,8 @@ import { studentsHandlers } from './students';
 import { paymentsHandlers } from './payments';
 import { reportsHandlers } from './reports';
 import { payoutsHandlers } from './payouts';
+import { settingsHandlers } from './settings';
+import { comingSoonHandlers } from './coming-soon';
 
 export const handlers = [
   ...authHandlers,
@@ -18,4 +20,6 @@ export const handlers = [
   ...paymentsHandlers,
   ...reportsHandlers,
   ...payoutsHandlers,
+  ...settingsHandlers,
+  ...comingSoonHandlers,
 ];

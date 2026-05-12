@@ -17,6 +17,7 @@ import { PaymentStatusChart } from '../components/PaymentStatusChart';
 import { RecentTransactions } from '../components/RecentTransactions';
 import { UnpaidStudents } from '../components/UnpaidStudents';
 import { GreetingTitle } from '../components/GreetingTitle';
+import { AIInsightsTeaser } from '@/features/coming-soon/components/AIInsightsTeaser';
 
 // Institution copy is a placeholder until /api/organization is wired (tracked in AI_CONTEXT open work).
 const PLACEHOLDER_INSTITUTION = 'УНИПЭЙ · Университет';
@@ -109,6 +110,8 @@ export default function DashboardPage() {
         <RecentTransactions />
         <UnpaidStudents />
       </div>
+
+      <AIInsightsTeaser />
     </div>
   );
 }

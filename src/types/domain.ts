@@ -490,3 +490,190 @@ export interface PayoutBreakdownRow {
  * `monthly`) can ship without an org-shape migration.
  */
 export type PayoutPlan = 'auto' | 'request';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Settings module (Prompt 10) — domain models for the current user's own
+// account-level surfaces. Distinct from the staff-feature shapes because
+// `/api/me/*` endpoints return data scoped to the active session, never a
+// foreign-key `staffId`. Reuse the wire shape with the Express+Mongo backend
+// when it lands.
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A device the current user is signed in from. */
+export interface MySession {
+  id: string;
+  device: string;
+  os?: string;
+  browser?: string;
+  ip: string;
+  location?: string;
+  lastActiveAt: string;
+  createdAt: string;
+  current: boolean;
+}
+
+export type LoginOutcome = 'success' | 'failed';
+
+export interface LoginHistoryEntry {
+  id: string;
+  timestamp: string;
+  ip: string;
+  device: string;
+  outcome: LoginOutcome;
+  failureCode?: 'invalid_credentials' | 'mfa_failed' | 'locked';
+}
+
+export const API_KEY_PERMISSIONS = [
+  'read:transactions',
+  'write:transactions',
+  'read:students',
+  'write:students',
+  'read:payouts',
+  'write:payouts',
+  'read:reports',
+] as const;
+export type ApiKeyPermission = (typeof API_KEY_PERMISSIONS)[number];
+
+export interface ApiKey {
+  id: string;
+  name: string;
+  /** `unipay_live_…` prefix (first 14 chars), shown in the list. */
+  prefix: string;
+  permissions: ApiKeyPermission[];
+  createdAt: string;
+  createdBy: string;
+  lastUsedAt?: string;
+}
+
+export const WEBHOOK_EVENTS = [
+  'payment.completed',
+  'payment.failed',
+  'payment.refunded',
+  'payout.settled',
+  'student.created',
+  'student.updated',
+] as const;
+export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
+
+export interface WebhookConfig {
+  url: string;
+  events: WebhookEvent[];
+  enabled: boolean;
+  updatedAt: string;
+}
+
+export type WebhookDeliveryStatus = 'success' | 'failed' | 'pending';
+
+export interface WebhookDelivery {
+  id: string;
+  timestamp: string;
+  event: WebhookEvent;
+  url: string;
+  status: WebhookDeliveryStatus;
+  responseCode?: number;
+  durationMs?: number;
+}
+
+export const NOTIFICATION_CHANNELS = ['email', 'sms', 'in_app'] as const;
+export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
+
+export const NOTIFICATION_EVENTS = [
+  'payment.received',
+  'payment.failed',
+  'overdue.alert',
+  'payout.sent',
+  'refund.processed',
+  'staff.invited',
+  'weekly.summary',
+] as const;
+export type NotificationEvent = (typeof NOTIFICATION_EVENTS)[number];
+
+export type NotificationMatrix = Record<NotificationEvent, Record<NotificationChannel, boolean>>;
+
+export interface NotificationPreferences {
+  matrix: NotificationMatrix;
+  /** Days after due date to fire the overdue alert. */
+  overdueAlertDays: number;
+}
+
+export type BillingPlanCode = 'starter' | 'business' | 'enterprise';
+export type PayoutScheduleCode = 'daily' | 'weekly' | 'on_request';
+
+export interface BillingFeature {
+  key: string;
+  /** Per-plan inclusion. `false` renders the Lock icon. */
+  included: Record<BillingPlanCode, boolean>;
+}
+
+export interface BillingPlanInfo {
+  code: BillingPlanCode;
+  name: string;
+  monthlyFee: Money;
+  commissionRate: number;
+  payoutSchedule: PayoutScheduleCode;
+}
+
+export interface BillingState {
+  current: BillingPlanCode;
+  plans: BillingPlanInfo[];
+  features: BillingFeature[];
+}
+
+export const AUDIT_ACTIONS = [
+  'staff.invited',
+  'staff.role_changed',
+  'staff.deactivated',
+  'staff.session_revoked',
+  'payment.refunded',
+  'payout.requested',
+  'payout.cancelled',
+  'apikey.created',
+  'apikey.regenerated',
+  'apikey.deleted',
+  'apikey.revealed',
+  'webhook.updated',
+  'webhook.secret_rotated',
+  'settings.general_updated',
+  'settings.notifications_updated',
+  'security.password_changed',
+  'security.2fa_enabled',
+  'security.2fa_disabled',
+] as const;
+export type AuditAction = (typeof AUDIT_ACTIONS)[number];
+
+export interface AuditLogEntry {
+  id: string;
+  timestamp: string;
+  actor: {
+    id: string;
+    name: string;
+    avatarUrl?: string;
+  };
+  action: AuditAction;
+  target?: {
+    type: 'staff' | 'student' | 'payment' | 'payout' | 'api_key' | 'webhook' | 'settings';
+    id?: string;
+    label: string;
+  };
+  ip: string;
+  device?: string;
+  reason?: string;
+}
+
+export interface GeneralSettings {
+  /** Mirror of `Organization.name.ru`; editing routes to `/organization/profile`. */
+  organizationName: string;
+  /** Mirror of `Organization.tin`. */
+  tin: string;
+  contactEmail: string;
+  contactPhone: string;
+  timezone: string;
+  language: Locale;
+}
+
+export interface TwoFactorState {
+  enabled: boolean;
+  enrolledAt?: string;
+  /** `app` (TOTP) is the only v1 method. */
+  method?: 'app';
+}
