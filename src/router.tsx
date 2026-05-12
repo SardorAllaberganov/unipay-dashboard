@@ -42,6 +42,9 @@ import { RefundsPage } from '@/features/payments/pages/RefundsPage';
 import ReportsLayout from '@/features/reports/pages/ReportsLayout';
 import SummaryPage from '@/features/reports/pages/SummaryPage';
 import ExportPage from '@/features/reports/pages/ExportPage';
+import PayoutsHistoryPage from '@/features/payouts/pages/PayoutsHistoryPage';
+import PayoutDetailPage from '@/features/payouts/pages/PayoutDetailPage';
+import RequestPayoutPage from '@/features/payouts/pages/RequestPayoutPage';
 import Placeholder from '@/pages/Placeholder';
 
 const KNOWN_PATH_PREFIXES = [
@@ -161,8 +164,9 @@ function AppRoutes() {
             <Route path="summary" element={<SummaryPage />} />
             <Route path="export" element={<ExportPage />} />
           </Route>
-          <Route path="/payouts" element={<Placeholder />} />
-          <Route path="/payouts/:id" element={<Placeholder />} />
+          <Route path="/payouts" element={<PayoutsHistoryPage />} />
+          <Route path="/payouts/request" element={<RequestPayoutPage />} />
+          <Route path="/payouts/:id" element={<PayoutDetailPage />} />
           <Route path="/settings" element={<Placeholder />} />
 
           {/* System preview routes for QA */}

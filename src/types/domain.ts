@@ -463,3 +463,30 @@ export interface Payout {
   status: PayoutStatus;
   completedAt?: string;
 }
+
+/**
+ * Per-transaction line of a payout's settlement breakdown. Surfaced on
+ * `/payouts/:id` so finance reviewers can reconcile each transaction's
+ * contribution to the net amount. Distinct from `Transaction` because
+ * the wire shape carries only the fields the breakdown table renders.
+ */
+export interface PayoutBreakdownRow {
+  transactionId: string;
+  studentId: string;
+  studentName: string;
+  channel: PaymentChannel;
+  status: PaymentStatus;
+  amount: Money;
+  commission: Money;
+  net: Money;
+  createdAt: string;
+}
+
+/**
+ * Payout disbursement cadence for the institution. Drives whether the
+ * `/payouts/request` page surfaces the manual request form or an
+ * informational card. Sourced from `GET /api/payouts/balance` — not on
+ * the `Organization` model — so future plan tiers (e.g. `weekly`,
+ * `monthly`) can ship without an org-shape migration.
+ */
+export type PayoutPlan = 'auto' | 'request';

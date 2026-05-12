@@ -1830,5 +1830,152 @@
         "manual": "Ручной ввод"
       }
     }
+  },
+  "payouts": {
+    "backPlural": "выплатам",
+    "list": {
+      "title": "Выплаты",
+      "description": "История зачислений на банковские счета и текущий статус.",
+      "requestCta": "Запросить выплату",
+      "columns": {
+        "id": "ID выплаты",
+        "period": "Период",
+        "transactionsCount": "Транзакций",
+        "gross": "Сумма",
+        "commission": "Комиссия",
+        "net": "К зачислению",
+        "bankAccount": "Счёт",
+        "bankRef": "Реф. банка",
+        "status": "Статус",
+        "completedAt": "Дата завершения",
+        "actions": "Действия"
+      },
+      "actions": {
+        "downloadStatement": "Скачать выписку"
+      },
+      "rowAria": "Открыть выплату {{id}}",
+      "empty": {
+        "title": "Пока нет выплат",
+        "body": "Здесь появятся зачисления, как только они начнут поступать."
+      }
+    },
+    "summary": {
+      "receivedThisMonth": "Получено в этом месяце",
+      "lastPayout": "Последняя выплата",
+      "nextExpected": "Следующая выплата",
+      "noLastPayout": "Нет данных",
+      "empty": "Сводка появится после первой выплаты."
+    },
+    "detail": {
+      "transactionsCount_one": "{{n}} транзакция",
+      "transactionsCount_few": "{{n}} транзакции",
+      "transactionsCount_many": "{{n}} транзакций",
+      "transactionsCount_other": "{{n}} транзакций",
+      "bankRefLabel": "Реф. банка",
+      "summary": {
+        "title": "Сводка",
+        "gross": "Сумма",
+        "commission": "Комиссия",
+        "net": "К зачислению"
+      },
+      "timeline": {
+        "title": "Статус выплаты"
+      },
+      "breakdown": {
+        "title": "Транзакции в выплате",
+        "description": "Состав выплаты по каждой транзакции."
+      }
+    },
+    "timeline": {
+      "aria": "Этапы выплаты",
+      "created": "Создана",
+      "processing": "Обработка",
+      "settled": "Зачислено",
+      "reconciled": "Сверено"
+    },
+    "actions": {
+      "confirm": "Подтвердить",
+      "cancel": "Отменить",
+      "downloadStatement": "Скачать выписку"
+    },
+    "breakdown": {
+      "columns": {
+        "transactionId": "ID транзакции",
+        "student": "Студент",
+        "channel": "Канал",
+        "status": "Статус",
+        "amount": "Сумма",
+        "commission": "Комиссия",
+        "net": "К зачислению",
+        "createdAt": "Дата и время"
+      },
+      "empty": {
+        "title": "Нет транзакций",
+        "body": "В этой выплате пока нет транзакций."
+      }
+    },
+    "confirm": {
+      "successToast": "Выплата подтверждена",
+      "step1": {
+        "title": "Подтверждение выплаты",
+        "body": "Проверьте сумму и счёт получателя перед подтверждением.",
+        "amountLabel": "К зачислению",
+        "periodLabel": "Период",
+        "bankLabel": "Счёт получателя",
+        "next": "Далее"
+      },
+      "step2": {
+        "title": "Финальное подтверждение",
+        "body": "Введите сумму ({{amount}}) и причину — минимум {{count}} символов.",
+        "amountLabel": "Введите сумму ({{amount}})",
+        "reasonLabel": "Причина (мин. {{count}} симв.)",
+        "reasonPlaceholder": "Опишите цель и контекст этой выплаты для аудита.",
+        "submit": "Подтвердить выплату",
+        "submitting": "Подтверждаем…"
+      },
+      "errors": {
+        "amountInvalid": "Введите числовое значение",
+        "amountMismatch": "Сумма не совпадает с суммой выплаты",
+        "reasonTooShort": "Минимум {{min}} символов"
+      }
+    },
+    "cancel": {
+      "title": "Отменить выплату",
+      "body": "Выплата будет отмечена как отменённая и не выполнится. Это действие необратимо.",
+      "reasonLabel": "Причина отмены (мин. {{count}} симв.)",
+      "reasonPlaceholder": "Опишите причину отмены для аудита.",
+      "submit": "Отменить выплату",
+      "successToast": "Выплата отменена",
+      "errors": {
+        "reasonTooShort": "Минимум {{min}} символов"
+      }
+    },
+    "request": {
+      "title": "Запрос выплаты",
+      "availableLabel": "Доступно к выводу",
+      "amountHint": "Минимальная сумма выплаты: {{min}}.",
+      "belowMinimumBanner": "Минимальная выплата {{min}}. Текущий доступный баланс: {{available}}.",
+      "belowMinimumTooltip": "Запрос станет доступен, когда баланс достигнет {{min}}. Сейчас доступно {{available}}.",
+      "bankAccountLabel": "Счёт получателя",
+      "bankAccountPlaceholder": "Выберите банковский счёт",
+      "noVerifiedAccounts": "Нет подтверждённых счетов. Добавьте счёт в разделе «Организация → Банковские счета».",
+      "defaultLabel": "по умолчанию",
+      "noteLabel": "Комментарий",
+      "notePlaceholder": "Опционально — комментарий к запросу",
+      "submit": "Запросить выплату",
+      "submitting": "Отправляем…",
+      "successToast": "Запрос на выплату создан",
+      "errors": {
+        "bankAccountRequired": "Выберите банковский счёт",
+        "amountInvalid": "Введите числовое значение",
+        "amountBelowMin": "Минимальная сумма выплаты — {{min}} UZS"
+      }
+    },
+    "automatic": {
+      "title": "Автоматические выплаты включены",
+      "body": "Ваш аккаунт находится на автоматических выплатах. Свяжитесь со службой поддержки, чтобы изменить расписание.",
+      "nextLabel": "Следующая выплата",
+      "contactSupport": "Написать в поддержку"
+    }
   }
 }

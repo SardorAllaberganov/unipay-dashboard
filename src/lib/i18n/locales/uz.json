@@ -1784,5 +1784,150 @@
         "manual": "Qo'lda kiritish"
       }
     }
+  },
+  "payouts": {
+    "backPlural": "to'lovlarga",
+    "list": {
+      "title": "To'lovlar",
+      "description": "Bank hisoblariga o'tkazmalar tarixi va joriy holati.",
+      "requestCta": "To'lov so'rash",
+      "columns": {
+        "id": "To'lov ID",
+        "period": "Davr",
+        "transactionsCount": "Tranzaksiyalar",
+        "gross": "Summa",
+        "commission": "Komissiya",
+        "net": "O'tkazmaga",
+        "bankAccount": "Hisob",
+        "bankRef": "Bank ref.",
+        "status": "Holat",
+        "completedAt": "Yakunlangan sana",
+        "actions": "Amallar"
+      },
+      "actions": {
+        "downloadStatement": "Hisobotni yuklab olish"
+      },
+      "rowAria": "{{id}} to'lovini ochish",
+      "empty": {
+        "title": "Hali to'lovlar yo'q",
+        "body": "Birinchi o'tkazma kelishi bilan u shu yerda paydo bo'ladi."
+      }
+    },
+    "summary": {
+      "receivedThisMonth": "Shu oyda olingan",
+      "lastPayout": "Oxirgi to'lov",
+      "nextExpected": "Keyingi to'lov",
+      "noLastPayout": "Ma'lumot yo'q",
+      "empty": "Sarlavha birinchi to'lovdan keyin paydo bo'ladi."
+    },
+    "detail": {
+      "transactionsCount_one": "{{n}} ta tranzaksiya",
+      "transactionsCount_other": "{{n}} ta tranzaksiya",
+      "bankRefLabel": "Bank ref.",
+      "summary": {
+        "title": "Sarlavha",
+        "gross": "Summa",
+        "commission": "Komissiya",
+        "net": "O'tkazmaga"
+      },
+      "timeline": {
+        "title": "To'lov holati"
+      },
+      "breakdown": {
+        "title": "Tranzaksiyalar tarkibi",
+        "description": "Har bir tranzaksiyaning to'lovga hissasi."
+      }
+    },
+    "timeline": {
+      "aria": "To'lov bosqichlari",
+      "created": "Yaratildi",
+      "processing": "Bajarilmoqda",
+      "settled": "O'tkazildi",
+      "reconciled": "Solishtirildi"
+    },
+    "actions": {
+      "confirm": "Tasdiqlash",
+      "cancel": "Bekor qilish",
+      "downloadStatement": "Hisobotni yuklab olish"
+    },
+    "breakdown": {
+      "columns": {
+        "transactionId": "Tranzaksiya ID",
+        "student": "Talaba",
+        "channel": "Kanal",
+        "status": "Holat",
+        "amount": "Summa",
+        "commission": "Komissiya",
+        "net": "O'tkazmaga",
+        "createdAt": "Sana va vaqt"
+      },
+      "empty": {
+        "title": "Tranzaksiyalar yo'q",
+        "body": "Bu to'lovda hali tranzaksiyalar yo'q."
+      }
+    },
+    "confirm": {
+      "successToast": "To'lov tasdiqlandi",
+      "step1": {
+        "title": "To'lovni tasdiqlash",
+        "body": "Tasdiqlashdan oldin summa va oluvchi hisobini tekshiring.",
+        "amountLabel": "O'tkazmaga",
+        "periodLabel": "Davr",
+        "bankLabel": "Oluvchi hisobi",
+        "next": "Davom etish"
+      },
+      "step2": {
+        "title": "Yakuniy tasdiqlash",
+        "body": "Summani ({{amount}}) va sababni kiriting — kamida {{count}} ta belgi.",
+        "amountLabel": "Summani kiriting ({{amount}})",
+        "reasonLabel": "Sabab (kamida {{count}} ta belgi)",
+        "reasonPlaceholder": "Audit uchun bu to'lovning maqsadi va kontekstini yozing.",
+        "submit": "To'lovni tasdiqlash",
+        "submitting": "Tasdiqlanmoqda…"
+      },
+      "errors": {
+        "amountInvalid": "Raqamli qiymat kiriting",
+        "amountMismatch": "Summa to'lov summasiga to'g'ri kelmaydi",
+        "reasonTooShort": "Kamida {{min}} ta belgi"
+      }
+    },
+    "cancel": {
+      "title": "To'lovni bekor qilish",
+      "body": "To'lov bekor qilingan deb belgilanadi va bajarilmaydi. Bu amal qaytarib bo'lmaydi.",
+      "reasonLabel": "Bekor qilish sababi (kamida {{count}} ta belgi)",
+      "reasonPlaceholder": "Audit uchun bekor qilish sababini yozing.",
+      "submit": "To'lovni bekor qilish",
+      "successToast": "To'lov bekor qilindi",
+      "errors": {
+        "reasonTooShort": "Kamida {{min}} ta belgi"
+      }
+    },
+    "request": {
+      "title": "To'lov so'rash",
+      "availableLabel": "Yechish uchun mavjud",
+      "amountHint": "Minimal to'lov summasi: {{min}}.",
+      "belowMinimumBanner": "Minimal to'lov {{min}}. Joriy mavjud balans: {{available}}.",
+      "belowMinimumTooltip": "Balans {{min}} ga yetganda so'rov yuborish mumkin bo'ladi. Hozir mavjud: {{available}}.",
+      "bankAccountLabel": "Oluvchi hisobi",
+      "bankAccountPlaceholder": "Bank hisobini tanlang",
+      "noVerifiedAccounts": "Tasdiqlangan hisoblar yo'q. «Tashkilot → Bank hisoblari» bo'limida hisob qo'shing.",
+      "defaultLabel": "asosiy",
+      "noteLabel": "Izoh",
+      "notePlaceholder": "Ixtiyoriy — so'rovga izoh",
+      "submit": "To'lov so'rash",
+      "submitting": "Yuborilmoqda…",
+      "successToast": "To'lov so'rovi yaratildi",
+      "errors": {
+        "bankAccountRequired": "Bank hisobini tanlang",
+        "amountInvalid": "Raqamli qiymat kiriting",
+        "amountBelowMin": "Minimal to'lov summasi — {{min}} UZS"
+      }
+    },
+    "automatic": {
+      "title": "Avtomatik to'lovlar yoqilgan",
+      "body": "Hisobingiz avtomatik to'lovlar rejimida. Jadvalni o'zgartirish uchun qo'llab-quvvatlash xizmatiga murojaat qiling.",
+      "nextLabel": "Keyingi to'lov",
+      "contactSupport": "Qo'llab-quvvatlashga yozish"
+    }
   }
 }

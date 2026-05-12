@@ -15,6 +15,27 @@ A deviation that isn't logged here is a bug.
 
 ---
 
+## 2026-05-12 · Payouts — `<StatusTimeline>` surfaces 4 UI milestones derived from the 3-value `PayoutStatus` enum
+
+1. **Rule** — `.claude/rules/status-machines.md` "Never invent states. If a design needs a state that doesn't exist, propose a model + state-machine update first."
+2. **Reason** — Spec §11.2 names a 4-step timeline (Created → Processing → Settled → Reconciled). The domain `PayoutStatus = 'settled' | 'pending' | 'failed'` (line 37 of [`domain.ts`](../src/types/domain.ts)) intentionally has only 3 terminal/in-flight states. The 4-milestone labels are **UI decoration** describing how a finance reviewer reads the lifecycle — they are not new domain states. Mapping: `pending` → past: Created · current: Processing · future: Settled, Reconciled. `settled` → past: Created, Processing, Settled · current: Reconciled. `failed` → past: Created · failed marker on Processing · future: Settled, Reconciled. The single source of truth is still `PayoutStatus`; the timeline computes its visual treatment in [`computeStates(status)`](../src/features/payouts/components/StatusTimeline.tsx).
+3. **Scope** — [`src/features/payouts/components/StatusTimeline.tsx`](../src/features/payouts/components/StatusTimeline.tsx) only. No domain change. If "Reconciled" ever needs to gate user-facing behavior (CTA visibility, exportability), promote it to a domain status and update this entry.
+4. **Review date** — Revisit when the backend exposes a separate `reconciled_at` field on `Payout`. At that point either (a) keep the UI mapping unchanged + read `reconciled_at` for the Reconciled marker tooltip, or (b) split `settled` into `settled` + `reconciled` if reconciliation becomes a user-actionable state.
+
+## 2026-05-12 · Payouts — `plan: 'auto'|'request'` lives on `GET /api/payouts/balance`, not on the `Organization` model
+
+1. **Rule** — `.claude/rules/core-principles.md` "Match the schema. Never propose UI that contradicts the domain. If the design needs a field that doesn't exist or a state that isn't in the machine, propose a model change first."
+2. **Reason** — Spec §11.3 makes the Request page conditional on the institution's payout plan. The natural place would be `Organization.plan` — but that field doesn't exist, and the plan is a billing/operational decision that may evolve (`weekly`, `monthly`, tiered limits) independently from the org's identity (name, TIN, region). Co-locating it with the live balance keeps both "current state of payouts" facts (available + plan + next-expected) in a single response and avoids forcing every screen that reads org data to also pull a billing-shaped field. The wire shape is `{ available: MoneyJson, plan: PayoutPlan, nextExpectedAt?: string }`.
+3. **Scope** — [`src/types/domain.ts`](../src/types/domain.ts) adds `export type PayoutPlan = 'auto' | 'request';` (no change to `Organization`). [`src/mocks/handlers/payouts.ts`](../src/mocks/handlers/payouts.ts) `GET /api/payouts/balance`. [`src/features/payouts/hooks/usePayoutBalance.ts`](../src/features/payouts/hooks/usePayoutBalance.ts) + [`RequestPayoutPage`](../src/features/payouts/pages/RequestPayoutPage.tsx) branches on `balance.plan`.
+4. **Review date** — Revisit when the real billing service lands. If plan becomes editable by Owner role, the canonical source becomes a settings endpoint and `/balance` reads it as a denormalized snapshot.
+
+## 2026-05-12 · Payouts — `GET /:id/breakdown.xlsx` returns a CSV-shaped text blob with `.xlsx` filename as a stub
+
+1. **Rule** — `.claude/rules/handoff.md` "All artifacts must be production-shaped. No 'TODO' frames."
+2. **Reason** — The "Скачать выписку Excel" affordance is part of acceptance, but generating a real `.xlsx` (binary OOXML) on the MSW side requires either bundling `xlsx` for the worker (it's already lazy-imported on the import-students page only, adding ~142KB to every MSW startup) or shipping a stub. CSV with the same header + row shape is a one-line client-import swap when real Excel generation lands, and the response already uses the xlsx MIME type and `.xlsx` filename so consumers won't change. Consistent with the Reports module precedent (`/mock-downloads/*` placeholder pattern).
+3. **Scope** — [`src/mocks/handlers/payouts.ts`](../src/mocks/handlers/payouts.ts) `GET /api/payouts/:id/breakdown.xlsx`. Real Excel generation is a follow-up — logged in `ai_context/AI_CONTEXT.md` "Open work" until backend lands.
+4. **Review date** — When the real backend service ships; at that point the MSW handler can be deleted and the real endpoint's streamed blob replaces it.
+
 ## 2026-05-11 · Reports — `<KpiCard>` + `<KpiSparkline>` promoted from `features/dashboard/components/` to `src/components/shared/`
 
 1. **Rule** — `design-system-layers.md` import-direction: a Components-layer primitive consumed by ≥ 2 features moves to `src/components/shared/` rather than cross-feature-importing from another `features/` folder.
