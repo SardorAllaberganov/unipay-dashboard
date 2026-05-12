@@ -4,6 +4,61 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-12 — Payouts module polish round (overview banner padding + StatusTimeline connector lines)
+
+**Summary.** Two visual fixes on the Payouts surfaces that landed earlier in the session, both driven by user feedback. Neither touches logic / data flow / i18n / domain — pure layout corrections in two component files.
+
+**Files modified.**
+- [`src/features/payouts/components/PayoutsSummaryBanner.tsx`](../src/features/payouts/components/PayoutsSummaryBanner.tsx) — removed `p-5` from the outer `<Card>` wrappers (data, empty, skeleton) and pushed `p-5 md:p-6` onto each inner `<Stat>` column and each `BannerSkeleton` cell. The empty-state `<p>` carries its own `p-5`. Net effect: the `divide-y` (mobile) / `divide-x` (md+) row separators between stats now extend edge-to-edge of the card while content keeps its breathing room. The `cn` import was dropped (no longer used after the `cn('p-5', className)` patterns collapsed to plain `className`).
+- [`src/features/payouts/components/StatusTimeline.tsx`](../src/features/payouts/components/StatusTimeline.tsx) — connector lines weren't visible because the previous `flex-1 h-px` line was placed inside an inner wrapper that switched to `md:flex-col` on desktop, and `flex-1` on the cross-axis of a column flexbox can't grow horizontally. Rebuilt with **absolute-positioned line halves** anchored to each `<li className="relative">`: left half `md:left-0 md:right-1/2` (when not first) + right half `md:left-1/2 md:right-0` (when not last), both pinned at `top-3.5` (14px = marker vertical center). Mobile gets a single vertical 1px connector from the marker bottom down to the next milestone (`absolute left-3.5 top-7 h-6 w-px md:hidden`). `Marker` spans now carry `relative z-10` so they always render above the absolute connectors (the 1px line never visibly bisects the circle). Future-state marker also gained `bg-card` so the dashed line behind it doesn't show through the empty circle's center. **Connector color rule** simplified: solid `success-600` IFF both endpoints are `'past'` (both done); any line touching `'current' / 'future' / 'failed'` is dashed `muted-foreground/40`. Previous logic treated `current` as "solid-eligible" which produced a misleading solid line leading INTO the current step — the user explicitly flagged this and confirmed the new rule.
+
+**Files updated for doc sync.**
+- [`docs/product_states.md`](../docs/product_states.md) — `/payouts` row updated to call out the flush banner + per-stat padding rhythm; `<StatusTimeline>` foundation row updated with the new connector geometry + color rule.
+- [`ai_context/AI_CONTEXT.md`](AI_CONTEXT.md) — new "Last updated" entry summarizing the polish round; the Payouts feature-module section's `<StatusTimeline>` paragraph updated in place to reflect the new connector recipe.
+
+**Verifications.** `npx tsc -b` clean. `npm run lint --max-warnings 0` clean. No build run — no source-of-truth code (domain, MSW, routing, i18n) changed, only visual tweaks in two component files.
+
+---
+
+## 2026-05-12 — Prompt 9 (Payouts module) shipped end-to-end
+
+**Summary.** Built the Payouts feature module per spec §11 — three routes under `/payouts/*`: paginated history list with conditional Request CTA, full-page Pattern A detail with 4-step `<StatusTimeline>` + paginated breakdown table + status-gated action bar, and a standalone Request page that branches on the institution's payout plan. 1 new MSW handler with 8 endpoints + 24 weekly Tuesday-cadenced fixtures (one pending @ index 0 for confirm/cancel QA + one failed @ index 4 for StatusBadge variety) + breakdown rows kept in a parallel `Map` so the Payout wire shape stays clean. ~80 new i18n keys in RU + UZ (including ICU plural for transactions count).
+
+**Files added.**
+- `src/features/payouts/pages/`: `PayoutsHistoryPage.tsx`, `PayoutDetailPage.tsx`, `RequestPayoutPage.tsx`.
+- `src/features/payouts/components/`: `PayoutsTable.tsx`, `PayoutsSummaryBanner.tsx`, `StatusTimeline.tsx`, `PayoutBreakdownTable.tsx`, `PayoutIdCopy.tsx`, `PayoutDetailHeader.tsx`, `PayoutDetailActionBar.tsx`, `ConfirmPayoutDialog.tsx`, `CancelPayoutDialog.tsx`, `RequestPayoutForm.tsx`, `AutomaticPayoutInfo.tsx`.
+- `src/features/payouts/hooks/`: `usePayouts.ts`, `usePayoutDetail.ts`, `usePayoutBreakdown.ts`, `usePayoutBalance.ts` (+ `useVerifiedBankAccounts`), `useRequestPayout.ts`, `useConfirmPayout.ts`, `useCancelPayout.ts`.
+- `src/features/payouts/`: `api.ts`, `schemas.ts`.
+- `src/mocks/handlers/payouts.ts` — 8 endpoints, mulberry32(`0xa10d05`)-seeded fixtures.
+
+**Files modified.**
+- [`src/types/domain.ts`](../src/types/domain.ts) — added `PayoutBreakdownRow` interface + `PayoutPlan = 'auto'|'request'` type. NOT added to `Organization` (plan lives on `/api/payouts/balance`; see DECISIONS).
+- [`src/router.tsx`](../src/router.tsx) — replaced the 2 placeholder routes (`/payouts`, `/payouts/:id`) with real pages; added `/payouts/request` sibling route. 3 new imports.
+- [`src/mocks/handlers/index.ts`](../src/mocks/handlers/index.ts) — spreads `payoutsHandlers`.
+- [`src/lib/i18n/locales/ru.json`](../src/lib/i18n/locales/ru.json) + [`uz.json`](../src/lib/i18n/locales/uz.json) — new top-level `payouts.*` namespace (~80 keys including ICU plural for `payouts.detail.transactionsCount`).
+- [`docs/DECISIONS.md`](../docs/DECISIONS.md) — three new entries (2026-05-12) covering the 4-UI-milestones-over-3-domain-states timeline, plan-on-balance-not-org, and the xlsx-CSV-stub.
+- [`docs/product_states.md`](../docs/product_states.md) — `/payouts`, `/payouts/:id`, `/payouts/request` flipped from ❌ to ✅ with full scope description. Added Foundation rows for the Payouts module, the new `payouts.ts` MSW handler, `<StatusTimeline>`, and `<PayoutIdCopy>`. Outstanding follow-ups updated: feature 10 (settings) is the only placeholder left; xlsx blob, `<BottomTabBar>`/`is-detail-route` not yet implemented, `<CopyableId>` promotion deferred.
+- [`ai_context/AI_CONTEXT.md`](AI_CONTEXT.md) — new "Last updated" entry + new "Payouts feature module" section.
+
+**Lesson-aware details.**
+- **DataTable column meta** (per 2026-05-11 lesson): amount columns get `text-right whitespace-nowrap` on BOTH header AND cell. Narrow columns (period, status, bank ref, actions, completedAt, transaction ID + channel + status + createdAt on the breakdown) get `w-[1%] whitespace-nowrap` on the header. Mono ID columns mirror nowrap on the cell. Applied across `PayoutsTable.tsx` (9 columns) + `PayoutBreakdownTable.tsx` (8 columns).
+- **Money arithmetic on the wire**: every numeric comparison uses `Number(money.amount) / 100`, never `/100n`. The wire `MoneyJson` type makes the contract explicit. The 2-step ConfirmPayoutDialog's amount-equality check is `parseAmount(typed) === Number(payout.net.amount) / 100`.
+- **NBSP regex** (per 2026-05-11 lesson): `parseAmount` uses `/[\s ]/g` escape form, not literal NBSP. Caught by ESLint `no-irregular-whitespace` on the first lint pass — fixed via byte-level Python rewrite since the Edit tool normalizes display.
+- **Label-over-control spacing**: form blocks use `flex flex-col gap-2`, not `space-y-*`, because shadcn `<Label>` is inline and `margin-top`-based spacing collapses on inline elements.
+- **Canonical tap-to-copy pattern** (per 2026-05-11 lesson): `PayoutIdCopy.tsx` is a feature-local copy of `TransactionIdCopy.tsx`. Both should consolidate into a shared `<CopyableId>` primitive when a third consumer (API key fingerprint, payout receipt no., etc.) lands.
+- **Mobile card-in-card eliminated** (per 2026-05-11 lesson): `PayoutsTable.tsx` `mobileCardRender` returns a plain `<div>`, not a `<Card>` (DataTable's mobile path already wraps each row in `<Card>`). Same pattern in `PayoutBreakdownTable.tsx`.
+- **No `position: sticky`** anywhere — page header, filters, action bar all flow inline. The action bar uses `position: fixed` via the shared `<DetailActionBar>` primitive per §0.5.
+- **`<WriteButton>` on every write action** — Confirm, Cancel, Request — offline tooltip auto-handled.
+
+**Verifications.** `npx tsc -b` clean. `npm run lint --max-warnings 0` clean (after one ESLint catch on the NBSP regex). `npm run build` clean (only chunk-size advisory unchanged). §0.9 audit greps clean across all real categories (`<svg>`, sticky `<thead>`, `max-w` on `<main>`, ChevronLeft, DataTable uppercase, `h-screen`, `text-[<13px]`). `text-xs` hits in the new code all map to §0.2 allow-list (mono IDs inline / uppercase tracking-wider category labels / chip body). The audit's "Unicode arrows" run trips on em-dashes in Russian/Uzbek copy — known false-positive per 2026-05-11 lesson.
+
+**Open follow-ups (carried into "Open work" in AI_CONTEXT).**
+- xlsx statement download returns a CSV-shaped blob; real OOXML lands with the backend.
+- `<BottomTabBar>` + `src/lib/is-detail-route.ts` helper named in §0.7 / spec §11.2 — not yet implemented in the codebase at all; `pb-28` + `<DetailActionBar>` is the operative pattern across all detail pages.
+- `<CopyableId>` shared promotion deferred — 11 total consumers (6 payments + 5 payouts) but no 3rd domain yet.
+
+---
+
 ## 2026-05-12 — Reports module polish round (ExportForm spacing + data-type radio width + Department donut sizing/legend)
 
 **Summary.** Five small visual fixes on the Reports module surfaces that landed the previous day, all driven by user feedback. None touch logic / data flow — pure layout and typography corrections.
