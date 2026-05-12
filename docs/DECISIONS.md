@@ -15,6 +15,96 @@ A deviation that isn't logged here is a bug.
 
 ---
 
+## 2026-05-12 · Polish (P12) — hex colors inside `<ReceiptPreviewIframe>` srcDoc CSS are allow-listed (iframe context can't reference `--brand-*` variables)
+
+1. **Rule** — §0.1 "Colors via scale tokens; never hardcoded hex in className".
+2. **Reason** — [`<ReceiptPreviewIframe>`](../src/features/payments/components/ReceiptPreviewIframe.tsx) renders a printable tuition receipt inside an `<iframe srcDoc={html}>`. The iframe is a separate browsing context with its own CSS scope — it CANNOT resolve `hsl(var(--brand-600))` etc. because the parent's CSS custom properties don't cascade across the iframe boundary. The ~25 hex values in the inline CSS string map 1:1 to the project's scale tokens (slate-900 `#111827` for headings · slate-700 `#1f2937` for body · slate-500 `#6b7280` for muted · slate-200 `#e5e7eb` for borders · slate-400 `#9ca3af` for disclaimer · success-700 `#15803d` + success-light `#dcfce7` for paid status chip · warning-700 `#b45309` + warning-light `#fef3c7` for refunded status chip). They're the resolved hex form of tokens for an iframe-document context, not arbitrary brand drift.
+3. **Scope** — [`src/features/payments/components/ReceiptPreviewIframe.tsx`](../src/features/payments/components/ReceiptPreviewIframe.tsx) only. Every other surface still uses scale tokens via `hsl(var(...))`.
+4. **Review date** — Revisit when the receipt either (a) becomes a server-rendered PDF (then this whole inline CSS goes away) or (b) gets refactored to read computed style values from the parent at iframe-render time via `window.getComputedStyle(document.documentElement).getPropertyValue('--slate-900')` and inject them as variables on the iframe. Either path eliminates the hex.
+
+## 2026-05-12 · Polish (P12) — also: `#1558B0` (anchor brand color) appears in 7 user-pickable Branding contexts
+
+1. **Rule** — §0.1 "Only static globals.css uses hex; never in className."
+2. **Reason** — The Branding flow (Onboarding Step 2 · Organization Profile · Organization Branding tab · ColorPicker primitive · ReceiptPreview primitive · MSW seed · Step2ContactBranding draft) lets the user pick their primary brand color. The DEFAULT value when nothing is picked yet is the anchor `#1558B0` (= `brand-600`). These are explicit defaults for a user-pickable color field — not visual-style decisions baked into class strings. The defaults must be hex because: (a) the picker stores hex in `Branding.primaryColor: string`, (b) the receipt iframe applies it via inline `style.backgroundColor`, (c) HSL conversion is per-render — meaningless at the seed/default level.
+3. **Scope** — `'#1558B0'` appears in 7 files as the default for `Branding.primaryColor`: ColorPicker · ReceiptPreview · Step2ContactBranding · ProfilePage · BrandingPage · MSW handler · `<input value={...}>`. Never in className.
+4. **Review date** — Stable. If the brand anchor ever moves, update all 7 in one PR.
+
+## 2026-05-12 · Polish (P12) — theme is a React Context (`providers/ThemeProvider.tsx`), not a `lib/theme.ts` `useSyncExternalStore` store
+
+1. **Rule** — §0.12 v2.0 names `src/lib/theme.ts` as a `useSyncExternalStore` module store alongside the other 5 (`auth.ts` · `preferences.ts` · `maintenanceState.ts` · `sessions.ts` · `useNetworkState.ts`).
+2. **Reason** — The original Prompt 0 scaffold implemented theme as a React Context provider, and the convention stuck across Prompts 1–11. Functionally the provider is equivalent: localStorage `unipay-theme` key for persistence · cross-tab sync via storage event · DOM side effect (`<html data-theme>` attr) inside the setter · exposes a `useTheme()` hook for consumers. The only difference from the lib/-store pattern is the implementation — Context vs `useSyncExternalStore`. No consumer code would change in a migration; only the implementation. Migrating now risks subtle re-render behavior changes (Context triggers all subscribers on any value change; `useSyncExternalStore` consumers can selectively re-render via stable snapshots), with zero user-facing benefit. The structural divergence is documented; functional parity preserved.
+3. **Scope** — [`src/providers/ThemeProvider.tsx`](../src/providers/ThemeProvider.tsx). All theme consumers import `useTheme` from `@/providers/ThemeProvider`. No `src/lib/theme.ts` exists.
+4. **Review date** — Revisit if (a) a new module store needs to read theme from outside React (consumer would need `getTheme()` non-React snapshot), or (b) the Context's "re-render all subscribers" semantics cause a measurable performance hit somewhere. Until then, the divergence stays.
+
+## 2026-05-12 · Polish (P12) — route-level code-splitting via `React.lazy()` ships in every feature route except auth
+
+1. **Rule** — Spec §11 Performance acceptance: "every feature route lazy-loaded".
+2. **Reason** — Before P12, every feature page was statically imported in `router.tsx`, producing a 528 KB gzipped main bundle (2.0× over the <250KB target). Route-level `React.lazy()` brings that to 245 KB while keeping the auth flow (sign-in / forgot-password / reset-password) and system primitives eager so the unauthenticated entry path has no flash-of-skeleton. Per-feature chunks are now 2–19 KB gzipped each. The Suspense fallback is a lightweight `<RouteFallback>` skeleton mimicking the AppShell content area so the layout shell doesn't blank during chunk loading.
+3. **Scope** — [`src/router.tsx`](../src/router.tsx). 22 feature page imports moved from `import X from '...'` to `const X = lazy(() => import('...'))`. Payments pages required named-export normalization (`.then(m => ({ default: m.X }))`) since those pages weren't default-exported originally.
+4. **Review date** — Stable. If the Recharts shared chunk (112 KB gzipped) becomes a meaningful TTI cost, split it further via Recharts tree-shaking or lazy-load chart components inline.
+
+## 2026-05-12 · Coming Soon — sidebar items with `status: 'coming-soon'` ARE clickable (route to `/locked/:feature`), not strictly non-clickable
+
+1. **Rule** — Spec §13: "Lock icon + non-clickable + tooltip 'Скоро. Свяжитесь с продажами для разблокировки.'"
+2. **Reason** — The spec's "non-clickable" intent reads as "doesn't navigate to the would-be live feature route". But making the items entirely inert hurts both discoverability and keyboard accessibility: a focused-but-inactive nav item with no action surfaces only the tooltip, which screen-readers don't reliably announce when they're not pointer-hover. We route the click to `/locked/:feature` instead — the user gets to the Coming Soon page where they can read about the feature, see the bullets, and submit a Notify-Me. The `<Lock>` icon + muted color + tooltip + `aria-label="{label} — Скоро"` collectively signal the state. This matches the spec's spirit ("non-clickable to the live feature") while preserving discovery + a11y.
+3. **Scope** — [`src/components/layout/Sidebar.tsx`](../src/components/layout/Sidebar.tsx) `NavItemView` coming-soon branch. Affects: `nav.documents`, `nav.smsCampaigns`, `nav.aiInsights`, `nav.mobileApp`.
+4. **Review date** — Revisit if user-testing shows people clicking expecting the live feature. At that point, switch to a `<button>`-based variant that opens the tooltip as a popover on tap instead of navigating.
+
+## 2026-05-12 · Coming Soon — `<BlurredScreenshot>` is CSS-only (gradient + grid pattern + lucide overlay), no real screenshots
+
+1. **Rule** — No specific § rule; this is a content-debt decision.
+2. **Reason** — Spec §13 names "blurred screenshot" as the illustration. Shipping real product screenshots in Prompt 11 would require either (a) maintaining 9 PNG/JPG assets per feature × 2 themes = ~18 binary files in the repo, with the maintenance burden of keeping them in sync with the design language, or (b) building actual feature mockups solely for the placeholder. Neither is worth the cost for a Phase-2 placeholder. A CSS composition (gradient + faint grid + centered icon under `[filter:blur(6px)]`) feels indistinguishable from a real blurred screenshot at a glance and is zero-maintenance.
+3. **Scope** — [`src/features/coming-soon/components/BlurredScreenshot.tsx`](../src/features/coming-soon/components/BlurredScreenshot.tsx). Used by `<LockedFeaturePage>` (when `showBlurredPreview: true` in registry) and `<AIInsightsTeaser>` (compact variant).
+4. **Review date** — When real feature work begins shipping, swap the placeholder for actual screenshots. Extend `<BlurredScreenshot>` with an optional `srcDataUri` prop; consumers either provide a screenshot or get the CSS fallback.
+
+## 2026-05-12 · Coming Soon — slugs are kebab-case (no dots), i18n keys use the slug as a literal child key
+
+1. **Rule** — 2026-05-12 LESSON "i18next splits dots in keys by default — domain identifiers must be NESTED in JSON".
+2. **Reason** — Coming Soon feature slugs are kebab-case (`sms-campaigns`, `integrations-hemis`, `billing-upgrade`, etc.). i18next's default `keySeparator: '.'` does NOT split at `-`, so a dynamic key like `t(\`comingSoon.features.${slug}.title\`)` resolves correctly even though the slug contains dashes. JSON structure:
+   ```json
+   "features": {
+     "sms-campaigns": { "title": "...", "subtitle": "...", "bullets": { "0": "...", ... } }
+   }
+   ```
+   If we had used dot-separated slugs (e.g. `sms.campaigns`), the same dot-splitting bug from the 2026-05-12 Settings audit would resurface. Bullets use indexed object keys (`0`, `1`, `2`) rather than a JSON array so the i18next lookup `t('...bullets.0')` works without `returnObjects`.
+3. **Scope** — `comingSoon.features.<slug>.*` i18n keys in [`ru.json`](../src/lib/i18n/locales/ru.json) and [`uz.json`](../src/lib/i18n/locales/uz.json). Slug source of truth: [`src/features/coming-soon/data/featureContent.ts`](../src/features/coming-soon/data/featureContent.ts) `FEATURE_REGISTRY`.
+4. **Review date** — Stable. Documented in LESSONS for future modules with dynamic identifier-keyed i18n namespaces.
+
+## 2026-05-12 · Settings — `MySession` is a new domain type distinct from `StaffSession`
+
+1. **Rule** — `.claude/rules/core-principles.md` "Match the schema. If the design needs a field that doesn't exist, propose a model change first."
+2. **Reason** — Spec §12.2 needs an "Active sessions" section showing devices the **current user** is signed in from. The existing `StaffSession` interface carries a `staffId` foreign-key because it's surfaced from the staff-feature `/api/staff/:id/sessions` endpoint (Owner role managing other people). The current-user equivalent comes from `/api/me/sessions` — same conceptual shape minus the FK. Reusing `StaffSession` would push a meaningless `staffId` field into wire responses; renaming `staffId` to optional bleeds the staff-feature semantics. A new `MySession` interface (id + device + os + browser + ip + location + lastActiveAt + createdAt + current) keeps both wire shapes honest. The two endpoints resolve through the same underlying auth sessions table on the backend, but the API contracts stay separate.
+3. **Scope** — [`src/types/domain.ts`](../src/types/domain.ts) `MySession` interface (alongside the existing `StaffSession`). [`/api/me/sessions`](../src/mocks/handlers/settings.ts) MSW endpoint. [`src/lib/sessions.ts`](../src/lib/sessions.ts) module store. [`src/features/settings/hooks/useMyActiveSessions.ts`](../src/features/settings/hooks/useMyActiveSessions.ts). Staff feature's `StaffSession` + `useStaffSessions` unchanged.
+4. **Review date** — Revisit when the real backend lands. If it consolidates both surfaces under one endpoint shape, collapse the two types.
+
+## 2026-05-12 · Settings — new `src/lib/sessions.ts` module store sits alongside `lib/auth.ts` rather than extending it
+
+1. **Rule** — `.claude/rules/design-system-layers.md` "Cross-cutting concerns live at the Token layer (read by every layer above)." Plus the project's `useSyncExternalStore` precedent in `lib/auth.ts` / `lib/preferences.ts` / `lib/maintenanceState.ts`.
+2. **Reason** — Spec §12.2 requires the active-sessions list to update across browser tabs immediately when a session is revoked. The auth store already manages the current session (sessionStorage-backed) + idle timeout. Coupling the new "list of all my sessions" cache into `lib/auth.ts` would mix concerns: auth.ts is about "am I signed in right now" while sessions.ts is about "what devices is my account signed in from". They share zero overlapping state. Splitting keeps each store small and lets `lib/sessions.ts` carry its own storage-event key (`unipay-my-sessions-sync`) without polluting the auth sync key. Pattern reference for both: `useSyncExternalStore` with module-level cache + listener Set + storage-event subscription.
+3. **Scope** — New file [`src/lib/sessions.ts`](../src/lib/sessions.ts). Consumed by [`useMyActiveSessions`](../src/features/settings/hooks/useMyActiveSessions.ts) which subscribes via `subscribeToCrossTabSessions` and invalidates the TanStack Query on cross-tab events.
+4. **Review date** — Revisit if a 2nd consumer outside `/settings/security` needs to read the sessions list — at that point promote the cache + add a hook export. Today it's a single-consumer store but the pattern is established.
+
+## 2026-05-12 · Settings — `<PasswordConfirmDialog>` ships feature-local under `src/features/settings/components/` (4 internal consumers, 0 external)
+
+1. **Rule** — `.claude/rules/design-system-layers.md` Patterns layer: "New composite element used on ≥ 2 screens → Components" (and the project's convention of promoting once a 3rd domain consumer appears, established by `<PayoutIdCopy>` from Prompt 9).
+2. **Reason** — Spec §12.2-12.3 names 4 flows that need password confirmation: reveal API key plaintext (password-only) · disable 2FA (password + reason ≥20) · reveal webhook signing secret (password-only) · rotate webhook signing secret (password + reason ≥20). All 4 live inside the Settings module. Building a single feature-local primitive (with optional `requireReason` + `minReasonLength` props) covers all 4 without forking, and the existing shared `<ConfirmDialog>` doesn't carry a password field. Promoting to `src/components/shared/` before a 3rd domain (outside Settings) needs it would speculate on an API. The same precedent applies to `<CopyableTextRow>` + `<CopyOrLoseItPanel>` — both feature-local for now.
+3. **Scope** — [`src/features/settings/components/PasswordConfirmDialog.tsx`](../src/features/settings/components/PasswordConfirmDialog.tsx). All 4 consumers are inside `src/features/settings/components/` (TwoFaCard / ApiKeysCard / WebhookConfigCard).
+4. **Review date** — Revisit when a 3rd domain outside Settings asks for a password-confirm flow (e.g. payout finalization, staff role transfer). At that point promote + add a separate ADR.
+
+## 2026-05-12 · Settings — `/locked/billing-upgrade` Placeholder route reserved here, content lands in Prompt 11
+
+1. **Rule** — No specific rule; this is a Doc-Cascade entry recording an inter-prompt dependency.
+2. **Reason** — Spec §12.5 names the Billing tab's "Улучшить план" CTA as routing to `/locked/billing-upgrade`. That route's content is owned by Prompt 11 (Locked / Coming Soon pages). Registering it as a `<Placeholder />` in Prompt 10 lets the CTA work today (no 404) and lets Prompt 11 land just by swapping the element. `/locked` was added to `KNOWN_PATH_PREFIXES` so deep-link-before-sign-in resolves to a sign-in redirect rather than a full-bleed 404.
+3. **Scope** — [`src/router.tsx`](../src/router.tsx) Placeholder route + KNOWN_PATH_PREFIXES entry.
+4. **Review date** — Replace the Placeholder when Prompt 11 ships.
+
+## 2026-05-12 · Settings — Preferences tab is a 7th tab rather than folded into General
+
+1. **Rule** — Spec §12 (in original v1.x) named 6 tabs. The user's Prompt 10 brief offered "fold Preferences into General if you'd rather" as an explicit alternative.
+2. **Reason** — General owns server-side org/account settings (contact email, phone, timezone, language — all persisted on the backend). Preferences owns local-only UI prefs (density, tabular numerals — `localStorage`-backed via `lib/preferences.ts`, never sent to the backend). The two have different persistence semantics and different "blast radius" if a value is wrong. A dedicated tab also gives Preferences its own "local to this browser" note + a live preview table, both of which would feel out of place under General. Worth the 7th tab.
+3. **Scope** — [`src/features/settings/pages/PreferencesTab.tsx`](../src/features/settings/pages/PreferencesTab.tsx) + `<SettingsTabsNav>` 7-tab list. `settings.tabs.preferences` i18n key.
+4. **Review date** — Revisit if user research shows confusion ("where do I change theme density?"). The current implementation keeps the surface honest about which settings are local vs. server-side.
+
 ## 2026-05-12 · Payouts — `<StatusTimeline>` surfaces 4 UI milestones derived from the 3-value `PayoutStatus` enum
 
 1. **Rule** — `.claude/rules/status-machines.md` "Never invent states. If a design needs a state that doesn't exist, propose a model + state-machine update first."

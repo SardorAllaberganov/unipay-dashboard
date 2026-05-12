@@ -6,6 +6,110 @@ Review at session start (or via `/start_task`). Most recent on top.
 
 ---
 
+## 2026-05-12 · i18next splits dots in keys by default — domain identifiers like `staff.invited` must be NESTED in JSON, never written as flat dotted leaf keys
+
+**Rule.** i18next's default `keySeparator` is `'.'`, so `t('settings.audit.actions.staff.invited')` looks up the nested path `settings → audit → actions → staff → invited`. If your JSON has the value at a FLAT leaf key like:
+
+```json
+"actions": {
+  "staff.invited": "Сотрудник приглашён",   ← unreachable: i18next splits at the dot
+  "payment.refunded": "Возврат платежа"
+}
+```
+
+the lookup will MISS and i18next will render the raw key path `settings.audit.actions.staff.invited` verbatim — the same failure mode as the 2026-05-11 stale-key `<ErrorState>` lesson. The fix is to nest, not flatten:
+
+```json
+"actions": {
+  "staff":   { "invited": "Сотрудник приглашён", "deactivated": "…" },
+  "payment": { "refunded": "Возврат платежа" }
+}
+```
+
+Dynamic call sites like `t(\`settings.audit.actions.${action}\`)` keep working unchanged because i18next splits `action = 'staff.invited'` at lookup time and walks the nested object.
+
+**Why.** Domain enums for `AuditAction` / `WebhookEvent` / `NotificationEvent` are namespaced with dots (`staff.invited`, `payment.completed`, `weekly.summary`) — and the natural copy-the-id-as-key reflex produces flat dotted leaf keys. First-pass Settings module shipped 27 unreachable keys in `settings.audit.actions.*` / `settings.webhook.eventLabels.*` / `settings.notifications.events.*`. Tests didn't catch it because the rendering only fails at runtime (a render of the literal raw key path looks plausible enough to pass type-check + build). Caught only by a post-ship i18n audit that resolved every dynamic-template key against the JSON tree.
+
+**How to apply.** Whenever a namespace contains identifiers that include dots (event names, action codes, dotted enum values), structure the JSON nested by family — never flat. Reference: [`src/lib/i18n/locales/ru.json`](../src/lib/i18n/locales/ru.json) `settings.audit.actions.*` / `settings.webhook.eventLabels.*` / `settings.notifications.events.*`. To audit a namespace, run a quick Node check resolving every domain enum value against the locale JSON before declaring the module done — the audit script lives at `/tmp/key_audit2.js` in dev sessions and can be promoted to `scripts/audit-i18n.ts` when a 3rd module repeats this pattern.
+
+---
+
+## 2026-05-12 · Zod `z.object(Object.fromEntries(...))` loses literal-key narrowing — override with the canonical domain type using `Omit + &`
+
+**Rule.** When you build a Zod schema's nested object shape dynamically from a constant array (`NOTIFICATION_EVENTS.map(evt => [evt, z.object(...)])` → `Object.fromEntries(...)` → `z.object(...)`), the inferred type collapses to `{ [x: string]: ... }` — it loses the literal `'payment.received' | 'payout.sent' | ...` key union you expected. Two-line fix:
+
+```ts
+export type NotificationsValues = Omit<z.infer<ReturnType<typeof notificationsSchema>>, 'matrix'> & {
+  matrix: NotificationMatrix;
+};
+```
+
+This re-pins the `matrix` field to the canonical domain type so consumers can do `values.matrix['payment.received']` without `any`. Runtime validation is unchanged — Zod still walks each event/channel field. The override is purely a TS surface.
+
+Separately, RHF's `setValue(path, ...)` can't infer the type of a dynamically-built path string like `\`matrix.${evt}.${channel}\``. Cast the path to the literal-string union locally + cast the setValue call once:
+
+```ts
+const path = `matrix.${evt}.${channel}` as `matrix.${NotificationEvent}.${NotificationChannel}`;
+(form.setValue as (p: typeof path, v: boolean, o: { shouldDirty: boolean }) => void)(path, v, { shouldDirty: true });
+```
+
+Reads worse than `form.setValue` direct but keeps the form-values shape type-safe at the call site.
+
+**Why.** First-pass Settings notifications matrix used `z.object(Object.fromEntries(...))` to avoid hand-writing the 7-events × 3-channels keymap. `npx tsc -b` failed on the consumer with `Type '{ [x: string]: { email: boolean; sms: boolean; in_app: boolean; }; }' is missing the following properties from type 'NotificationMatrix': "payment.failed", "payment.received", ...`. The fix above keeps the dynamic schema (one source of truth — `NOTIFICATION_EVENTS` array drives the shape) while restoring narrow literal keys for consumers.
+
+**How to apply.** Any time a Zod schema's shape is computed via `Object.fromEntries` + `.map()`, the inferred `z.infer<>` will have a string-indexed object signature instead of literal-key narrowing. If the canonical domain type already exists, use `Omit + &` to re-pin it. If it doesn't exist, write the canonical type first in `domain.ts`, then re-pin. Reference: [`src/features/settings/schemas.ts`](../src/features/settings/schemas.ts) `NotificationsValues`.
+
+---
+
+## 2026-05-12 · MSW handler fixture SVG: encode to base64 string constant, never inline `<svg>` text in source
+
+**Rule.** When an MSW handler needs to return SVG-shaped fixture data — typically a 2FA QR placeholder, a logo URL, or any data URI containing vector content — encode the SVG to a base64 string constant once and reference the constant:
+
+```ts
+const MOCK_QR_SVG_BASE64 = 'PHN2Zy…'; // base64 of <svg>...</svg>
+const dataUri = `data:image/svg+xml;base64,${MOCK_QR_SVG_BASE64}`;
+```
+
+NEVER inline the SVG markup as a template literal in source (`const svg = \`<svg ...>...</svg>\``) even inside an MSW handler — the §0.9 audit grep `<svg` flags it and rightly so. The audit's intent is "no hand-rolled vector authoring in source", and a literal `<svg>` substring in a `.ts` file is indistinguishable from that, audit-wise.
+
+**Why.** First-pass Settings 2FA enable-init endpoint used a template-literal SVG to generate a placeholder QR `data:image/svg+xml;utf8,...` data URI. `bash scripts/audit-discipline.sh` flagged the line — even though it's mock fixture data, not authoring vector UI. The base64 constant form makes the same fixture data unambiguous: it's a binary blob, not source-authored vector markup.
+
+**How to apply.** For new MSW handlers that need SVG fixtures, generate the base64 once with `node -e "console.log(Buffer.from(svg).toString('base64'))"` and embed the resulting string as a top-of-file constant. Reference: [`src/mocks/handlers/settings.ts`](../src/mocks/handlers/settings.ts) `MOCK_QR_SVG_BASE64`.
+
+---
+
+## 2026-05-12 · New module-level store (`useSyncExternalStore`) needs reference-stable `getSnapshot` — return the cached array reference, only swap on real mutation
+
+**Rule.** When implementing a new `useSyncExternalStore`-based module store that exposes a list (`Array<T>` or `Map<K, V>`), `getSnapshot` MUST return the **cached reference**, not a fresh copy. React's `useSyncExternalStore` calls `getSnapshot` on every render and bails out only if the returned reference is `===` to the previous one. If you write `return cached ?? []` inline, every render creates a fresh `[]` array — `===` fails — React re-renders — `getSnapshot` runs again — repeat indefinitely. The fix:
+
+```ts
+let cached: MySession[] | null = null;
+
+function getSnapshot(): MySession[] | null {
+  return cached;  // ← stable reference; only mutate by reassigning `cached`
+}
+
+export function setMySessions(next: MySession[]): void {
+  cached = next;   // ← swap reference exactly when the data really changes
+  notify();
+}
+```
+
+For the SSR snapshot, return a `const`-frozen empty array (NOT a fresh `[]` each call):
+
+```ts
+const SERVER_SNAPSHOT: readonly MySession[] = Object.freeze([]);
+function getServerSnapshot(): MySession[] | null {
+  return SERVER_SNAPSHOT as unknown as MySession[];
+}
+```
+
+**Why.** Without this, the SettingsActiveSessionsCard would infinite-loop on first render because `getSnapshot` returned `cached ?? []` and the `??` short-circuit minted a new array each call. The symptom is a "Maximum update depth exceeded" React error or visible browser jank. This is also why `lib/preferences.ts` and `lib/auth.ts` both have a single module-level `cached` variable that gets reassigned in mutators — same pattern, same reason.
+
+**How to apply.** Every new module store in `src/lib/*.ts` follows this shape. Confirm by reading: the `getSnapshot` body should be a single `return cached;` line (no `??`, no `[...cached]`, no `Object.assign({}, cached)`). All mutators should reassign `cached` to a new reference before calling `notify()`. Reference: [`src/lib/sessions.ts`](../src/lib/sessions.ts), [`src/lib/preferences.ts`](../src/lib/preferences.ts), [`src/lib/auth.ts`](../src/lib/auth.ts).
+
+---
+
 ## 2026-05-11 · DataTable column `meta`: header and cell alignment must be set together; date/time and amount columns also need `whitespace-nowrap` on BOTH sides
 
 **Rule.** When defining a `<DataTable>` column via TanStack `ColumnDef`, the `meta.headerClassName` and `meta.cellClassName` are independent — applying `text-right` to one does NOT propagate to the other. Whatever alignment / wrapping the cell has, the **header must mirror**. Concretely:

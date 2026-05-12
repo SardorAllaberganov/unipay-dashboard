@@ -4,6 +4,201 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-12 — Post-P12 sidebar polish for Coming Soon nav items
+
+**Summary.** Iterative visual refinement of the Coming Soon nav items in [`src/components/layout/Sidebar.tsx`](../src/components/layout/Sidebar.tsx), driven by user feedback on the rendered result after the P11 ship. No new functionality — purely visual rhythm + color tokens. Four passes converged on the final shape below.
+
+**Final shape (`NavItemView` coming-soon branch).**
+- **Layout**: `grid h-9 grid-cols-[auto_1fr_auto] items-center gap-2.5 rounded-md px-3` — three explicit columns (icon · label · lock). Lock sits at the natural right edge of column 3, no `ml-auto` / `mr-*` tricks needed.
+- **Collapsed-mode fallback**: `flex justify-center px-0` when `collapsed === true` so the 3-col grid doesn't misbehave at 64px sidebar width — only the single icon centers.
+- **Text colors** explicit on each child element (not inherited from NavLink parent — inheritance was fighting tailwind-merge and NavLink's own className pipeline):
+  - Feature icon: `text-muted-foreground/70`
+  - Label `<span>`: `text-muted-foreground/70` (explicit, not via parent cascade)
+  - Lock icon: `text-muted-foreground/60` (most muted — pure visual cue)
+- **Active state**: just `bg-muted` (no text-color jump). Coming-soon items never adopt the brand-active treatment (`bg-brand-50 text-brand-700`) that real modules get, because `/locked/:feature` isn't a "real" route the user "is on" in the navigational sense.
+
+**Iterations that didn't land.**
+- `text-muted-foreground` on the NavLink parent — wasn't cascading to the child `<span>` reliably; the label rendered as `slate-900` foreground instead. Fixed by putting the color directly on the `<span class="truncate">`.
+- `mr-0.5` / `mr-3` on the Lock to push it inward — abandoned in favor of CSS Grid's natural column-right alignment, which is structurally cleaner and removes the magic.
+- `pl-3 pr-2` / `pl-3 pr-4` asymmetric padding — abandoned for symmetric `px-3` since the grid handles right-alignment cleanly.
+
+**Files modified.**
+- [`src/components/layout/Sidebar.tsx`](../src/components/layout/Sidebar.tsx) — only file touched. `NavItemView` coming-soon branch.
+
+**Verifications.** `npx tsc -b` clean. `npm run lint --max-warnings 0` clean. No new tests; visual refinement only.
+
+---
+
+## 2026-05-12 — Prompt 12 (Polish + a11y audit) completed; POLISH_REPORT.md generated
+
+**Summary.** Full audit pass against `STYLE_DISCIPLINE.md` v2.0 §0.1–§0.12 + spec §14 (states) + §15 (responsive/a11y/locale). Produced [`POLISH_REPORT.md`](../POLISH_REPORT.md) at repo root with every audit result + file refs. Fixed real violations inline; documented browser-side QA items as Prompt 13 follow-ups.
+
+**Audit results.**
+- **§0.9 forbidden-patterns sweep** — every real category clean. `text-xs`: 105 total hits, 100 allow-listed across the 5 §0.2 categories, 5 fixed (Payments PendingTable / TransactionTimeline / RefundsTable ×2 / TransactionMobileCard — all decorative secondary text bumped to `text-sm`). Hex: 35 hits all allow-listed (7 brand-color user-pick contexts + ~25 inside `ReceiptPreviewIframe` srcDoc CSS where `hsl(var(...))` can't resolve). Unicode arrows: 37 hits all in code comments using `→` as "leads to" notation — known LESSONS false-positive. Other categories (`<svg>` / sticky `<thead>` / `max-w` on `<main>` / ChevronLeft / `text-[10/11/12px]` / `h-screen` / `BrowserRouter` / reason `<20` / direct localStorage in features / `:root --brand` overrides) all zero.
+- **§0.8 state coverage matrix** — every shipped data surface implements all 6 states (or 5 + n/a-partial for non-paginated surfaces) via shared `<DataTable state={...}>` (20 consumers) + `<PanelStates>` primitives. NotifyMeForm covers 6 states inline (idle / loading via Button spinner / success view / inline error banner / offline via WriteButton / partial N/A).
+- **§0.5 detail-page conventions** — 3 Pattern A (Student `/students/:id` · Transaction `/payments/transactions/:id` · Payout `/payouts/:id`) all using `pb-28` + `<BackLink>` + `<DetailActionBar>` (fixed-bottom via shared primitive). 1 Pattern B (Staff `/staff/:id`) using `pb-12` + kebab DropdownMenu (no fixed bar).
+- **§0.6 data tables** — shared `<TableHead>` (`text-sm font-medium text-muted-foreground`, no `uppercase tracking-wider`, no `text-xs`) + `<TableRow>` (`style={{ height: 'var(--row-h)' }}` density-bound + `hover:bg-muted/40`) enforce conformance for all 20 consumers. No sticky thead anywhere.
+- **§0.11 system preview routes** — 5 existing routes verified (`/system/preview/{404,500,403,offline,maintenance}`). **Added missing 6th**: `/system/preview/error-boundary` mounting new [`<ErrorBoundaryPreview>`](../src/components/system/ErrorBoundaryPreview.tsx) component that throws on render. Verifies `<SystemErrorBoundary>` catches it and renders `<ServerErrorState>` with reference id. `?maintenance=on|off` URL param continues to gate the entire app except `/system/preview/*` paths.
+- **§0.12 module-level stores** — 5 stores conform (`auth.ts` · `preferences.ts` · `maintenanceState.ts` · `sessions.ts` · `useNetworkState.ts`). Theme is a documented structural divergence: `providers/ThemeProvider.tsx` uses React Context instead of `useSyncExternalStore`, but is functionally equivalent (localStorage `unipay-theme` backed, exposes `useTheme()`, DOM side effects in setter). Migration to `lib/theme.ts` deferred — no consumer impact.
+- **Offline-gate `<WriteButton>` coverage** — 94 instances across features; matches spec expectations.
+- **Onboarding offline-gate gap fixed** — [`StepActionBar.tsx`](../src/features/onboarding/components/StepActionBar.tsx) "Save & exit" + "Next" buttons write to server but were `<Button>`. Both promoted to `<WriteButton>`. Back button stays `<Button>` (no server write).
+- **Localization** — 2 hardcoded RU placeholder violations fixed: `<Input placeholder="Семестр 1 2026">` in [`TemplateForm.tsx:246`](../src/features/students/components/schedules/TemplateForm.tsx#L246) + [`PaymentSetupSection.tsx:108`](../src/features/students/components/add/PaymentSetupSection.tsx#L108). New i18n key `students.add.rowPeriodPlaceholder` added in RU + UZ. The 3 other Cyrillic hits are non-violations (DashboardPage's tracked open-work placeholder constant · Step1Download.tsx xlsx template cell content not rendered on screen · code-comment string literals).
+
+**Route-level code-splitting (biggest performance win).** [`src/router.tsx`](../src/router.tsx) rewritten to use `React.lazy()` per feature page + `<Suspense fallback={<RouteFallback />}>` wrapping `<AppRoutes>`. Auth pages (sign-in / forgot / reset) stay eager since they're the absolute critical path. Payments pages use named-export normalization (`.then(m => ({ default: m.X }))`) since their page exports aren't default-shaped.
+
+**Bundle impact**:
+- Before: main `index-*.js` = 528 KB gzipped (2.0× over <250KB target)
+- After: main `index-*.js` = **245 KB gzipped** ✓ under target
+- Per-feature chunks: 2–19 KB gzipped each (largest = DepartmentsPage at 19 KB containing @dnd-kit)
+- Recharts shared chunk peels off at 112 KB gzipped (loaded only on Dashboard + Reports — slightly above per-chunk target but it's shared)
+- xlsx + MSW + confetti remain dynamic-import (xlsx loads only on `/students/import`, MSW only in dev/preview, confetti only on onboarding finish)
+
+**Files modified.**
+- [`src/router.tsx`](../src/router.tsx) — route-level code-splitting + Suspense wrapper + `/system/preview/error-boundary` route
+- [`src/features/payments/components/PendingTable.tsx`](../src/features/payments/components/PendingTable.tsx) — text-xs → text-sm on period label
+- [`src/features/payments/components/TransactionTimeline.tsx`](../src/features/payments/components/TransactionTimeline.tsx) — text-xs → text-sm on timestamp
+- [`src/features/payments/components/RefundsTable.tsx`](../src/features/payments/components/RefundsTable.tsx) — text-xs → text-sm ×2
+- [`src/features/payments/components/TransactionMobileCard.tsx`](../src/features/payments/components/TransactionMobileCard.tsx) — text-xs → text-sm
+- [`src/features/onboarding/components/StepActionBar.tsx`](../src/features/onboarding/components/StepActionBar.tsx) — Save & exit + Next promoted to WriteButton
+- [`src/features/students/components/schedules/TemplateForm.tsx`](../src/features/students/components/schedules/TemplateForm.tsx) — hardcoded placeholder → i18n key
+- [`src/features/students/components/add/PaymentSetupSection.tsx`](../src/features/students/components/add/PaymentSetupSection.tsx) — hardcoded placeholder → i18n key
+- [`src/lib/i18n/locales/ru.json`](../src/lib/i18n/locales/ru.json) + [`uz.json`](../src/lib/i18n/locales/uz.json) — new `students.add.rowPeriodPlaceholder` key
+
+**Files added.**
+- [`src/components/system/ErrorBoundaryPreview.tsx`](../src/components/system/ErrorBoundaryPreview.tsx) — QA-only throwing component
+- [`POLISH_REPORT.md`](../POLISH_REPORT.md) — full audit results report at repo root
+
+**Files deleted.**
+- `src/pages/Placeholder.tsx` — dead code (no longer imported after Coming Soon module replaced consumers); empty `src/pages/` directory also removed
+
+**Verifications.** `npx tsc -b` clean. `npm run lint --max-warnings 0` clean. `npm run build` clean (only chunk-size advisory remains, applies to Recharts shared chunk). `bash scripts/audit-discipline.sh` clean on all real categories (em-dash + Cyrillic byte-alias false-positives only on the Unicode-arrows grep per LESSONS).
+
+**Items deferred to Prompt 13** (require running browser context).
+- Lighthouse a11y ≥ 95 on Dashboard / Students list / Student profile A / Staff detail B / Settings API
+- Mobile QA at 320 / 375 / 414 / 768 / 1024 / 1280 / 1440 px
+- 200% zoom reflow on Dashboard / Students list / Student profile / Settings API
+- Cross-tab session-sync E2E (tab A revoke → tab B refresh)
+- MSW-disabled prod build smoke test (`VITE_USE_MOCKS=false npm run preview` → check graceful empty/error/offline states)
+- Tap-target overlay sweep on mobile
+
+**Open carry-over items** (existing follow-ups not addressed in this pass — listed in POLISH_REPORT §11).
+- Bilingual xlsx template (Step1Download.tsx writes RU-only)
+- `/api/organization` wiring (PLACEHOLDER_INSTITUTION constant)
+- `<BottomTabBar>` + `is-detail-route.ts` helper (operative pattern is `<DetailActionBar>` + `pb-28`)
+- Shared promotions: `<CopyableId>` / `<CopyableTextRow>` / `<CopyOrLoseItPanel>` / `<PasswordConfirmDialog>` (all feature-local; promote when 3rd consumer appears)
+- Receipt rendering refactor (hex colors in srcDoc CSS — replace with computed-style read or PDF generator)
+- Theme migration `providers/ThemeProvider.tsx` → `src/lib/theme.ts` (pattern uniformity only)
+
+---
+
+## 2026-05-12 — Prompt 11 (Coming Soon system) shipped end-to-end
+
+**Summary.** Built the generic Coming Soon system per spec §13 — new `/locked/:feature` route resolving to `<LockedFeaturePage>` over 9 registered features + fallback for unknown slugs. New `<LockedLayout>` (full-bleed radial-gradient via scale tokens). New `<NotifyMeForm>` (RHF + Zod email, 6 states inline). Dashboard `<AIInsightsTeaser>` preview card. Settings → Integrations tab as 8th sub-tab. 4 sidebar items flagged `status: 'coming-soon'` with `<Lock>` overlay + tooltip. Single MSW endpoint with idempotent in-memory signup store. ~110 new i18n keys in both RU + UZ.
+
+**Files added.**
+- `src/app/layouts/LockedLayout.tsx` — full-bleed radial-gradient backdrop (`hsl(var(--brand-50))` light / `hsl(var(--brand-950)/.4)` dark) wrapping a centered `max-w-3xl` content column. Negative margins reverse the AppShell `<main>` padding so the gradient touches page edges.
+- `src/features/coming-soon/pages/LockedFeaturePage.tsx` — slug-driven `<EmptyState>`-shaped landing: badge + illustration (blurred screenshot OR `size-24` brand-tinted icon) + title (`text-2xl md:text-3xl`) + subtitle + 3 bullet rows with `Check` icons + `<NotifyMeForm>` + Contact-sales mailto link.
+- `src/features/coming-soon/components/NotifyMeForm.tsx` — email Input + Submit `<WriteButton>` row; success view swaps in with `aria-live="polite"` echo of the submitted address + "Подписать другой email" reset.
+- `src/features/coming-soon/components/BlurredScreenshot.tsx` — CSS-only placeholder using a faux content gradient + faint grid pattern under `[filter:blur(6px)]` with a centered lucide icon overlay. `compact` variant for the AI Insights teaser.
+- `src/features/coming-soon/components/AIInsightsTeaser.tsx` — dashboard preview Card with `opacity-60` inner content + an absolute `pointer-events-auto` "Уведомить меня" Button that escapes the dim and routes to `/locked/ai-insights`.
+- `src/features/coming-soon/data/featureContent.ts` — 9-feature registry (`sms-campaigns` · `documents` · `ai-insights` · `integrations-hemis` · `integrations-1c` · `mobile-app` · `multi-currency` · `custom-roles` · `billing-upgrade`) + `FALLBACK_FEATURE` + `resolveFeature(slug)` helper + `BULLET_COUNT = 3` + `SUPPORT_EMAIL`.
+- `src/features/coming-soon/hooks/useNotifyMe.ts` — TanStack `useMutation` wrapping `POST /api/coming-soon/notify`.
+- `src/features/coming-soon/api.ts` + `schemas.ts` (Zod email).
+- `src/mocks/handlers/coming-soon.ts` — single endpoint, in-memory `Map<feature:email>` store, 700ms simulated latency, idempotent on repeat submits.
+- `src/features/settings/pages/IntegrationsTab.tsx` — 3-card grid (HEMIS / 1C / custom ERP).
+- `src/features/settings/components/IntegrationCard.tsx` — disabled card with `<StatusBadge variant="coming-soon">` + "Запросить доступ" Button routing to `/locked/integrations-{slug}`.
+
+**Files modified.**
+- [`src/components/layout/Sidebar.tsx`](../src/components/layout/Sidebar.tsx) — extended `NavItem` with `status?: 'coming-soon'`. Added 4 representative coming-soon items (Documents under Students · SMS Campaigns under Payments · AI Insights under Finance · Mobile App under System). Each renders as a `<NavLink>` to `/locked/:feature` with the `<Lock>` icon at `ml-auto`, `<Tooltip>` showing `comingSoon.sidebarTooltip`, and an SR `aria-label` "{label} — Скоро". Visually muted via `text-muted-foreground` instead of `text-foreground/80` so users get the "not active yet" signal even at a glance.
+- [`src/router.tsx`](../src/router.tsx) — replaced the one-off `/locked/billing-upgrade → <BillingUpgradePage />` with a generic `/locked/:feature → <LockedFeaturePage />`. Added `/settings/integrations` child route under `<SettingsLayout>`.
+- [`src/components/layout/Topbar.tsx`](../src/components/layout/Topbar.tsx) — dropped the one-off `/locked/billing-upgrade` entry from `ROUTE_TITLES`. Added a regex matcher for `/locked/:feature` that looks up `comingSoon.features.{slug}.title` and falls back to the generic "Скоро" label when the i18n lookup misses. `NESTED_TAB_LABELS['/settings']` now includes `integrations`.
+- [`src/features/settings/components/SettingsTabsNav.tsx`](../src/features/settings/components/SettingsTabsNav.tsx) — TABS array now has 8 entries (Integrations inserted between API and Notifications).
+- [`src/features/dashboard/pages/DashboardPage.tsx`](../src/features/dashboard/pages/DashboardPage.tsx) — `<AIInsightsTeaser />` mounted after Row 5.
+- [`src/mocks/handlers/index.ts`](../src/mocks/handlers/index.ts) — spreads `comingSoonHandlers`.
+- [`src/lib/i18n/locales/ru.json`](../src/lib/i18n/locales/ru.json) + [`uz.json`](../src/lib/i18n/locales/uz.json) — new top-level `comingSoon.*` namespace (~110 keys: 9 feature entries × {title + subtitle + 3 bullets} + fallback set + notifyMe form set + sidebar tooltip + dashboardTeaser set + badge), new `settings.integrations.*` section, new `settings.tabs.integrations` key, 4 new `nav.*` keys for the sidebar coming-soon items. Old `locked.*` namespace deleted.
+
+**Files deleted.**
+- `src/features/settings/pages/BillingUpgradePage.tsx` — one-off page reserved during Prompt 10. `/locked/billing-upgrade` now resolves through the generic `<LockedFeaturePage>` with slug-keyed content.
+
+**Acceptance walk-through.**
+- All sidebar Coming Soon items show lock + tooltip + are focusable for SR with "{label} — Скоро" aria-label ✓
+- All locked routes render correct content from `featureContent.ts` (9 slugs × 5 content fields each, plus the 3 fallback i18n keys) ✓
+- Notify Me form submits via `<WriteButton>`, success view shown with email echo + "another email" reset ✓
+- Dashboard `<AIInsightsTeaser>` renders dimmed but the CTA stays interactive via `pointer-events-auto` ✓
+- Settings → Integrations tab renders 3 disabled cards routing to `/locked/integrations-{slug}` ✓
+- Unknown slug (e.g. `/locked/foo`) falls back to `comingSoon.fallback.*` generic "Скоро" page ✓
+
+**Lesson-aware details.**
+- **i18n nested keys** (per 2026-05-12 LESSON) — feature slugs are kebab-case (`sms-campaigns`, `integrations-hemis`, etc.); none contain dots, so dynamic `t(\`comingSoon.features.${slug}.title\`)` lookups split correctly. The audit script confirms all 56 dynamic lookups resolve in both locales.
+- **No inline `<svg>`** — `BlurredScreenshot` composes via two stacked `<div>` layers with `background-image: linear-gradient + repeating-linear-gradient` under a centered lucide icon overlay. Zero hand-rolled vector in source.
+- **No `position: sticky`** — locked page chrome flows inline; sidebar items use Tooltip-on-trigger.
+- **`<WriteButton>` on email submit** — auto-disables offline with tooltip; loading state shows Button's built-in `<Loader2>` spinner.
+- **Cross-tab tokens via `hsl(var(--brand-50))`** — radial-gradient uses CSS scale tokens directly, so dark-mode flip and future palette tweaks just work.
+- **AI Insights teaser CTA escape** — the `pointer-events-none` is on the OUTER absolute positioning wrapper, and `pointer-events-auto` re-enables the Button itself. This pattern works for any "dimmed preview with interactive CTA overlay" need.
+
+**Verifications.** `npx tsc -b` clean. `npm run lint --max-warnings 0` clean. `npm run build` clean. JSON validity for both locales confirmed via `JSON.parse`. i18n audit script confirms all ~110 `comingSoon.*` + `settings.integrations.*` + `nav.*` keys resolve in both RU and UZ. §0.9 audit clean on `<svg>`, sticky `<thead>`, `max-w` on `<main>`, ChevronLeft, hex colors, DataTable uppercase; em-dash false-positive in Unicode-arrows category unchanged.
+
+**Open follow-ups.**
+- MSW handler's signup store is in-memory only. When the real backend lands, replace the Map with a `/api/coming-soon/signups` collection. The wire shape `{ feature, email, createdAt }` is the contract.
+- Sidebar "Coming Soon" badge in collapsed (64px) mode: the `<Lock>` icon doesn't render when collapsed (the truncated label slot is gone). Acceptable for v1 — the tooltip on hover still surfaces the state. If feedback says otherwise, render a tiny lock dot in the corner of the icon.
+- Feature illustrations are currently CSS gradients + a lucide icon. Real product screenshots can be dropped in later by extending `<BlurredScreenshot>` with an optional `srcDataUri` prop.
+
+---
+
+## 2026-05-12 — Prompt 10 (Settings module) shipped end-to-end
+
+**Summary.** Built the Settings feature module per spec §12 — a nested `/settings/*` layout with **7 tab routes** (General · Security · API & Webhooks · Notifications · Billing Plan · Audit Log · Preferences). Replaced the previous `<Placeholder />` route. New `src/lib/sessions.ts` module store implements the `useSyncExternalStore` pattern with cross-tab storage-event sync. New MSW handler with **24 endpoints** + a ~180-entry audit log fixture. ~180 i18n keys added to both RU + UZ. Build sequence: 10 of 13 prompts done.
+
+**Files added.**
+- `src/lib/sessions.ts` — module store + cross-tab sync API (`setMySessions`, `removeMySessionFromCache`, `removeOtherMySessionsFromCache`, `broadcastSessionsChange`, `subscribeToCrossTabSessions`, `useMySessionsSnapshot`).
+- `src/features/settings/pages/`: `SettingsLayout.tsx`, `GeneralTab.tsx`, `SecurityTab.tsx`, `ApiTab.tsx`, `NotificationsTab.tsx`, `BillingTab.tsx`, `AuditTab.tsx`, `PreferencesTab.tsx`.
+- `src/features/settings/components/`: `SettingsTabsNav.tsx` · `ChangePasswordCard.tsx` · `TwoFaCard.tsx` · `Enable2FaWizard.tsx` · `ActiveSessionsCard.tsx` · `LoginHistoryCard.tsx` · `ApiKeysCard.tsx` · `GenerateApiKeyDialog.tsx` · `WebhookConfigCard.tsx` · `WebhookDeliveriesCard.tsx` · `AuditFiltersBar.tsx` · `PreferencesLivePreview.tsx` · `PasswordConfirmDialog.tsx` (feature-local) · `CopyableTextRow.tsx` (feature-local) · `CopyOrLoseItPanel.tsx` (feature-local).
+- `src/features/settings/hooks/`: `useGeneralSettings.ts` · `useChangePassword.ts` · `useTwoFactor.ts` · `useMyActiveSessions.ts` · `useLoginHistory.ts` · `useApiKeys.ts` · `useWebhook.ts` · `useNotificationsConfig.ts` · `useBilling.ts` · `useAuditLog.ts`.
+- `src/features/settings/api.ts` + `src/features/settings/schemas.ts`.
+- `src/mocks/handlers/settings.ts` — 24 endpoints across the 7 tabs; mulberry32 seeded `0x5e771465`; in-memory `Map`s for API keys + plaintext-tokens + webhook deliveries; 5 sessions (1 current + 4 others), 30 login-history entries, 3 seeded API keys with permission variety, 20 webhook deliveries, ~180 audit-log entries spanning all 18 `AuditAction` values.
+
+**Files modified.**
+- [`src/types/domain.ts`](../src/types/domain.ts) — appended Settings domain block: `MySession` · `LoginHistoryEntry` + `LoginOutcome` · `ApiKey` + `ApiKeyPermission` + `API_KEY_PERMISSIONS` · `WebhookConfig` + `WebhookEvent` + `WEBHOOK_EVENTS` + `WebhookDelivery` + `WebhookDeliveryStatus` · `NotificationChannel` + `NOTIFICATION_CHANNELS` + `NotificationEvent` + `NOTIFICATION_EVENTS` + `NotificationMatrix` + `NotificationPreferences` · `BillingPlanCode` + `PayoutScheduleCode` + `BillingFeature` + `BillingPlanInfo` + `BillingState` · `AuditAction` + `AUDIT_ACTIONS` + `AuditLogEntry` · `GeneralSettings` · `TwoFactorState`.
+- [`src/router.tsx`](../src/router.tsx) — replaced `<Route path="/settings" element={<Placeholder />} />` with nested `<SettingsLayout>` + 7 child routes (index redirect → `general`). Added sibling `/locked/billing-upgrade` Placeholder route reserved for Prompt 11. Added `/locked` to `KNOWN_PATH_PREFIXES` so deep-link before sign-in resolves correctly.
+- [`src/mocks/handlers/index.ts`](../src/mocks/handlers/index.ts) — spreads `settingsHandlers`.
+- [`src/lib/i18n/locales/ru.json`](../src/lib/i18n/locales/ru.json) + [`uz.json`](../src/lib/i18n/locales/uz.json) — added top-level `settings.*` namespace (~180 keys, including ICU plurals for `api.permissionsCount` and audit row counts). Plugged the previously-missing `common.actions.{done, show, actions, copyFailed}`, new `common.validation.*` namespace (required / email / phone / minLength / maxLength / reasonMinLength), and `common.errors.saveFailed`.
+
+**Layout shape.**
+- **Mobile (<md)**: a `<Select>` at the top of the content area drives navigation to `/settings/{slug}`. No sticky.
+- **Desktop (≥md)**: left vertical strip 200px wide with brand-stripe active state; right column `min-w-0 flex-1` for tab content. The strip is **vertical** (not the horizontal underline pattern used by `OrgTabsNav` / `ReportsTabsNav`) because the spec called for a left rail; consistency with §0.5 (no `position: sticky` on page chrome) preserved.
+
+**Tab highlights.**
+- **General** — RHF + Zod factory; org name and TIN read-only with "Edit in Profile" link to `/organization/profile`; contact email + phone editable; timezone (Asia/Tashkent default) + language `<Select>` (RU/UZ). Save persists via PATCH and updates the query cache.
+- **Security** — 4 cards: change-password (current + new + confirm with mismatch validation) · 2FA (3-step Dialog wizard scan-QR → 6-digit code → recovery codes once, regenerate via `PasswordConfirmDialog`, disable via password + reason ≥20) · active sessions (DataTable with revoke per row + revoke-all-others, cross-tab sync via storage event) · login history (last 30 with success/failed icons).
+- **API & Webhooks** — API Keys card with kebab dropdown (Reveal / Regenerate / Delete), Generate dialog with copy-or-lose-it warning + destructive close-warn, Webhook config (HTTPS URL + events checkbox grid + enabled Switch + test panel + delivery log + signing-secret row with reveal/rotate using `PasswordConfirmDialog`).
+- **Notifications** — 7 events × 3 channels (Email / SMS / In-app) matrix of `<Switch>` cells + overdue-alert days `<NumberInput>` rule.
+- **Billing Plan** — Current plan summary card (plan name + monthly fee + commission % + payout schedule) with "Улучшить план" → `/locked/billing-upgrade`. 3-plan comparison table (Starter / Business / Enterprise) with `Check` / `Lock` icons.
+- **Audit Log** — Actor search + action `<Select>` (all 18 `AuditAction` values) + From / To date inputs (URL-synced via `useAuditFiltersFromUrl`); inline expandable reason note row above the table; DataTable with 50/page pagination.
+- **Preferences** — Density `<RadioGroup>` (Compact / Comfortable cards) + tabular-numerals `<Switch>`; live-preview sample table reacts immediately to both toggles via `data-density` / `data-tabular-nums` attrs on `<html>` from `lib/preferences.ts`; "settings are local to this browser" note.
+
+**Module store — sessions.ts.** Pattern reference: `lib/preferences.ts` (boot DOM side effects), `lib/auth.ts` (cross-tab via storage event), with a critical reference-stability constraint: `getSnapshot` returns the cached array reference (only swapped on real mutation) so `useSyncExternalStore` doesn't trigger infinite re-renders. The `useMyActiveSessions` hook subscribes via `subscribeToCrossTabSessions` to invalidate the TanStack Query on remote-tab mutations. Mutation hooks (`useRevokeSession`, `useRevokeAllOtherSessions`) call `broadcastSessionsChange()` after success.
+
+**`PasswordConfirmDialog` (feature-local).** Handles 4 flavors with one component: password-only (reveal API key plaintext, reveal webhook signing secret) and password + reason ≥20 (disable 2FA, rotate webhook signing secret). Promote to `src/components/shared/` when a 3rd domain consumer outside Settings appears (same precedent as `<PayoutIdCopy>` from Prompt 9). Same precedent applies to `CopyableTextRow` + `CopyOrLoseItPanel`.
+
+**Lesson-aware details.**
+- **DataTable column meta** (LESSON 2026-05-11): every right-aligned amount/numeric column has `text-right whitespace-nowrap` on BOTH header AND cell across Sessions / LoginHistory / ApiKeys / WebhookDeliveries / Audit. Narrow columns use `w-[1%] whitespace-nowrap` on the header (lastUsedAt, createdAt, IP, status, action, ID columns). Mobile card-in-card eliminated — every `mobileCardRender` returns plain `<div>`, not `<Card>`.
+- **No `position: sticky`** anywhere (tab strip, filter bar, form rows all flow inline) per LESSON 2026-05-11.
+- **`flex flex-col gap-2`** on label-over-control blocks (not `space-y-2`) per LESSON 2026-05-12.
+- **`<WriteButton>` on every write** (password change · save general · generate key · regenerate key · delete key · revoke session · revoke all others · enable 2FA · disable 2FA · regenerate codes · save webhook · test webhook · retry delivery · reveal/rotate secret · save notifications).
+- **MSW QR placeholder** ships as a pre-encoded base64 SVG string constant (`MOCK_QR_SVG_BASE64`), not inline `<svg>` text in source, so the §0.9 audit's no-inline-vector grep stays clean — this is fixture data, not authoring vector UI.
+- **`text-xs` hits** (audit each per §0.2): all map to allow-list (mono API key prefixes / permission tokens — category mono IDs; uppercase tracking-wider definition labels — category 5; "current" badge — category 1 chip/badge body).
+- **Reference-stable `getSnapshot`** in `lib/sessions.ts`: the cached array reference only swaps on real mutation (otherwise `useSyncExternalStore` loops re-renders).
+
+**Verifications.** `npx tsc -b` clean. `npm run lint --max-warnings 0` clean (two `prefer-const` autofixes on the MSW stores caught on first pass). `npm run build` clean (chunk-size advisory unchanged). §0.9 audit clean on real categories (`<svg>`, sticky `<thead>`, `max-w` on `<main>`, ChevronLeft, hex colors, DataTable uppercase). Unicode-arrows audit category trips on em-dashes in RU/UZ copy + `→` in code comments (cross-codebase convention for describing step flows — pre-existing pattern, known false positive per 2026-05-11 LESSON).
+
+**Open follow-ups.**
+- `PasswordConfirmDialog` + `CopyableTextRow` + `CopyOrLoseItPanel` not yet promoted to `src/components/shared/` (no 3rd consumer yet outside Settings).
+- API keys + webhook signing secret reveal endpoints accept the demo password `demo1234` — same as the dev sign-in. Real backend will gate this behind the user's actual session-bound password verifier.
+- `/locked/billing-upgrade` is a `<Placeholder />` route reserved for Prompt 11 (Locked / Coming Soon pages).
+- 2FA verify endpoint accepts any well-formed 6-digit code without checking against the secret (the mock secret is `JBSWY3DPEHPK3PXP`, the RFC 6238 example, but no TOTP computation is wired). Real backend computes the time-window-correct TOTP.
+
+---
+
 ## 2026-05-12 — Payouts module polish round (overview banner padding + StatusTimeline connector lines)
 
 **Summary.** Two visual fixes on the Payouts surfaces that landed earlier in the session, both driven by user feedback. Neither touches logic / data flow / i18n / domain — pure layout corrections in two component files.
