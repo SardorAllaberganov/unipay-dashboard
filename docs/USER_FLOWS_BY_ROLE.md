@@ -9,12 +9,22 @@ This document is a **workflow map**, not a user manual. Each flow lists the sequ
 
 ## How to read a flow
 
+Each flow has a **mermaid `flowchart TD` diagram** for visual scan, followed by the prose breakdown. The diagram and the steps are kept in sync — if they drift, the steps win (they cite the route and permission row).
+
 ```markdown
 ### Flow X — Short name
 
 **Role:** owner / finance_manager / operator / viewer
 **Trigger:** What prompts the user to start
 **Outcome:** What's true after the flow ends
+
+```mermaid
+flowchart TD
+  A[Entry] --> B[Action]
+  B --> C{Decision?}
+  C -->|yes| D[Outcome]
+  C -->|no| A
+```
 
 Steps:
 1. Sidebar → … (`/route`)
@@ -25,6 +35,12 @@ Routes touched: `/route`, `/route/:id`
 Permissions required: `resource.action` per ROLE_PERMISSIONS
 Open questions: anything unresolved (PRD-only, not in code)
 ```
+
+**Diagram conventions** —
+- `[Rectangle]` = action / page
+- `{Diamond?}` = decision branch
+- `-->` = primary edge · `-.label.->` = optional / async / out-of-band edge
+- Route paths shown verbatim (e.g. `/staff/:id`); same for `ROLE_PERMISSIONS` resources
 
 When a flow is **spec'd but not yet enforced** by the runtime (e.g. the route exists but no role guard hides it from a Viewer), it's marked **⚠️ Spec only**.
 
@@ -51,6 +67,17 @@ DEV fixtures in [src/lib/auth.ts:69-98](../src/lib/auth.ts) confirm: only `owner
 **Trigger:** User opens the dashboard URL while signed out
 **Outcome:** Authenticated session; landed on `/` (or `/onboarding/:step` for incomplete Owner)
 
+```mermaid
+flowchart TD
+  A["/sign-in (eager)"] --> B[Enter email + password]
+  B --> C["POST /api/auth/sign-in (mocked)"]
+  C --> D{Success?}
+  D -->|no| A
+  D -->|yes| E{onboardingComplete?}
+  E -->|true| F["Navigate to ?next or /"]
+  E -->|false| G["useOnboardingGuard redirects to /onboarding/:step"]
+```
+
 Steps:
 1. Land on `/sign-in` (eager-loaded; no skeleton flash).
 2. Enter email + password (DEV: role inferred from email prefix or domain hint).
@@ -68,6 +95,19 @@ Permissions required: none (public surface)
 **Role:** any
 **Trigger:** User forgot password
 **Outcome:** New password set; signed in via Sign-in flow
+
+```mermaid
+flowchart TD
+  A["/sign-in"] --> B["Click 'Forgot password?'"]
+  B --> C["/forgot-password"]
+  C --> D[Enter email + submit]
+  D --> E[Confirmation toast]
+  E -.out-of-band.-> F[Email link delivered]
+  F --> G["/reset-password?token=…"]
+  G --> H[Enter new password + submit]
+  H --> I["/sign-in"]
+  I --> J[Run Flow S1]
+```
 
 Steps:
 1. From `/sign-in` → click "Forgot password?" → `/forgot-password`.
@@ -87,6 +127,15 @@ Permissions required: none
 **Trigger:** No interaction past the idle timeout
 **Outcome:** Auto-signed-out with `reason: 'session_expired'`; redirected to `/sign-in`
 
+```mermaid
+flowchart TD
+  A[Active session in AppShell] --> B[useIdleTimeout ticks]
+  B --> C{idle > timeout?}
+  C -->|no| A
+  C -->|yes| D["signOut reason='session_expired'"]
+  D --> E["/sign-in?expired=1"]
+```
+
 Mechanism: `useIdleTimeout()` in `AuthGuard` ([src/router.tsx:131-134](../src/router.tsx)). Not a user-initiated flow but the only end-of-session path other than explicit sign-out.
 
 ---
@@ -96,6 +145,17 @@ Mechanism: `useIdleTimeout()` in `AuthGuard` ([src/router.tsx:131-134](../src/ro
 **Role:** any
 **Trigger:** Click a 🔒 sidebar item or a billing-upgrade CTA
 **Outcome:** Lands on `/locked/:feature` with title, bullets, screenshot, and a `mailto:` contact CTA
+
+```mermaid
+flowchart TD
+  A[Click locked sidebar item OR embedded CTA] --> B["/locked/:feature"]
+  B --> C[resolveFeature slug]
+  C --> D{Slug in FEATURE_REGISTRY?}
+  D -->|yes| E[Render title + bullets + screenshot + NotifyMe form + mailto:]
+  D -->|no| F[Generic 'Coming Soon' fallback]
+  E -.optional.-> G[Submit NotifyMe email]
+  E -.optional.-> H[Open mailto: to sales]
+```
 
 Slug → content map: [src/features/coming-soon/data/featureContent.ts](../src/features/coming-soon/data/featureContent.ts) (`FEATURE_REGISTRY`).
 
@@ -113,6 +173,24 @@ The Owner is the only role with `staff.write`, `settings.write`, `audit.write`, 
 **Role:** owner
 **Trigger:** First sign-in on a fresh institution (`onboardingComplete === false`)
 **Outcome:** Institution configured; `User.onboardingComplete` flips to `true`; lands on `/`
+
+```mermaid
+flowchart TD
+  A[Owner signs in for the first time] --> B[useOnboardingGuard redirects]
+  B --> C["/onboarding/1 — Institution info"]
+  C --> D["/onboarding/2 — Contact + branding"]
+  D --> E["/onboarding/3 — Bank accounts (test transfer 1 000 UZS)"]
+  E --> F["/onboarding/4 — Departments (template or skip)"]
+  F --> G["/onboarding/5 — Invite staff (optional)"]
+  G --> H["Finish — confetti + onboardingComplete=true"]
+  H --> I["/"]
+  C -.Skip Setup.-> J[Confirm 'Skip setup?']
+  D -.Skip Setup.-> J
+  E -.Skip Setup.-> J
+  F -.Skip Setup.-> J
+  G -.Skip Setup.-> J
+  J --> I
+```
 
 Steps (sequential — `StepGuardedSwitch` in [OnboardingPage.tsx:43-72](../src/features/onboarding/pages/OnboardingPage.tsx) refuses skips):
 1. `/onboarding/1` — **Institution info** — name (RU/UZ), type, legal form, TIN, region, address, website, founded year.
@@ -135,6 +213,19 @@ Open questions: invite email body content (PRD-only).
 **Trigger:** New hire needs dashboard access
 **Outcome:** Invite email sent; row appears in Staff list with `pending` status
 
+```mermaid
+flowchart TD
+  A["Sidebar → Staff (/staff)"] --> B[Click 'Пригласить сотрудника']
+  B --> C[Invite dialog opens]
+  C --> D["Fill name + email + role from STAFF_INVITABLE_ROLES (finance_manager / operator / viewer)"]
+  D --> E[Optional: assign departments]
+  E --> F[Preview ROLE_PERMISSIONS matrix]
+  F --> G[Submit]
+  G --> H{Success?}
+  H -->|yes| I[Toast 'Приглашение отправлено' + row with 'pending' badge]
+  H -->|no| J[Inline error]
+```
+
 Steps:
 1. Sidebar → **Staff** (`/staff`).
 2. Click "Пригласить сотрудника" → invite dialog.
@@ -153,6 +244,24 @@ Open questions: invite email content; expiry / resend cadence.
 **Role:** owner
 **Trigger:** Update institution details after onboarding (e.g. new bank account, rebrand, new department)
 **Outcome:** Org profile reflects the change; receipts and reports use the new values
+
+```mermaid
+flowchart TD
+  A["Sidebar → Organization (/organization)"] --> B{Which tab?}
+  B --> C["/organization/profile — name, TIN, region, address"]
+  B --> D["/organization/departments — drag-drop tree"]
+  B --> E["/organization/bank-accounts"]
+  B --> F["/organization/branding — logo, color, receipt footer"]
+  D -.add.-> D1["/organization/departments/new?parentId=X"]
+  E -.add.-> E1["/organization/bank-accounts/new"]
+  C --> Save[Save tab]
+  D --> Save
+  E --> Save
+  F --> Save
+  D1 --> Save
+  E1 --> Save
+  Save --> Done[Receipts + reports reflect new values]
+```
 
 Steps:
 1. Sidebar → **Organization** (`/organization`).
@@ -174,6 +283,19 @@ Permissions required: `settings.write` (per spec: Owner only)
 **Trigger:** Periodic governance check; suspected access incident
 **Outcome:** Audit log reviewed; sessions revoked or 2FA enforced as needed
 
+```mermaid
+flowchart TD
+  A["Sidebar → Settings (/settings)"] --> B["Audit tab (/settings/audit)"]
+  B --> C[Filter by actor / action / date range]
+  C --> D[Inspect AUDIT_ACTIONS events]
+  D --> E{Suspicious?}
+  E -->|yes| F["/staff/:id"]
+  F --> G[Sessions tab]
+  G --> H[Revoke individual OR revoke-all-others]
+  E -.optional.-> I["/settings/security"]
+  I --> J[Enforce 2FA org-wide]
+```
+
 Steps:
 1. Sidebar → **Settings** (`/settings`) → **Audit** tab (`/settings/audit`).
 2. Filter by actor / action / date range; inspect specific events from `AUDIT_ACTIONS` (e.g. `staff.role_changed`, `apikey.revealed`, `payment.refunded`).
@@ -190,6 +312,14 @@ Permissions required: `audit.read`, `staff.write` (per spec: Owner only)
 **Role:** owner
 **Trigger:** Plan upgrade needed; commission rate review
 **Outcome:** Plan changed; billing reflects new monthly fee + commission
+
+```mermaid
+flowchart TD
+  A["Sidebar → Settings → Billing (/settings/billing)"] --> B[Compare current plan vs starter / business / enterprise]
+  B --> C[Click upgrade CTA]
+  C --> D["/locked/billing-upgrade"]
+  D --> E[mailto: sales — Coming Soon in v1]
+```
 
 Steps:
 1. Sidebar → **Settings** → **Billing** (`/settings/billing`).
@@ -211,6 +341,20 @@ The Finance Manager owns money in/out: refunds, payouts, monthly reconciliation,
 **Trigger:** End-of-month close
 **Outcome:** Month's revenue + commissions + payouts reconciled; export filed
 
+```mermaid
+flowchart TD
+  A["Sidebar → Dashboard (/)"] --> B[Read this-month KPIs from KpiRow]
+  B --> C["Sidebar → Reports → Summary (/reports/summary)"]
+  C --> D[Set DateRangePicker to month]
+  D --> E[Inspect channel chart + dept donut + by-day table]
+  E --> F["Switch to Export tab (/reports/export)"]
+  F --> G[Pick dataType + format + grouping → submit]
+  G --> H[Inline polling 'Готовим экспорт… ~N сек']
+  H --> I[Download from RecentExportsList when ready]
+  I --> J["Sidebar → Payouts (/payouts)"]
+  J --> K[Confirm settled payouts match export totals]
+```
+
 Steps:
 1. Sidebar → **Dashboard** (`/`) — read this-month KPI from `<KpiRow>` (`monthRevenue`, `pending`, `overdue`).
 2. Sidebar → **Reports** → **Summary** (`/reports/summary`) — set date range to the month via `<DateRangePicker>`. Inspect the channel mix bar chart and department donut.
@@ -230,6 +374,18 @@ Permissions required: `reports.read`, `reports.write` (export creation), `paymen
 **Trigger:** Customer disputes a charge; duplicate payment; service not provided
 **Outcome:** Refund row in `pending → approved → completed` lifecycle; transaction `refunded`
 
+```mermaid
+flowchart TD
+  A["Sidebar → Transactions (/payments/transactions)"] --> B[Search / find offending row]
+  B --> C["/payments/transactions/:id"]
+  C --> D[Click 'Возврат']
+  D --> E[Refund dialog: amount + REFUND_REASONS + note]
+  E --> F[Submit]
+  F --> G["Row added to /payments/refunds with status 'pending'"]
+  G -.async backend.-> H[Status flips: pending → approved → completed]
+  H --> I[Original transaction shows 'refunded']
+```
+
 Steps:
 1. Sidebar → **Transactions** (`/payments/transactions`) → search/find the offending row.
 2. Open `/payments/transactions/:id` → click "Возврат" → refund dialog.
@@ -247,6 +403,21 @@ Permissions required: `payments.destructive` (Owner + Finance Manager only)
 **Role:** finance_manager *(Owner also)*
 **Trigger:** Available balance ≥100k UZS and `balance.plan === 'request'`
 **Outcome:** Payout row created with `pending` status; settles via async backend
+
+```mermaid
+flowchart TD
+  A["Sidebar → Payouts (/payouts)"] --> B[Read PayoutsSummaryBanner]
+  B --> C{balance.plan?}
+  C -->|auto| D["/payouts/request → AutomaticPayoutInfo card (no form)"]
+  C -->|request| E[Click 'Запросить выплату']
+  E --> F["/payouts/request"]
+  F --> G[RequestPayoutForm: pick verified bank account + enter amount]
+  G --> H{Amount ≥ 100k UZS?}
+  H -->|no| I[Submit disabled — Tooltip explains threshold]
+  H -->|yes| J[Submit → toast]
+  J --> K[New row in History with status 'pending']
+  K -.optional.-> L["/payouts/:id — watch StatusTimeline"]
+```
 
 Steps:
 1. Sidebar → **Payouts** (`/payouts`).
@@ -267,6 +438,20 @@ Permissions required: `payments.write` (Owner + Finance Manager + Operator have 
 **Role:** finance_manager *(Owner also)*
 **Trigger:** A payout sits in `pending` and needs human approval/rejection
 **Outcome:** Payout transitions to `processing` (confirm) or stays `pending` cancelled (cancel)
+
+```mermaid
+flowchart TD
+  A["Sidebar → Payouts"] --> B[Click pending row]
+  B --> C["/payouts/:id — PayoutDetailActionBar shows Confirm + Cancel"]
+  C --> D{Confirm or Cancel?}
+  D -->|Confirm| E[Step 1 AlertDialog: review summary]
+  E --> F["Step 2: type exact amount + reason ≥20"]
+  F --> G["POST /api/payouts/:id/confirm → status: processing"]
+  D -->|Cancel| H[ConfirmDialog: reason ≥20]
+  H --> I["POST /api/payouts/:id/cancel → cancelled"]
+  G --> J[Banner + StatusTimeline updated]
+  I --> J
+```
 
 Steps:
 1. Sidebar → **Payouts** → click the pending row.
@@ -290,6 +475,16 @@ The Operator works front-line: adding students, recording payments, chasing over
 **Trigger:** New student enrolled
 **Outcome:** Student record exists; appears in Students list
 
+```mermaid
+flowchart TD
+  A["Sidebar → Students (/students)"] --> B[Click 'Добавить студента']
+  B --> C["/students/new"]
+  C --> D[Fill required: studentId, firstName, lastName, departmentId via TreePicker, educationType, enrollmentDate]
+  D --> E[Submit → toast]
+  E --> F["/students/:id"]
+  F -.optional.-> G[Schedule tab → apply template OR add custom rows]
+```
+
 Steps:
 1. Sidebar → **Students** (`/students`).
 2. Click "Добавить студента" → `/students/new`.
@@ -307,6 +502,24 @@ Permissions required: `students.write`
 **Role:** operator *(Owner + Finance Manager + Operator)*
 **Trigger:** Term start; multi-hundred student batch from registrar
 **Outcome:** Cleaned batch committed to Students list
+
+```mermaid
+flowchart TD
+  A["Sidebar → Students → Импорт"] --> B["/students/import"]
+  B --> C[Step 1: download xlsx template]
+  C --> D[Step 1: upload completed file]
+  D --> E[Step 2: review + correct column mapping]
+  E --> F[Step 3: server-parsed rows with per-cell errors]
+  F --> G{All rows clean?}
+  G -->|no| H[Inline-edit OR download error report]
+  H --> F
+  G -->|yes| I[Step 4: commit]
+  I --> J{committed > 100?}
+  J -->|yes| K[Reason ≥20 required]
+  K --> L[Submit → batch created]
+  J -->|no| L
+  L --> M[/students — new rows visible]
+```
 
 Steps (4 internal wizard steps):
 1. Sidebar → **Students** → "Импорт" → `/students/import`.
@@ -326,6 +539,19 @@ Open questions: behavior on duplicate `studentId` against existing records (plan
 **Role:** operator *(Owner + Finance Manager + Operator)*
 **Trigger:** Overdue alert fires (per `NotificationPreferences.overdueAlertDays`)
 **Outcome:** Payment recorded as paid OR reminder sent OR rescheduled
+
+```mermaid
+flowchart TD
+  A["Sidebar → Pending (/payments/pending)"] --> B[Sort / filter by overdue days]
+  B --> C["Pick row → /students/:id (Schedule tab)"]
+  C --> D{Action?}
+  D -->|Mark paid| E[Record cash / bank-transfer / manual payment]
+  D -->|Send SMS| F[Click 'Отправить SMS' rate-limited]
+  D -->|Reschedule| G[Inline-edit dueDate cell — Enter saves, Esc cancels]
+  E --> H[Confirm via Activity tab — entry with actor + before/after]
+  F --> H
+  G --> H
+```
 
 Steps:
 1. Sidebar → **Pending** (`/payments/pending`).
@@ -348,6 +574,17 @@ Permissions required: `students.write`, `payments.write`
 **Trigger:** New term; tuition schedule needs rolling out
 **Outcome:** ScheduleRows generated for the target cohort
 
+```mermaid
+flowchart TD
+  A["Sidebar → Students → Шаблоны расписания (/students/schedules)"] --> B{Pick OR create?}
+  B -->|Pick| C[Select existing template]
+  B -->|Create| D["New ScheduleTemplate (single OR per-dept amounts)"]
+  C --> E[Apply to: department TreePicker + years + ad-hoc studentIds]
+  D --> E
+  E --> F[Preview applied count via debounced studentsApi.list]
+  F --> G[Confirm → ScheduleRows generated per target student]
+```
+
 Steps:
 1. Sidebar → **Students** → "Шаблоны расписания" (`/students/schedules`).
 2. Pick a template OR create one (`<ScheduleTemplate>`: single amount or per-department amounts).
@@ -369,6 +606,16 @@ Viewer is read-only across the resources they can access (`students`, `payments`
 **Trigger:** Start of business day
 **Outcome:** Awareness of yesterday's revenue, pending balance, overdue queue
 
+```mermaid
+flowchart TD
+  A["Sidebar → Dashboard (/)"] --> B[Read greeting + 4 KPIs + revenue chart + status donut + recent tx + unpaid students]
+  B --> C["Sidebar → Reports → Summary (/reports/summary)"]
+  C --> D[Set range to 'Сегодня' or 'Вчера']
+  D --> E[Review channel mix]
+  E --> F["Sidebar → Pending (/payments/pending)"]
+  F --> G[Scan for new overdues]
+```
+
 Steps:
 1. Sidebar → **Dashboard** (`/`) — read greeting + 4 KPIs + revenue chart + payment status donut + recent transactions + unpaid students.
 2. Sidebar → **Reports** → **Summary** (`/reports/summary`) — set range to "Сегодня" or "Вчера" → review channel mix.
@@ -384,6 +631,15 @@ Permissions required: `students.read`, `payments.read`, `reports.read`
 **Role:** viewer *(any role with `students.read`)*
 **Trigger:** Parent inquiry; registrar question
 **Outcome:** Visibility into a specific student's schedule + transactions
+
+```mermaid
+flowchart TD
+  A["Sidebar → Students (/students)"] --> B[Search by name / ID / phone]
+  B --> C["Click row → /students/:id"]
+  C --> D[Schedule tab — due / paid / overdue lines]
+  D --> E[Transactions tab — actual payments]
+  E --> F[Activity tab — audit trail]
+```
 
 Steps:
 1. Sidebar → **Students** (`/students`) → search by name / ID / phone.
@@ -402,6 +658,16 @@ Permissions required: `students.read`
 **Role:** viewer
 **Trigger:** Director asks for a department-level breakdown
 **Outcome:** Report visible on screen; export request submitted (if Reports.write enforced)
+
+```mermaid
+flowchart TD
+  A["Sidebar → Reports → Summary (/reports/summary)"] --> B[Set date range]
+  B --> C[Read department donut + per-day table]
+  C --> D["/reports/export"]
+  D --> E{Viewer has reports.write?}
+  E -->|spec: no| F[Backend will reject POST when wired up]
+  E -->|today by URL| G[Form reachable, submit will fail]
+```
 
 Steps:
 1. Sidebar → **Reports** → **Summary** (`/reports/summary`).
