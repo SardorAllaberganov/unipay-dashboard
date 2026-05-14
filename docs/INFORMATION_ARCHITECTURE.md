@@ -1,134 +1,134 @@
-# UNIPAY — Information Architecture
+# UNIPAY — Информационная архитектура
 
-> The single map of every page, tab, and locked feature in the merchant dashboard, with a per-route role visibility overlay.
-> For workflow narratives across roles, see [USER_FLOWS_BY_ROLE.md](./USER_FLOWS_BY_ROLE.md).
+> Единая карта всех страниц, вкладок и locked-фич мерчант-панели + overlay видимости по ролям на каждый маршрут.
+> Нарративы пользовательских сценариев по ролям — в [USER_FLOWS_BY_ROLE.md](./USER_FLOWS_BY_ROLE.md).
 
 ---
 
-## 1. Overview
+## 1. Обзор
 
-UNIPAY is a merchant dashboard for Uzbek educational institutions to manage tuition payments. It has **9 functional modules** and a **4-role permission model**.
+UNIPAY — мерчант-панель для узбекских образовательных учреждений для управления оплатой обучения. **9 функциональных модулей** и модель прав на **4 роли**.
 
-### The 4 roles (from [src/types/domain.ts](../src/types/domain.ts) — `Role`)
+### 4 роли (из [src/types/domain.ts](../src/types/domain.ts) — `Role`)
 
-| Role | Primary job | Onboarding |
+| Роль *(в коде)* | Основная задача | Онбординг |
 |---|---|---|
-| **Owner** | Institution-wide control: org setup, staff management, billing, audit | Goes through 5-step wizard on first sign-in (`onboardingComplete: false`) |
-| **Finance Manager** | Daily financial operations: payments, refunds, payouts, reports | Bypasses onboarding |
-| **Operator** | Front-line work: add students, record payments, chase overdues | Bypasses onboarding |
-| **Viewer** | Read-only consumption: dashboards, reports, lookup | Bypasses onboarding |
+| **Владелец** *(`owner`)* | Контроль на уровне учреждения: настройка организации, управление сотрудниками, тариф, аудит | Проходит 5-шаговый мастер при первом входе (`onboardingComplete: false`) |
+| **Финансовый менеджер** *(`finance_manager`)* | Ежедневные финансовые операции: платежи, возвраты, выплаты, отчёты | Пропускает онбординг |
+| **Оператор** *(`operator`)* | Фронтлайн-работа: добавлять студентов, фиксировать платежи, гонять просрочки | Пропускает онбординг |
+| **Наблюдатель** *(`viewer`)* | Только чтение: дашборды, отчёты, поиск | Пропускает онбординг |
 
-### Source-of-truth notes
+### Источники истины
 
-- **Routes** — [src/router.tsx](../src/router.tsx)
-- **Sidebar grouping + icons** — [src/components/layout/Sidebar.tsx](../src/components/layout/Sidebar.tsx)
-- **Roles + resource permissions matrix** — [src/types/domain.ts](../src/types/domain.ts) (`ROLE_PERMISSIONS`)
-- **Tab labels** — Component-level `*TabsNav.tsx` files; i18n keys resolve via [src/lib/i18n/locales/ru.json](../src/lib/i18n/locales/ru.json) and [uz.json](../src/lib/i18n/locales/uz.json)
-- **Module status** — [docs/product_states.md](./product_states.md)
+- **Маршруты** — [src/router.tsx](../src/router.tsx)
+- **Группировка сайдбара + иконки** — [src/components/layout/Sidebar.tsx](../src/components/layout/Sidebar.tsx)
+- **Роли + матрица прав по ресурсам** — [src/types/domain.ts](../src/types/domain.ts) (`ROLE_PERMISSIONS`)
+- **Лейблы вкладок** — компонент-уровневые файлы `*TabsNav.tsx`; i18n-ключи резолвятся через [src/lib/i18n/locales/ru.json](../src/lib/i18n/locales/ru.json) и [uz.json](../src/lib/i18n/locales/uz.json)
+- **Статус модулей** — [docs/product_states.md](./product_states.md)
 
-### Spec-vs-runtime caveat
+### Оговорка спека-vs-рантайм
 
-There is **no route-level `<RoleGuard>`** in [src/router.tsx](../src/router.tsx) today. Every authenticated user can navigate to every authenticated route by URL. Permission gating is enforced **only inside individual components** (e.g. `StaffDetailPage` hides the Sessions tab unless the viewer is the Owner or themselves; `StudentDetailActionBar` hides Delete unless `isOwner`).
+Сегодня в [src/router.tsx](../src/router.tsx) **нет route-level `<RoleGuard>`**. Любой аутентифицированный пользователь может перейти на любой аутентифицированный маршрут по URL. Гейтинг прав закреплён **только внутри отдельных компонентов** (например, `StaffDetailPage` скрывает вкладку Сессии, пока зритель не Владелец и не сам сотрудник; `StudentDetailActionBar` скрывает Delete, пока `isOwner` не выполнено).
 
-In the role-visibility matrix below:
-- ✓ — **spec'd visible** AND component-level gating allows the action
-- 🟡 — **runtime-visible** today by URL, but `ROLE_PERMISSIONS` says it shouldn't be (a future route-guard would hide it)
-- ✗ — **spec'd hidden** AND no component renders the action
+В матрице видимости ниже:
+- ✓ — **по спеке видно** И компонент-уровневый гейтинг разрешает действие
+- 🟡 — **сегодня видно в рантайме** по URL, но `ROLE_PERMISSIONS` говорит что не должно быть (будущий route-guard скроет)
+- ✗ — **по спеке скрыто** И ни один компонент не рендерит действие
 
 ---
 
-## 2. Top-level navigation (sidebar)
+## 2. Навигация верхнего уровня (сайдбар)
 
-The sidebar has **6 sections**. Order, icons, and i18n keys are defined in [src/components/layout/Sidebar.tsx](../src/components/layout/Sidebar.tsx). During onboarding all items are tooltip-locked (`onboarding.sidebarLockedTooltip`).
+В сайдбаре **6 секций**. Порядок, иконки и i18n-ключи определены в [src/components/layout/Sidebar.tsx](../src/components/layout/Sidebar.tsx). Во время онбординга все элементы tooltip-залочены (`onboarding.sidebarLockedTooltip`).
 
-| Section (i18n key) | Label (RU) | Item | Route | Icon | Status |
+| Секция (i18n-ключ) | Лейбл (RU) | Элемент | Маршрут | Иконка | Статус |
 |---|---|---|---|---|---|
-| `nav.section.main` | Главное | Dashboard | `/` | `LayoutDashboard` | active |
-| `nav.section.organization` | Организация | Organization | `/organization` | `Building2` | active |
-| | | Staff | `/staff` | `Users` | active |
-| `nav.section.students` | Студенты | Students | `/students` | `GraduationCap` | active |
-| | | Documents | `/locked/documents` | `FileText` | 🔒 coming soon |
-| `nav.section.payments` | Платежи | Transactions | `/payments/transactions` | `ArrowLeftRight` | active |
-| | | Pending | `/payments/pending` | `Clock` | active |
-| | | Refunds | `/payments/refunds` | `Undo2` | active |
-| | | SMS Campaigns | `/locked/sms-campaigns` | `MessageSquare` | 🔒 coming soon |
-| `nav.section.finance` | Финансы | Reports | `/reports` | `FileBarChart` | active |
-| | | Payouts | `/payouts` | `Banknote` | active |
-| | | AI Insights | `/locked/ai-insights` | `Bot` | 🔒 coming soon |
-| `nav.section.system` | Система | Settings | `/settings` | `Settings` | active |
-| | | Mobile App | `/locked/mobile-app` | `Smartphone` | 🔒 coming soon |
+| `nav.section.main` | Главное | Дашборд | `/` | `LayoutDashboard` | активен |
+| `nav.section.organization` | Организация | Организация | `/organization` | `Building2` | активен |
+| | | Сотрудники | `/staff` | `Users` | активен |
+| `nav.section.students` | Студенты | Студенты | `/students` | `GraduationCap` | активен |
+| | | Документы | `/locked/documents` | `FileText` | 🔒 скоро |
+| `nav.section.payments` | Платежи | Транзакции | `/payments/transactions` | `ArrowLeftRight` | активен |
+| | | Ожидающие | `/payments/pending` | `Clock` | активен |
+| | | Возвраты | `/payments/refunds` | `Undo2` | активен |
+| | | SMS-рассылки | `/locked/sms-campaigns` | `MessageSquare` | 🔒 скоро |
+| `nav.section.finance` | Финансы | Отчёты | `/reports` | `FileBarChart` | активен |
+| | | Выплаты | `/payouts` | `Banknote` | активен |
+| | | AI-инсайты | `/locked/ai-insights` | `Bot` | 🔒 скоро |
+| `nav.section.system` | Система | Настройки | `/settings` | `Settings` | активен |
+| | | Мобильное приложение | `/locked/mobile-app` | `Smartphone` | 🔒 скоро |
 
 ---
 
-## 3. Full route tree
+## 3. Полное дерево маршрутов
 
 ```
-/                                              Dashboard
+/                                              Дашборд
 │
-├── /sign-in                                   Auth — sign in
-├── /forgot-password                           Auth — request password reset
-├── /reset-password                            Auth — set new password
+├── /sign-in                                   Auth — вход
+├── /forgot-password                           Auth — запрос сброса пароля
+├── /reset-password                            Auth — установка нового пароля
 │
-├── /onboarding/:step                          5-step wizard (sequential guard)
-│   ├── /onboarding/1                          Step 1 — Institution info
-│   ├── /onboarding/2                          Step 2 — Contact + branding
-│   ├── /onboarding/3                          Step 3 — Bank accounts
-│   ├── /onboarding/4                          Step 4 — Departments
-│   └── /onboarding/5                          Step 5 — Invite staff
+├── /onboarding/:step                          5-шаговый мастер (последовательный guard)
+│   ├── /onboarding/1                          Шаг 1 — информация об учреждении
+│   ├── /onboarding/2                          Шаг 2 — контакты + брендинг
+│   ├── /onboarding/3                          Шаг 3 — банковские счета
+│   ├── /onboarding/4                          Шаг 4 — подразделения
+│   └── /onboarding/5                          Шаг 5 — пригласить сотрудников
 │
-├── /organization                              OrganizationLayout (h1 + tabs + outlet)
-│   ├── /organization/profile                  Profile tab (default)
-│   ├── /organization/departments              Departments tab
-│   ├── /organization/bank-accounts            Bank Accounts tab
-│   ├── /organization/branding                 Branding tab
-│   ├── /organization/bank-accounts/new        Add bank account (sub-page)
-│   └── /organization/departments/new          Add department (sub-page)
+├── /organization                              OrganizationLayout (h1 + вкладки + outlet)
+│   ├── /organization/profile                  Вкладка Профиль (по умолчанию)
+│   ├── /organization/departments              Вкладка Подразделения
+│   ├── /organization/bank-accounts            Вкладка Банковские счета
+│   ├── /organization/branding                 Вкладка Брендинг
+│   ├── /organization/bank-accounts/new        Добавить банковский счёт (sub-page)
+│   └── /organization/departments/new          Добавить подразделение (sub-page)
 │
-├── /staff                                     Staff list
-│   └── /staff/:id                             Staff detail — 4 tabs:
-│                                                • Profile
-│                                                • Role & Permissions
-│                                                • Activity log
-│                                                • Sessions  (Owner OR self only)
+├── /staff                                     Список сотрудников
+│   └── /staff/:id                             Деталь сотрудника — 4 вкладки:
+│                                                • Профиль
+│                                                • Роль и права
+│                                                • Журнал активности
+│                                                • Сессии (только Владелец ИЛИ сам)
 │
-├── /students                                  Students list
-│   ├── /students/new                          Add student
-│   ├── /students/import                       Import wizard (4 internal steps)
-│   ├── /students/schedules                    Schedule templates
-│   ├── /students/:id                          Student profile — 4 tabs:
-│   │                                            • Schedule
-│   │                                            • Transactions
-│   │                                            • Notes
-│   │                                            • Activity
-│   └── /students/:id/edit                     Edit student
+├── /students                                  Список студентов
+│   ├── /students/new                          Добавить студента
+│   ├── /students/import                       Мастер импорта (4 внутренних шага)
+│   ├── /students/schedules                    Шаблоны расписаний
+│   ├── /students/:id                          Профиль студента — 4 вкладки:
+│   │                                            • Расписание
+│   │                                            • Транзакции
+│   │                                            • Заметки
+│   │                                            • Журнал
+│   └── /students/:id/edit                     Редактировать студента
 │
 ├── /payments
-│   ├── /payments/transactions                 Transactions list
-│   │   └── /payments/transactions/:id         Transaction detail
-│   ├── /payments/pending                      Pending + overdue
-│   └── /payments/refunds                      Refunds queue
+│   ├── /payments/transactions                 Список транзакций
+│   │   └── /payments/transactions/:id         Деталь транзакции
+│   ├── /payments/pending                      Ожидающие + просроченные
+│   └── /payments/refunds                      Очередь возвратов
 │
-├── /reports                                   ReportsLayout (h1 + tabs + outlet)
-│   ├── /reports/summary                       Summary tab (default)
-│   └── /reports/export                        Export tab
+├── /reports                                   ReportsLayout (h1 + вкладки + outlet)
+│   ├── /reports/summary                       Вкладка Сводка (по умолчанию)
+│   └── /reports/export                        Вкладка Экспорт
 │
-├── /payouts                                   Payouts history
-│   ├── /payouts/request                       Request payout (or auto-info if `plan === 'auto'`)
-│   └── /payouts/:id                           Payout detail — timeline + breakdown
+├── /payouts                                   История выплат
+│   ├── /payouts/request                       Запросить выплату (или auto-info при `plan === 'auto'`)
+│   └── /payouts/:id                           Деталь выплаты — таймлайн + breakdown
 │
-├── /settings                                  SettingsLayout (h1 + side-tabs + outlet)
-│   ├── /settings/general                      General tab (default)
-│   ├── /settings/security                     Security tab
-│   ├── /settings/api                          API & Webhooks tab
-│   ├── /settings/integrations                 Integrations tab
-│   ├── /settings/notifications                Notifications tab
-│   ├── /settings/billing                      Billing tab
-│   ├── /settings/audit                        Audit log tab
-│   └── /settings/preferences                  Preferences tab
+├── /settings                                  SettingsLayout (h1 + боковые вкладки + outlet)
+│   ├── /settings/general                      Вкладка Общие (по умолчанию)
+│   ├── /settings/security                     Вкладка Безопасность
+│   ├── /settings/api                          Вкладка API и Webhooks
+│   ├── /settings/integrations                 Вкладка Интеграции
+│   ├── /settings/notifications                Вкладка Уведомления
+│   ├── /settings/billing                      Вкладка Тариф
+│   ├── /settings/audit                        Вкладка Журнал аудита
+│   └── /settings/preferences                  Вкладка Предпочтения
 │
-├── /locked/:feature                           Coming-soon landing (see §6)
+├── /locked/:feature                           Coming-soon лендинг (см. §6)
 │
-└── /system/preview/*                          QA-only error-state previews
+└── /system/preview/*                          QA-only превью состояний ошибок
     ├── /system/preview/404
     ├── /system/preview/500
     ├── /system/preview/403
@@ -137,69 +137,69 @@ The sidebar has **6 sections**. Order, icons, and i18n keys are defined in [src/
     └── /system/preview/error-boundary
 ```
 
-### Tab summary
+### Сводка вкладок
 
-| Module | Tab count | Tabs |
+| Модуль | Кол-во | Вкладки |
 |---|:-:|---|
-| Organization | 4 | Profile · Departments · Bank Accounts · Branding |
-| Staff Detail | 3–4 | Profile · Role & Permissions · Activity · Sessions* |
-| Student Profile | 4 | Schedule · Transactions · Notes · Activity |
-| Reports | 2 | Summary · Export |
-| Settings | 8 | General · Security · API · Integrations · Notifications · Billing · Audit · Preferences |
+| Организация | 4 | Профиль · Подразделения · Банковские счета · Брендинг |
+| Деталь сотрудника | 3–4 | Профиль · Роль и права · Журнал · Сессии* |
+| Профиль студента | 4 | Расписание · Транзакции · Заметки · Журнал |
+| Отчёты | 2 | Сводка · Экспорт |
+| Настройки | 8 | Общие · Безопасность · API · Интеграции · Уведомления · Тариф · Аудит · Предпочтения |
 
-*Sessions tab on Staff Detail is conditional: visible only when the current user is the Owner, or when viewing their own profile ([src/features/staff/pages/StaffDetailPage.tsx:97-99](../src/features/staff/pages/StaffDetailPage.tsx)).
+*Вкладка Сессии в деталях сотрудника условна: видна только когда текущий пользователь — Владелец или открывает свой собственный профиль ([src/features/staff/pages/StaffDetailPage.tsx:97-99](../src/features/staff/pages/StaffDetailPage.tsx)).
 
 ---
 
-## 4. Role visibility matrix
+## 4. Матрица видимости по ролям
 
-This table maps every authenticated route to what each role *should* see (per `ROLE_PERMISSIONS`) and what they *actually* see today (component-level gating only). See the **spec-vs-runtime caveat** in §1.
+Эта таблица сопоставляет каждый аутентифицированный маршрут с тем, что каждая роль *должна* видеть (по `ROLE_PERMISSIONS`) и что *реально* видит сегодня (только компонент-уровневый гейтинг). См. **оговорку спека-vs-рантайм** в §1.
 
-Legend: ✓ visible · ✓ʳ read-only · 🟡 runtime-visible but spec says no · ✗ hidden
+Легенда: ✓ видно · ✓ʳ только чтение · 🟡 видно в рантайме, но по спеке нет · ✗ скрыто
 
-| Route group | Owner | Finance Manager | Operator | Viewer | Notes |
+| Группа маршрутов | Владелец | Финансовый менеджер | Оператор | Наблюдатель | Заметки |
 |---|:-:|:-:|:-:|:-:|---|
-| `/sign-in`, `/forgot-password`, `/reset-password` | ✓ | ✓ | ✓ | ✓ | Public |
-| `/onboarding/1…5` | ✓ | 🟡 | 🟡 | 🟡 | DEV fixtures: only Owner has `onboardingComplete: false`. In practice Owner-only. |
-| `/` (Dashboard) | ✓ | ✓ | ✓ | ✓ʳ | Greeting + KPIs — read-only on Viewer (no actions to take) |
-| `/organization/profile` | ✓ | ✓ʳ | 🟡 | 🟡 | `settings.read=false` for Operator/Viewer per spec; runtime currently allows visit |
-| `/organization/departments` | ✓ | ✓ʳ | 🟡 | 🟡 | Same as above |
-| `/organization/bank-accounts` (+ `/new`) | ✓ | ✓ʳ | 🟡 | 🟡 | Same |
-| `/organization/branding` | ✓ | ✓ʳ | 🟡 | 🟡 | Same |
-| `/staff` (list) | ✓ | ✓ʳ¹ | ✓ʳ | ✓ʳ | All roles have `staff.read=true`. Owner + Finance Manager see kebab actions. |
-| `/staff/:id` | ✓ | ✓ʳ¹ | ✓ʳ | ✓ʳ | Sessions tab Owner-only or self-only |
-| `/students` (list) | ✓ | ✓ | ✓ | ✓ʳ | Bulk actions hidden for Viewer |
-| `/students/new` | ✓ | ✓ | ✓ | 🟡 | `students.write=false` for Viewer; runtime currently allows visit |
-| `/students/import` | ✓ | ✓ | ✓ | 🟡 | Same |
-| `/students/schedules` | ✓ | ✓ | ✓ | 🟡 | Same |
-| `/students/:id` | ✓ | ✓ | ✓ | ✓ʳ | Detail view; action bar hides Edit/SMS/Deactivate for Viewer (not yet enforced) |
-| `/students/:id` — Delete button | ✓ | ✗ | ✗ | ✗ | Owner only ([StudentDetailActionBar.tsx:25](../src/features/students/components/profile/StudentDetailActionBar.tsx)) |
-| `/students/:id/edit` | ✓ | ✓ | ✓ | 🟡 | `students.write=false` for Viewer |
-| `/payments/transactions` (+ `:id`) | ✓ | ✓ | ✓ | ✓ʳ | All read; Viewer has no write |
-| `/payments/pending` | ✓ | ✓ | ✓ | ✓ʳ | Same |
-| `/payments/refunds` | ✓ | ✓² | ✓ʳ | ✓ʳ | `payments.destructive=true` for Owner + Finance Manager only |
-| `/reports/summary` | ✓ | ✓ | ✓ʳ | ✓ʳ | All read; only Owner + Finance Manager can configure |
-| `/reports/export` | ✓ | ✓ | ✓ʳ | ✓ʳ | Same |
-| `/payouts` (history) | ✓ | ✓ | ✓ʳ | ✓ʳ | Read-all; request flow gated below |
-| `/payouts/request` | ✓ | ✓ | 🟡 | 🟡 | `reports.write=false` for Operator/Viewer (payouts inherits); runtime allows visit |
-| `/payouts/:id` | ✓ | ✓ | ✓ʳ | ✓ʳ | Confirm/Cancel buttons gated by status, not by role today |
-| `/settings/*` (all 8 tabs) | ✓ | ✓ʳ | ✗ | ✗ | `settings.read=false` for Operator + Viewer per spec |
-| `/settings/audit` | ✓ | ✓ʳ | ✗ | ✗ | `audit.read=false` for Operator + Viewer per spec |
-| `/locked/:feature` | ✓ | ✓ | ✓ | ✓ | Coming-soon landings open to all |
+| `/sign-in`, `/forgot-password`, `/reset-password` | ✓ | ✓ | ✓ | ✓ | Публично |
+| `/onboarding/1…5` | ✓ | 🟡 | 🟡 | 🟡 | DEV-фикстуры: только у Владельца `onboardingComplete: false`. На практике только Владелец. |
+| `/` (Дашборд) | ✓ | ✓ | ✓ | ✓ʳ | Приветствие + KPI — только чтение у Наблюдателя (нет действий) |
+| `/organization/profile` | ✓ | ✓ʳ | 🟡 | 🟡 | `settings.read=false` для Оператора/Наблюдателя по спеке; рантайм пускает |
+| `/organization/departments` | ✓ | ✓ʳ | 🟡 | 🟡 | Аналогично |
+| `/organization/bank-accounts` (+ `/new`) | ✓ | ✓ʳ | 🟡 | 🟡 | Аналогично |
+| `/organization/branding` | ✓ | ✓ʳ | 🟡 | 🟡 | Аналогично |
+| `/staff` (список) | ✓ | ✓ʳ¹ | ✓ʳ | ✓ʳ | У всех ролей `staff.read=true`. Владелец + Финансовый менеджер видят kebab-действия. |
+| `/staff/:id` | ✓ | ✓ʳ¹ | ✓ʳ | ✓ʳ | Вкладка Сессии только Владелец или сам |
+| `/students` (список) | ✓ | ✓ | ✓ | ✓ʳ | Bulk-действия скрыты у Наблюдателя |
+| `/students/new` | ✓ | ✓ | ✓ | 🟡 | `students.write=false` у Наблюдателя; рантайм пускает |
+| `/students/import` | ✓ | ✓ | ✓ | 🟡 | Аналогично |
+| `/students/schedules` | ✓ | ✓ | ✓ | 🟡 | Аналогично |
+| `/students/:id` | ✓ | ✓ | ✓ | ✓ʳ | Деталь; action bar скрывает Edit/SMS/Deactivate у Наблюдателя (пока не закреплено) |
+| `/students/:id` — кнопка Delete | ✓ | ✗ | ✗ | ✗ | Только Владелец ([StudentDetailActionBar.tsx:25](../src/features/students/components/profile/StudentDetailActionBar.tsx)) |
+| `/students/:id/edit` | ✓ | ✓ | ✓ | 🟡 | `students.write=false` у Наблюдателя |
+| `/payments/transactions` (+ `:id`) | ✓ | ✓ | ✓ | ✓ʳ | Все читают; Наблюдатель без write |
+| `/payments/pending` | ✓ | ✓ | ✓ | ✓ʳ | Аналогично |
+| `/payments/refunds` | ✓ | ✓² | ✓ʳ | ✓ʳ | `payments.destructive=true` только у Владельца + Финансового менеджера |
+| `/reports/summary` | ✓ | ✓ | ✓ʳ | ✓ʳ | Все читают; настраивать могут только Владелец + Финансовый менеджер |
+| `/reports/export` | ✓ | ✓ | ✓ʳ | ✓ʳ | Аналогично |
+| `/payouts` (история) | ✓ | ✓ | ✓ʳ | ✓ʳ | Все читают; флоу запроса гейтится ниже |
+| `/payouts/request` | ✓ | ✓ | 🟡 | 🟡 | `reports.write=false` для Оператора/Наблюдателя (выплаты наследуют); рантайм пускает |
+| `/payouts/:id` | ✓ | ✓ | ✓ʳ | ✓ʳ | Кнопки Подтвердить/Отменить гейтятся статусом, а не ролью |
+| `/settings/*` (все 8 вкладок) | ✓ | ✓ʳ | ✗ | ✗ | `settings.read=false` для Оператора + Наблюдателя по спеке |
+| `/settings/audit` | ✓ | ✓ʳ | ✗ | ✗ | `audit.read=false` для Оператора + Наблюдателя по спеке |
+| `/locked/:feature` | ✓ | ✓ | ✓ | ✓ | Coming-soon лендинги доступны всем |
 
-**Footnotes**
+**Сноски**
 
-¹ **Staff management actions for Finance Manager** — `ROLE_PERMISSIONS.finance_manager.staff.write = false`, but `PERMISSIONED_ROLES = ['owner', 'finance_manager']` in both [StaffRowKebab.tsx:38](../src/features/staff/components/list/StaffRowKebab.tsx) and [StaffDetailKebab.tsx:48](../src/features/staff/components/detail/StaffDetailKebab.tsx). This is a known runtime/spec divergence — the current UI lets Finance Manager invite/edit staff. Resolve by aligning either the matrix or the kebab.
+¹ **Действия управления сотрудниками для Финансового менеджера** — `ROLE_PERMISSIONS.finance_manager.staff.write = false`, но `PERMISSIONED_ROLES = ['owner', 'finance_manager']` и в [StaffRowKebab.tsx:38](../src/features/staff/components/list/StaffRowKebab.tsx), и в [StaffDetailKebab.tsx:48](../src/features/staff/components/detail/StaffDetailKebab.tsx). Это известное расхождение спека/рантайм — текущий UI разрешает Финансовому менеджеру приглашать/редактировать сотрудников. Решить выравниванием либо матрицы, либо kebab'а.
 
-² **Refund destructive actions** — `ROLE_PERMISSIONS.payments.destructive = true` for Owner + Finance Manager only.
+² **Деструктивные действия по возвратам** — `ROLE_PERMISSIONS.payments.destructive = true` только у Владельца + Финансового менеджера.
 
 ---
 
-## 5. Resource permission matrix (verbatim)
+## 5. Матрица прав по ресурсам (verbatim)
 
-From [src/types/domain.ts:418-451](../src/types/domain.ts) (`ROLE_PERMISSIONS`). 4 roles × 6 resources × `{read, write, destructive}`.
+Из [src/types/domain.ts:418-451](../src/types/domain.ts) (`ROLE_PERMISSIONS`). 4 роли × 6 ресурсов × `{read, write, destructive}`.
 
-| Resource | Owner | Finance Manager | Operator | Viewer |
+| Ресурс | Владелец | Финансовый менеджер | Оператор | Наблюдатель |
 |---|---|---|---|---|
 | **students** | R · W · D | R · W · — | R · W · — | R · — · — |
 | **payments** | R · W · D | R · W · D | R · W · — | R · — · — |
@@ -208,59 +208,59 @@ From [src/types/domain.ts:418-451](../src/types/domain.ts) (`ROLE_PERMISSIONS`).
 | **settings** | R · W · D | R · — · — | — · — · — | — · — · — |
 | **audit** | R · W · D | R · — · — | — · — · — | — · — · — |
 
-R = read · W = write · D = destructive · — = denied
+R = чтение · W = запись · D = деструктивное · — = запрещено
 
 ---
 
-## 6. Coming Soon feature inventory
+## 6. Реестр Coming Soon фич
 
-Locked features open at `/locked/:feature`. The slug → content map lives in [src/features/coming-soon/data/featureContent.ts](../src/features/coming-soon/data/featureContent.ts) (`FEATURE_REGISTRY`). 9 features are registered; 4 are reachable from the sidebar.
+Locked-фичи открываются на `/locked/:feature`. Карта slug → контент в [src/features/coming-soon/data/featureContent.ts](../src/features/coming-soon/data/featureContent.ts) (`FEATURE_REGISTRY`). Зарегистрировано 9 фич; 4 доступны из сайдбара.
 
-| Slug | Sidebar item? | Where it's linked from |
+| Slug | Есть в сайдбаре? | Откуда линкуется |
 |---|:-:|---|
-| `documents` | ✓ Students section | Sidebar |
-| `sms-campaigns` | ✓ Payments section | Sidebar |
-| `ai-insights` | ✓ Finance section | Sidebar |
-| `mobile-app` | ✓ System section | Sidebar |
-| `integrations-hemis` | ✗ | Settings → Integrations |
-| `integrations-1c` | ✗ | Settings → Integrations |
-| `multi-currency` | ✗ | Organization → Bank Accounts (USD picker) |
-| `custom-roles` | ✗ | Settings → Security or Staff (planned) |
-| `billing-upgrade` | ✗ | Settings → Billing (CTA) |
+| `documents` | ✓ Секция Студенты | Сайдбар |
+| `sms-campaigns` | ✓ Секция Платежи | Сайдбар |
+| `ai-insights` | ✓ Секция Финансы | Сайдбар |
+| `mobile-app` | ✓ Секция Система | Сайдбар |
+| `integrations-hemis` | ✗ | Настройки → Интеграции |
+| `integrations-1c` | ✗ | Настройки → Интеграции |
+| `multi-currency` | ✗ | Организация → Банковские счета (USD picker) |
+| `custom-roles` | ✗ | Настройки → Безопасность или Сотрудники (планируется) |
+| `billing-upgrade` | ✗ | Настройки → Тариф (CTA) |
 
-Direct URL access works for any slug; an unknown slug falls back to the generic illustration via `resolveFeature(slug)`.
+Прямой URL-доступ работает на любой slug; неизвестный slug fallback'ится на универсальную иллюстрацию через `resolveFeature(slug)`.
 
 ---
 
-## 7. Auth surfaces
+## 7. Auth-поверхности
 
-Eager-loaded for zero flash on the unauthenticated path ([src/router.tsx:29-31](../src/router.tsx)).
+Eager-loaded для отсутствия вспышки на неавтентифицированном пути ([src/router.tsx:29-31](../src/router.tsx)).
 
-| Route | Component | Purpose |
+| Маршрут | Компонент | Назначение |
 |---|---|---|
-| `/sign-in` | `SignInPage` | Email + password (DEV: role inferred from email prefix) |
-| `/forgot-password` | `ForgotPasswordPage` | Request reset email |
-| `/reset-password` | `ResetPasswordPage` | Set new password from emailed token |
+| `/sign-in` | `SignInPage` | Email + пароль (DEV: роль из префикса email) |
+| `/forgot-password` | `ForgotPasswordPage` | Запрос письма для сброса |
+| `/reset-password` | `ResetPasswordPage` | Установка нового пароля по токену из письма |
 
-No dedicated MFA, magic-link, or SSO route exists today. Idle session expiry is enforced by `useIdleTimeout()` in `AuthGuard` ([src/router.tsx:131-134](../src/router.tsx)).
+Сегодня нет выделенных маршрутов MFA, magic-link или SSO. Истечение сессии по неактивности закреплено `useIdleTimeout()` внутри `AuthGuard` ([src/router.tsx:131-134](../src/router.tsx)).
 
 ---
 
-## 8. Maintenance contract
+## 8. Регламент сопровождения
 
-Update this document when **any** of the following changes:
+Обновляйте этот документ при **любом** из следующих изменений:
 
-| Change | What to update here |
+| Изменение | Что обновить здесь |
 |---|---|
-| Add/remove a route in [src/router.tsx](../src/router.tsx) | §3 route tree, §4 visibility matrix |
-| Add/remove a sidebar item in [Sidebar.tsx](../src/components/layout/Sidebar.tsx) | §2 nav table |
-| Add/remove a tab in any `*TabsNav.tsx` | §3 tab summary, §4 if role-conditional |
-| Edit `ROLE_PERMISSIONS` in [domain.ts](../src/types/domain.ts) | §5 matrix, re-audit §4 |
-| Add a new role to `Role` | §1 roles table, §4 column, §5 column |
-| Add a coming-soon feature to `FEATURE_REGISTRY` | §6 inventory |
-| Add a route-level guard | Drop the spec-vs-runtime caveat in §1, flip 🟡 cells to ✗ |
+| Добавить/удалить маршрут в [src/router.tsx](../src/router.tsx) | Дерево маршрутов §3, матрицу видимости §4 |
+| Добавить/удалить элемент сайдбара в [Sidebar.tsx](../src/components/layout/Sidebar.tsx) | Таблицу навигации §2 |
+| Добавить/удалить вкладку в любом `*TabsNav.tsx` | Сводку вкладок §3, §4 если role-conditional |
+| Изменить `ROLE_PERMISSIONS` в [domain.ts](../src/types/domain.ts) | Матрицу §5, переаудит §4 |
+| Добавить новую роль в `Role` | Таблицу ролей §1, колонку §4, колонку §5 |
+| Добавить coming-soon фичу в `FEATURE_REGISTRY` | Реестр §6 |
+| Добавить route-level guard | Удалить оговорку спека-vs-рантайм в §1, перевести 🟡 ячейки в ✗ |
 
-Cross-checks before merging:
-1. `git grep -nE "path: ['\"]" src/router.tsx | wc -l` should match the route count in §3.
-2. Every i18n key referenced (e.g. `nav.section.main`) must exist in both [ru.json](../src/lib/i18n/locales/ru.json) and [uz.json](../src/lib/i18n/locales/uz.json).
-3. Run `npm run audit:discipline` per [STYLE_DISCIPLINE.md](../STYLE_DISCIPLINE.md) §0.9.
+Проверки перед мерджем:
+1. `git grep -nE "path: ['\"]" src/router.tsx | wc -l` должно совпадать со счётом маршрутов в §3.
+2. Каждый упомянутый i18n-ключ (например, `nav.section.main`) должен существовать и в [ru.json](../src/lib/i18n/locales/ru.json), и в [uz.json](../src/lib/i18n/locales/uz.json).
+3. Запустить `npm run audit:discipline` согласно [STYLE_DISCIPLINE.md](../STYLE_DISCIPLINE.md) §0.9.

@@ -1,723 +1,723 @@
-# UNIPAY — User Flows by Role
+# UNIPAY — Пользовательские сценарии по ролям
 
-> Canonical end-to-end workflows for each of the 4 dashboard roles.
-> For the route map and per-route role visibility matrix, see [INFORMATION_ARCHITECTURE.md](./INFORMATION_ARCHITECTURE.md).
+> Канонические сквозные сценарии для каждой из 4 ролей панели.
+> Карту маршрутов и матрицу видимости по ролям смотрите в [INFORMATION_ARCHITECTURE.md](./INFORMATION_ARCHITECTURE.md).
 
-This document is a **workflow map**, not a user manual. Each flow lists the sequence of screens a role traverses to complete one job-to-be-done, with the routes touched and the permission row that authorizes it.
+Этот документ — **карта рабочих процессов**, а не руководство пользователя. Каждый сценарий описывает последовательность экранов, через которые проходит роль, выполняя одну конкретную задачу: какие маршруты затрагиваются и какая строка матрицы прав это разрешает.
 
 ---
 
-## How to read a flow
+## Как читать сценарий
 
-Each flow has a **mermaid `flowchart TD` diagram** for visual scan, followed by the prose breakdown. The diagram and the steps are kept in sync — if they drift, the steps win (they cite the route and permission row).
+Каждый сценарий начинается с **диаграммы mermaid `flowchart TD`** для быстрого визуального обзора, после чего идёт текстовый разбор. Диаграмма и шаги синхронизированы — если они расходятся, приоритет у шагов (они ссылаются на реальный маршрут и строку прав).
 
 ```markdown
-### Flow X — Short name
+### Сценарий X — Краткое название
 
-**Role:** owner / finance_manager / operator / viewer
-**Trigger:** What prompts the user to start
-**Outcome:** What's true after the flow ends
+**Роль:** Владелец / Финансовый менеджер / Оператор / Наблюдатель *(в коде: `owner` / `finance_manager` / `operator` / `viewer`)*
+**Что запускает:** Что побуждает пользователя начать сценарий
+**Результат:** Что становится правдой после завершения
 
 ```mermaid
 flowchart TD
-  A[Entry] --> B[Action]
-  B --> C{Decision?}
-  C -->|yes| D[Outcome]
-  C -->|no| A
+  A[Точка входа] --> B[Действие]
+  B --> C{Решение?}
+  C -->|да| D[Результат]
+  C -->|нет| A
 ```
 
-Steps:
-1. Sidebar → … (`/route`)
-2. Click "…" → next screen
+Шаги:
+1. Сайдбар → … (`/route`)
+2. Клик "…" → следующий экран
 3. …
 
-Routes touched: `/route`, `/route/:id`
-Permissions required: `resource.action` per ROLE_PERMISSIONS
-Open questions: anything unresolved (PRD-only, not in code)
+Затронутые маршруты: `/route`, `/route/:id`
+Требуются права: `resource.action` по `ROLE_PERMISSIONS`
+Открытые вопросы: что не решено (PRD-only, не в коде)
 ```
 
-**Diagram conventions** —
-- `[Rectangle]` = action / page
-- `{Diamond?}` = decision branch
-- `-->` = primary edge · `-.label.->` = optional / async / out-of-band edge
-- Route paths shown verbatim (e.g. `/staff/:id`); same for `ROLE_PERMISSIONS` resources
+**Соглашения для диаграмм** —
+- `[Прямоугольник]` = действие / страница
+- `{Ромб?}` = ветвление по решению
+- `-->` = основное ребро · `-. метка .->` = опциональное / асинхронное / внешнее ребро
+- Маршруты пишутся как есть (например, `/staff/:id`); то же для ресурсов `ROLE_PERMISSIONS`
 
-When a flow is **spec'd but not yet enforced** by the runtime (e.g. the route exists but no role guard hides it from a Viewer), it's marked **⚠️ Spec only**.
+Если сценарий **специфицирован, но ещё не закреплён** в рантайме (например, маршрут есть, но `RoleGuard` не скрывает его от Наблюдателя), он помечен **⚠️ Только спека**.
 
 ---
 
-## 1. The 4 roles at a glance
+## 1. 4 роли коротко
 
-| Role | Primary job to be done | Onboarding |
+| Роль *(в коде)* | Основная задача | Онбординг |
 |---|---|---|
-| **Owner** | Set up the institution and govern access, billing, audit | First-run wizard |
-| **Finance Manager** | Reconcile money in/out: payments, refunds, payouts, reports | Bypasses |
-| **Operator** | Front-line work: students, payments, overdues, reminders | Bypasses |
-| **Viewer** | Read-only: dashboards, reports, lookup students | Bypasses |
+| **Владелец** *(`owner`)* | Настроить учреждение и управлять доступом, тарифом, аудитом | Мастер первичной настройки |
+| **Финансовый менеджер** *(`finance_manager`)* | Сверка денежных потоков: платежи, возвраты, выплаты, отчёты | Пропускает онбординг |
+| **Оператор** *(`operator`)* | Фронтлайн-работа: студенты, платежи, просрочки, напоминания | Пропускает онбординг |
+| **Наблюдатель** *(`viewer`)* | Только чтение: дашборды, отчёты, поиск студентов | Пропускает онбординг |
 
-DEV fixtures in [src/lib/auth.ts:69-98](../src/lib/auth.ts) confirm: only `owner@unipay.dev` ships with `onboardingComplete: false`.
+DEV-фикстуры в [src/lib/auth.ts:69-98](../src/lib/auth.ts) подтверждают: только `owner@unipay.dev` поставляется с `onboardingComplete: false`.
 
 ---
 
-## 2. Shared flows (apply to every role)
+## 2. Общие сценарии (применимы к любой роли)
 
-### Flow S1 — Sign in
+### Сценарий S1 — Вход
 
-**Role:** any
-**Trigger:** User opens the dashboard URL while signed out
-**Outcome:** Authenticated session; landed on `/` (or `/onboarding/:step` for incomplete Owner)
+**Роль:** любая
+**Что запускает:** Пользователь открывает URL панели, не имея активной сессии
+**Результат:** Аутентифицированная сессия; перешёл на `/` (или `/onboarding/:step`, если Владелец не закончил онбординг)
 
 ```mermaid
 flowchart TD
-  A["/sign-in (eager)"] --> B[Enter email + password]
+  A["/sign-in (eager)"] --> B[Ввод email + пароля]
   B --> C["POST /api/auth/sign-in (mocked)"]
-  C --> D{Success?}
-  D -->|no| A
-  D -->|yes| E{onboardingComplete?}
-  E -->|true| F["Navigate to ?next or /"]
-  E -->|false| G["useOnboardingGuard redirects to /onboarding/:step"]
+  C --> D{Успех?}
+  D -->|нет| A
+  D -->|да| E{onboardingComplete?}
+  E -->|true| F["Переход к ?next или /"]
+  E -->|false| G["useOnboardingGuard перенаправляет на /onboarding/:step"]
 ```
 
-Steps:
-1. Land on `/sign-in` (eager-loaded; no skeleton flash).
-2. Enter email + password (DEV: role inferred from email prefix or domain hint).
+Шаги:
+1. Попадает на `/sign-in` (eager-loaded; без вспышки скелетона).
+2. Ввод email + пароля (DEV: роль определяется по префиксу email или домену).
 3. Submit → `POST /api/auth/sign-in` (mocked).
-4. On success, navigate to `next` query param if provided, else `/`.
-5. If `profile.onboardingComplete === false`, `useOnboardingGuard()` redirects to `/onboarding/:step`.
+4. При успехе — переход на `next` query-param, иначе на `/`.
+5. Если `profile.onboardingComplete === false`, `useOnboardingGuard()` перенаправляет на `/onboarding/:step`.
 
-Routes touched: `/sign-in`, `/`, `/onboarding/:step`
-Permissions required: none (public surface)
+Затронутые маршруты: `/sign-in`, `/`, `/onboarding/:step`
+Требуются права: нет (публичная поверхность)
 
 ---
 
-### Flow S2 — Forgot + reset password
+### Сценарий S2 — Забыли + сброс пароля
 
-**Role:** any
-**Trigger:** User forgot password
-**Outcome:** New password set; signed in via Sign-in flow
+**Роль:** любая
+**Что запускает:** Пользователь забыл пароль
+**Результат:** Новый пароль установлен; вход через сценарий S1
 
 ```mermaid
 flowchart TD
-  A["/sign-in"] --> B["Click 'Forgot password?'"]
+  A["/sign-in"] --> B["Клик 'Забыли пароль?'"]
   B --> C["/forgot-password"]
-  C --> D[Enter email + submit]
-  D --> E[Confirmation toast]
-  E -.out-of-band.-> F[Email link delivered]
+  C --> D[Ввод email + submit]
+  D --> E[Тост подтверждения]
+  E -. вне приложения .-> F[Письмо со ссылкой доставлено]
   F --> G["/reset-password?token=…"]
-  G --> H[Enter new password + submit]
+  G --> H[Ввод нового пароля + submit]
   H --> I["/sign-in"]
-  I --> J[Run Flow S1]
+  I --> J[Выполнить сценарий S1]
 ```
 
-Steps:
-1. From `/sign-in` → click "Forgot password?" → `/forgot-password`.
-2. Enter email → submit → confirmation toast.
-3. (Out-of-band) receive email link → land on `/reset-password?token=…`.
-4. Enter new password → submit → redirect to `/sign-in`.
-5. Run Flow S1.
+Шаги:
+1. С `/sign-in` → клик "Забыли пароль?" → `/forgot-password`.
+2. Ввод email → submit → тост подтверждения.
+3. (Вне приложения) приходит письмо со ссылкой → переход на `/reset-password?token=…`.
+4. Ввод нового пароля → submit → редирект на `/sign-in`.
+5. Выполнить сценарий S1.
 
-Routes touched: `/forgot-password`, `/reset-password`, `/sign-in`
-Permissions required: none
+Затронутые маршруты: `/forgot-password`, `/reset-password`, `/sign-in`
+Требуются права: нет
 
 ---
 
-### Flow S3 — Idle session expiry
+### Сценарий S3 — Истечение сессии по неактивности
 
-**Role:** any
-**Trigger:** No interaction past the idle timeout
-**Outcome:** Auto-signed-out with `reason: 'session_expired'`; redirected to `/sign-in`
+**Роль:** любая
+**Что запускает:** Нет взаимодействия дольше таймаута неактивности
+**Результат:** Автоматический выход с `reason: 'session_expired'`; редирект на `/sign-in`
 
 ```mermaid
 flowchart TD
-  A[Active session in AppShell] --> B[useIdleTimeout ticks]
+  A[Активная сессия в AppShell] --> B[useIdleTimeout тикает]
   B --> C{"idle > timeout?"}
-  C -->|no| A
-  C -->|yes| D["signOut reason='session_expired'"]
+  C -->|нет| A
+  C -->|да| D["signOut reason='session_expired'"]
   D --> E["/sign-in?expired=1"]
 ```
 
-Mechanism: `useIdleTimeout()` in `AuthGuard` ([src/router.tsx:131-134](../src/router.tsx)). Not a user-initiated flow but the only end-of-session path other than explicit sign-out.
+Механизм: `useIdleTimeout()` внутри `AuthGuard` ([src/router.tsx:131-134](../src/router.tsx)). Это не пользователь-инициируемый сценарий, но единственный путь завершения сессии, кроме явного выхода.
 
 ---
 
-### Flow S4 — Open a Coming-Soon feature
+### Сценарий S4 — Открыть Coming Soon фичу
 
-**Role:** any
-**Trigger:** Click a 🔒 sidebar item or a billing-upgrade CTA
-**Outcome:** Lands on `/locked/:feature` with title, bullets, screenshot, and a `mailto:` contact CTA
+**Роль:** любая
+**Что запускает:** Клик по 🔒 пункту сайдбара или по CTA "обновить тариф"
+**Результат:** Попадает на `/locked/:feature` с заголовком, буллетами, скриншотом и `mailto:` CTA для связи
 
 ```mermaid
 flowchart TD
-  A[Click locked sidebar item OR embedded CTA] --> B["/locked/:feature"]
+  A[Клик по locked-пункту сайдбара ИЛИ встроенный CTA] --> B["/locked/:feature"]
   B --> C[resolveFeature slug]
-  C --> D{Slug in FEATURE_REGISTRY?}
-  D -->|yes| E["Render title + bullets + screenshot + NotifyMe form + mailto:"]
-  D -->|no| F["Generic 'Coming Soon' fallback"]
-  E -.optional.-> G[Submit NotifyMe email]
-  E -.optional.-> H["Open mailto: to sales"]
+  C --> D{Slug в FEATURE_REGISTRY?}
+  D -->|да| E["Рендер заголовка + буллетов + скриншота + формы NotifyMe + mailto:"]
+  D -->|нет| F["Универсальный fallback 'Скоро'"]
+  E -.опционально.-> G[Отправить NotifyMe email]
+  E -.опционально.-> H["Открыть mailto: в продажи"]
 ```
 
-Slug → content map: [src/features/coming-soon/data/featureContent.ts](../src/features/coming-soon/data/featureContent.ts) (`FEATURE_REGISTRY`).
+Карта slug → контент: [src/features/coming-soon/data/featureContent.ts](../src/features/coming-soon/data/featureContent.ts) (`FEATURE_REGISTRY`).
 
-Routes touched: `/locked/:feature`
-Permissions required: none
+Затронутые маршруты: `/locked/:feature`
+Требуются права: нет
 
 ---
 
-## 3. Owner flows
+## 3. Сценарии Владельца
 
-The Owner is the only role with `staff.write`, `settings.write`, `audit.write`, and full `destructive` rights across every resource. In practice, the Owner also owns onboarding, billing, and integrations.
+Только у Владельца есть `staff.write`, `settings.write`, `audit.write` и полный `destructive` по всем ресурсам. На практике Владелец также отвечает за онбординг, тариф и интеграции.
 
-### Flow O1 — First-run onboarding
+### Сценарий O1 — Первичная настройка
 
-**Role:** owner
-**Trigger:** First sign-in on a fresh institution (`onboardingComplete === false`)
-**Outcome:** Institution configured; `User.onboardingComplete` flips to `true`; lands on `/`
+**Роль:** Владелец *(`owner`)*
+**Что запускает:** Первый вход в свежем учреждении (`onboardingComplete === false`)
+**Результат:** Учреждение настроено; `User.onboardingComplete` становится `true`; переход на `/`
 
 ```mermaid
 flowchart TD
-  A[Owner signs in for the first time] --> B[useOnboardingGuard redirects]
-  B --> C["/onboarding/1 — Institution info"]
-  C --> D["/onboarding/2 — Contact + branding"]
-  D --> E["/onboarding/3 — Bank accounts (test transfer 1 000 UZS)"]
-  E --> F["/onboarding/4 — Departments (template or skip)"]
-  F --> G["/onboarding/5 — Invite staff (optional)"]
-  G --> H["Finish — confetti + onboardingComplete=true"]
+  A[Владелец входит первый раз] --> B[useOnboardingGuard перенаправляет]
+  B --> C["/onboarding/1 — информация об учреждении"]
+  C --> D["/onboarding/2 — контакты + брендинг"]
+  D --> E["/onboarding/3 — банковские счета (тестовый перевод 1 000 UZS)"]
+  E --> F["/onboarding/4 — подразделения (шаблон или пропуск)"]
+  F --> G["/onboarding/5 — пригласить сотрудников (опционально)"]
+  G --> H["Финиш — конфетти + onboardingComplete=true"]
   H --> I["/"]
-  C -. Skip Setup .-> J["Confirm 'Skip setup?'"]
-  D -. Skip Setup .-> J
-  E -. Skip Setup .-> J
-  F -. Skip Setup .-> J
-  G -. Skip Setup .-> J
+  C -. Пропустить настройку .-> J["Подтверждение 'Пропустить настройку?'"]
+  D -. Пропустить настройку .-> J
+  E -. Пропустить настройку .-> J
+  F -. Пропустить настройку .-> J
+  G -. Пропустить настройку .-> J
   J --> I
 ```
 
-Steps (sequential — `StepGuardedSwitch` in [OnboardingPage.tsx:43-72](../src/features/onboarding/pages/OnboardingPage.tsx) refuses skips):
-1. `/onboarding/1` — **Institution info** — name (RU/UZ), type, legal form, TIN, region, address, website, founded year.
-2. `/onboarding/2` — **Contact + branding** — contact email, phone, logo upload, primary color, receipt footer (with live receipt preview).
-3. `/onboarding/3` — **Bank accounts** — add ≥1 account; one marked default. UNIPAY sends a 1 000 UZS test transfer for verification.
-4. `/onboarding/4` — **Departments** — pick a template (university / school / kindergarten) or skip; edit tree via dnd-kit.
-5. `/onboarding/5` — **Invite staff** (optional) — invite by email + role; "Skip and finish" exits without invites. Confetti on finish.
+Шаги (последовательно — `StepGuardedSwitch` в [OnboardingPage.tsx:43-72](../src/features/onboarding/pages/OnboardingPage.tsx) запрещает пропуски):
+1. `/onboarding/1` — **Информация об учреждении** — название (RU/UZ), тип, правовая форма, ИНН, регион, адрес, сайт, год основания.
+2. `/onboarding/2` — **Контакты + брендинг** — контактный email, телефон, загрузка логотипа, основной цвет, подпись на чеке (с live-превью чека).
+3. `/onboarding/3` — **Банковские счета** — добавить ≥1 счёт; один помечен дефолтным. UNIPAY делает тестовый перевод 1 000 UZS для верификации.
+4. `/onboarding/4` — **Подразделения** — выбрать шаблон (университет / школа / детсад) или пропустить; редактирование дерева через dnd-kit.
+5. `/onboarding/5` — **Пригласить сотрудников** (опционально) — приглашение по email + роли; "Пропустить и завершить" выходит без приглашений. Конфетти при финише.
 
-Sidebar is locked throughout (tooltip: `onboarding.sidebarLockedTooltip`). "Skip Setup" exit is available on every step (sets `onboardingComplete = true` and routes to `/`).
+Сайдбар заблокирован весь онбординг (tooltip: `onboarding.sidebarLockedTooltip`). Выход "Пропустить настройку" доступен на каждом шаге (выставляет `onboardingComplete = true` и переход на `/`).
 
-Routes touched: `/onboarding/1` … `/onboarding/5`, `/`
-Permissions required: implicit (Owner is the only role with `onboardingComplete: false`)
-Open questions: invite email body content (PRD-only).
+Затронутые маршруты: `/onboarding/1` … `/onboarding/5`, `/`
+Требуются права: неявно (только Владелец имеет `onboardingComplete: false`)
+Открытые вопросы: содержимое письма-приглашения (только PRD).
 
 ---
 
-### Flow O2 — Invite a staff member
+### Сценарий O2 — Пригласить сотрудника
 
-**Role:** owner *(Finance Manager also accepted today — see footnote 1 in [INFORMATION_ARCHITECTURE.md §4](./INFORMATION_ARCHITECTURE.md))*
-**Trigger:** New hire needs dashboard access
-**Outcome:** Invite email sent; row appears in Staff list with `pending` status
+**Роль:** Владелец *(`owner`)* *(Финансовый менеджер сегодня тоже принимается — см. сноску 1 в [INFORMATION_ARCHITECTURE.md §4](./INFORMATION_ARCHITECTURE.md))*
+**Что запускает:** Новому сотруднику нужен доступ к панели
+**Результат:** Письмо-приглашение отправлено; в списке сотрудников появилась строка со статусом `pending`
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Staff (/staff)"] --> B["Click 'Пригласить сотрудника'"]
-  B --> C[Invite dialog opens]
-  C --> D["Fill name + email + role from STAFF_INVITABLE_ROLES (finance_manager / operator / viewer)"]
-  D --> E["Optional: assign departments"]
-  E --> F[Preview ROLE_PERMISSIONS matrix]
+  A["Сайдбар → Сотрудники (/staff)"] --> B["Клик 'Пригласить сотрудника'"]
+  B --> C[Открывается диалог приглашения]
+  C --> D["Заполнить имя + email + роль из STAFF_INVITABLE_ROLES (finance_manager / operator / viewer)"]
+  D --> E["Опционально: назначить подразделения"]
+  E --> F[Превью матрицы ROLE_PERMISSIONS]
   F --> G[Submit]
-  G --> H{Success?}
-  H -->|yes| I["Toast 'Приглашение отправлено' + row with 'pending' badge"]
-  H -->|no| J[Inline error]
+  G --> H{Успех?}
+  H -->|да| I["Тост 'Приглашение отправлено' + строка с бейджем 'pending'"]
+  H -->|нет| J[Inline-ошибка]
 ```
 
-Steps:
-1. Sidebar → **Staff** (`/staff`).
-2. Click "Пригласить сотрудника" → invite dialog.
-3. Fill name, email, role from `STAFF_INVITABLE_ROLES = ['finance_manager', 'operator', 'viewer']` (Owner cannot be invited — only transferred).
-4. Optional: assign departments; preview permission matrix from `ROLE_PERMISSIONS`.
-5. Submit → toast "Приглашение отправлено" → row appears with `pending` badge.
+Шаги:
+1. Сайдбар → **Сотрудники** (`/staff`).
+2. Клик "Пригласить сотрудника" → диалог приглашения.
+3. Заполнить имя, email, роль из `STAFF_INVITABLE_ROLES = ['finance_manager', 'operator', 'viewer']` (Владельца нельзя пригласить — только передать роль).
+4. Опционально: назначить подразделения; превью матрицы прав из `ROLE_PERMISSIONS`.
+5. Submit → тост "Приглашение отправлено" → появилась строка с бейджем `pending`.
 
-Routes touched: `/staff`
-Permissions required: `staff.write` (per spec: Owner only)
-Open questions: invite email content; expiry / resend cadence.
+Затронутые маршруты: `/staff`
+Требуются права: `staff.write` (по спеке: только Владелец)
+Открытые вопросы: содержимое письма; время жизни приглашения / повторная отправка.
 
 ---
 
-### Flow O3 — Configure the organization end-to-end
+### Сценарий O3 — Настройка организации целиком
 
-**Role:** owner
-**Trigger:** Update institution details after onboarding (e.g. new bank account, rebrand, new department)
-**Outcome:** Org profile reflects the change; receipts and reports use the new values
+**Роль:** Владелец *(`owner`)*
+**Что запускает:** Обновить данные учреждения после онбординга (новый банковский счёт, ребрендинг, новое подразделение)
+**Результат:** Профиль организации отражает изменения; чеки и отчёты используют новые значения
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Organization (/organization)"] --> B{Which tab?}
-  B --> C["/organization/profile — name, TIN, region, address"]
-  B --> D["/organization/departments — drag-drop tree"]
+  A["Сайдбар → Организация (/organization)"] --> B{Какая вкладка?}
+  B --> C["/organization/profile — название, ИНН, регион, адрес"]
+  B --> D["/organization/departments — дерево с drag-drop"]
   B --> E["/organization/bank-accounts"]
-  B --> F["/organization/branding — logo, color, receipt footer"]
-  D -.add.-> D1["/organization/departments/new?parentId=X"]
-  E -.add.-> E1["/organization/bank-accounts/new"]
-  C --> Save[Save tab]
+  B --> F["/organization/branding — логотип, цвет, подпись на чеке"]
+  D -.добавить.-> D1["/organization/departments/new?parentId=X"]
+  E -.добавить.-> E1["/organization/bank-accounts/new"]
+  C --> Save[Сохранить вкладку]
   D --> Save
   E --> Save
   F --> Save
   D1 --> Save
   E1 --> Save
-  Save --> Done[Receipts + reports reflect new values]
+  Save --> Done[Чеки + отчёты отражают новые значения]
 ```
 
-Steps:
-1. Sidebar → **Organization** (`/organization`).
-2. Walk the 4 tabs in order or as needed:
-   - **Profile** (`/organization/profile`) — name, type, TIN, region, address, website.
-   - **Departments** (`/organization/departments`) — drag-and-drop tree edit; add child via `/organization/departments/new`.
-   - **Bank Accounts** (`/organization/bank-accounts`) — add via `/organization/bank-accounts/new`; mark default; verification status flips after server-side test transfer.
-   - **Branding** (`/organization/branding`) — logo, primary color, receipt footer; live receipt preview.
-3. Each tab saves independently; cross-tab consistency is the user's responsibility.
+Шаги:
+1. Сайдбар → **Организация** (`/organization`).
+2. Пройти по 4 вкладкам по порядку или по необходимости:
+   - **Профиль** (`/organization/profile`) — название, тип, ИНН, регион, адрес, сайт.
+   - **Подразделения** (`/organization/departments`) — drag-drop редактирование дерева; добавление дочернего через `/organization/departments/new`.
+   - **Банковские счета** (`/organization/bank-accounts`) — добавление через `/organization/bank-accounts/new`; пометка по умолчанию; статус верификации переключается после серверного тестового перевода.
+   - **Брендинг** (`/organization/branding`) — логотип, основной цвет, подпись на чеке; live-превью чека.
+3. Каждая вкладка сохраняется независимо; консистентность между вкладками — на пользователе.
 
-Routes touched: `/organization/*`
-Permissions required: `settings.write` (per spec: Owner only)
+Затронутые маршруты: `/organization/*`
+Требуются права: `settings.write` (по спеке: только Владелец)
 
 ---
 
-### Flow O4 — Audit + security review
+### Сценарий O4 — Аудит и проверка безопасности
 
-**Role:** owner
-**Trigger:** Periodic governance check; suspected access incident
-**Outcome:** Audit log reviewed; sessions revoked or 2FA enforced as needed
+**Роль:** Владелец *(`owner`)*
+**Что запускает:** Регулярная управленческая проверка; подозрение на инцидент доступа
+**Результат:** Журнал аудита просмотрен; сессии отозваны или 2FA включена при необходимости
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Settings (/settings)"] --> B["Audit tab (/settings/audit)"]
-  B --> C["Filter by actor / action / date range"]
-  C --> D[Inspect AUDIT_ACTIONS events]
-  D --> E{Suspicious?}
-  E -->|yes| F["/staff/:id"]
-  F --> G[Sessions tab]
-  G --> H[Revoke individual OR revoke-all-others]
-  E -.optional.-> I["/settings/security"]
-  I --> J[Enforce 2FA org-wide]
+  A["Сайдбар → Настройки (/settings)"] --> B["Вкладка Аудит (/settings/audit)"]
+  B --> C["Фильтр по актору / действию / диапазону дат"]
+  C --> D[Изучить события AUDIT_ACTIONS]
+  D --> E{Подозрительно?}
+  E -->|да| F["/staff/:id"]
+  F --> G[Вкладка Сессии]
+  G --> H[Отозвать отдельную сессию ИЛИ revoke-all-others]
+  E -.опционально.-> I["/settings/security"]
+  I --> J[Включить 2FA на уровне организации]
 ```
 
-Steps:
-1. Sidebar → **Settings** (`/settings`) → **Audit** tab (`/settings/audit`).
-2. Filter by actor / action / date range; inspect specific events from `AUDIT_ACTIONS` (e.g. `staff.role_changed`, `apikey.revealed`, `payment.refunded`).
-3. If suspicious, open **Staff** (`/staff/:id`) → **Sessions** tab → revoke individual sessions or "revoke all others".
-4. Optional: enforce 2FA org-wide via `/settings/security`.
+Шаги:
+1. Сайдбар → **Настройки** (`/settings`) → вкладка **Аудит** (`/settings/audit`).
+2. Фильтр по актору / действию / диапазону дат; изучить события из `AUDIT_ACTIONS` (например, `staff.role_changed`, `apikey.revealed`, `payment.refunded`).
+3. Если подозрительно, открыть **Сотрудники** (`/staff/:id`) → вкладка **Сессии** → отозвать отдельные сессии или "revoke all others".
+4. Опционально: включить 2FA на уровне организации через `/settings/security`.
 
-Routes touched: `/settings/audit`, `/settings/security`, `/staff/:id`
-Permissions required: `audit.read`, `staff.write` (per spec: Owner only)
+Затронутые маршруты: `/settings/audit`, `/settings/security`, `/staff/:id`
+Требуются права: `audit.read`, `staff.write` (по спеке: только Владелец)
 
 ---
 
-### Flow O5 — Manage billing + plan
+### Сценарий O5 — Управление тарифом
 
-**Role:** owner
-**Trigger:** Plan upgrade needed; commission rate review
-**Outcome:** Plan changed; billing reflects new monthly fee + commission
+**Роль:** Владелец *(`owner`)*
+**Что запускает:** Нужно обновить тариф; ревизия комиссии
+**Результат:** Тариф изменён; биллинг отражает новую месячную плату + комиссию
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Settings → Billing (/settings/billing)"] --> B["Compare current plan vs starter / business / enterprise"]
-  B --> C[Click upgrade CTA]
+  A["Сайдбар → Настройки → Тариф (/settings/billing)"] --> B["Сравнить текущий план с starter / business / enterprise"]
+  B --> C[Клик по CTA "Улучшить план"]
   C --> D["/locked/billing-upgrade"]
-  D --> E["mailto: sales — Coming Soon in v1"]
+  D --> E["mailto: в продажи — Coming Soon в v1"]
 ```
 
-Steps:
-1. Sidebar → **Settings** → **Billing** (`/settings/billing`).
-2. Compare current plan against `starter` / `business` / `enterprise` (from `BillingPlanInfo`).
-3. Click upgrade CTA → routes to `/locked/billing-upgrade` (Coming Soon — current v1 surfaces a `mailto:` to sales).
+Шаги:
+1. Сайдбар → **Настройки** → **Тариф** (`/settings/billing`).
+2. Сравнить текущий план с `starter` / `business` / `enterprise` (из `BillingPlanInfo`).
+3. Клик по CTA "Улучшить план" → переход на `/locked/billing-upgrade` (Coming Soon — в v1 это `mailto:` в продажи).
 
-Routes touched: `/settings/billing`, `/locked/billing-upgrade`
-Permissions required: `settings.write` (per spec: Owner only)
+Затронутые маршруты: `/settings/billing`, `/locked/billing-upgrade`
+Требуются права: `settings.write` (по спеке: только Владелец)
 
 ---
 
-## 4. Finance Manager flows
+## 4. Сценарии Финансового менеджера
 
-The Finance Manager owns money in/out: refunds, payouts, monthly reconciliation, and reports. They have `payments.destructive` (can refund) but not `staff.write` (per spec) or `settings.write`.
+Финансовый менеджер отвечает за денежные потоки in/out: возвраты, выплаты, месячная сверка, отчёты. У него есть `payments.destructive` (может делать возвраты), но нет `staff.write` (по спеке) и `settings.write`.
 
-### Flow F1 — Monthly reconciliation
+### Сценарий F1 — Месячная сверка
 
-**Role:** finance_manager
-**Trigger:** End-of-month close
-**Outcome:** Month's revenue + commissions + payouts reconciled; export filed
+**Роль:** Финансовый менеджер *(`finance_manager`)*
+**Что запускает:** Закрытие месяца
+**Результат:** Сверены выручка месяца + комиссии + выплаты; экспорт оформлен
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Dashboard (/)"] --> B[Read this-month KPIs from KpiRow]
-  B --> C["Sidebar → Reports → Summary (/reports/summary)"]
-  C --> D[Set DateRangePicker to month]
-  D --> E[Inspect channel chart + dept donut + by-day table]
-  E --> F["Switch to Export tab (/reports/export)"]
-  F --> G["Pick dataType + format + grouping → submit"]
-  G --> H["Inline polling 'Готовим экспорт… ~N сек'"]
-  H --> I[Download from RecentExportsList when ready]
-  I --> J["Sidebar → Payouts (/payouts)"]
-  J --> K[Confirm settled payouts match export totals]
+  A["Сайдбар → Дашборд (/)"] --> B[Прочитать KPI текущего месяца из KpiRow]
+  B --> C["Сайдбар → Отчёты → Сводка (/reports/summary)"]
+  C --> D[Выставить DateRangePicker на месяц]
+  D --> E[Изучить график каналов + donut по подразделениям + by-day таблицу]
+  E --> F["Переключить на вкладку Экспорт (/reports/export)"]
+  F --> G["Выбрать dataType + format + grouping → submit"]
+  G --> H["Inline-опрос 'Готовим экспорт… ~N сек'"]
+  H --> I[Скачать из RecentExportsList, когда ready]
+  I --> J["Сайдбар → Выплаты (/payouts)"]
+  J --> K[Подтвердить, что settled выплаты совпадают с итогами экспорта]
 ```
 
-Steps:
-1. Sidebar → **Dashboard** (`/`) — read this-month KPI from `<KpiRow>` (`monthRevenue`, `pending`, `overdue`).
-2. Sidebar → **Reports** → **Summary** (`/reports/summary`) — set date range to the month via `<DateRangePicker>`. Inspect the channel mix bar chart and department donut.
-3. Drill into the per-day table; sort/paginate; mobile-card render on phones.
-4. Switch to **Export** tab (`/reports/export`) — pick `dataType` (transactions / payouts / refunds / students), format, grouping → submit. Status polls inline (`Готовим экспорт… ~N сек`).
-5. Download from `<RecentExportsList>` once `ready` (3-second mock turnaround).
-6. Sidebar → **Payouts** (`/payouts`) — confirm the month's settled payouts match the export totals.
+Шаги:
+1. Сайдбар → **Дашборд** (`/`) — прочитать KPI текущего месяца из `<KpiRow>` (`monthRevenue`, `pending`, `overdue`).
+2. Сайдбар → **Отчёты** → **Сводка** (`/reports/summary`) — выставить диапазон дат на месяц через `<DateRangePicker>`. Изучить график каналов и donut по подразделениям.
+3. Углубиться в by-day таблицу; сортировать/пагинировать; mobile-card рендер на телефонах.
+4. Переключиться на вкладку **Экспорт** (`/reports/export`) — выбрать `dataType` (transactions / payouts / refunds / students), формат, группировку → submit. Статус опрашивается инлайн (`Готовим экспорт… ~N сек`).
+5. Скачать из `<RecentExportsList>` когда статус `ready` (3-секундный мок).
+6. Сайдбар → **Выплаты** (`/payouts`) — подтвердить, что settled выплаты совпадают с итогами экспорта.
 
-Routes touched: `/`, `/reports/summary`, `/reports/export`, `/payouts`
-Permissions required: `reports.read`, `reports.write` (export creation), `payments.read`
+Затронутые маршруты: `/`, `/reports/summary`, `/reports/export`, `/payouts`
+Требуются права: `reports.read`, `reports.write` (создание экспорта), `payments.read`
 
 ---
 
-### Flow F2 — Process a refund
+### Сценарий F2 — Оформить возврат
 
-**Role:** finance_manager *(Owner also)*
-**Trigger:** Customer disputes a charge; duplicate payment; service not provided
-**Outcome:** Refund row in `pending → approved → completed` lifecycle; transaction `refunded`
+**Роль:** Финансовый менеджер *(`finance_manager`)* *(Владелец тоже)*
+**Что запускает:** Клиент оспорил списание; дубль оплаты; услуга не оказана
+**Результат:** Возврат в жизненном цикле `pending → approved → completed`; транзакция `refunded`
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Transactions (/payments/transactions)"] --> B["Search / find offending row"]
+  A["Сайдбар → Транзакции (/payments/transactions)"] --> B["Найти / отыскать спорную строку"]
   B --> C["/payments/transactions/:id"]
-  C --> D["Click 'Возврат'"]
-  D --> E["Refund dialog: amount + REFUND_REASONS + note"]
+  C --> D["Клик 'Возврат'"]
+  D --> E["Диалог возврата: сумма + REFUND_REASONS + примечание"]
   E --> F[Submit]
-  F --> G["Row added to /payments/refunds with status 'pending'"]
-  G -. async backend .-> H["Status flips: pending → approved → completed"]
-  H --> I["Original transaction shows 'refunded'"]
+  F --> G["Строка появилась в /payments/refunds со статусом 'pending'"]
+  G -. async backend .-> H["Статус меняется: pending → approved → completed"]
+  H --> I["Оригинальная транзакция показывает 'refunded'"]
 ```
 
-Steps:
-1. Sidebar → **Transactions** (`/payments/transactions`) → search/find the offending row.
-2. Open `/payments/transactions/:id` → click "Возврат" → refund dialog.
-3. Fill amount (default = full amount), reason from `REFUND_REASONS = ['duplicate', 'wrong_amount', 'service_not_provided', 'other']`, note.
-4. Submit → row added to **Refunds** (`/payments/refunds`) with `pending` status.
-5. (Async) backend approves → status `completed`; original transaction shows `refunded`.
+Шаги:
+1. Сайдбар → **Транзакции** (`/payments/transactions`) → найти спорную строку.
+2. Открыть `/payments/transactions/:id` → клик "Возврат" → диалог возврата.
+3. Заполнить сумму (по умолчанию = полная сумма), причину из `REFUND_REASONS = ['duplicate', 'wrong_amount', 'service_not_provided', 'other']`, примечание.
+4. Submit → строка добавлена в **Возвраты** (`/payments/refunds`) со статусом `pending`.
+5. (Async) бэкенд одобряет → статус `completed`; оригинальная транзакция показывает `refunded`.
 
-Routes touched: `/payments/transactions`, `/payments/transactions/:id`, `/payments/refunds`
-Permissions required: `payments.destructive` (Owner + Finance Manager only)
+Затронутые маршруты: `/payments/transactions`, `/payments/transactions/:id`, `/payments/refunds`
+Требуются права: `payments.destructive` (только Владелец + Финансовый менеджер)
 
 ---
 
-### Flow F3 — Request a payout
+### Сценарий F3 — Запросить выплату
 
-**Role:** finance_manager *(Owner also)*
-**Trigger:** Available balance ≥100k UZS and `balance.plan === 'request'`
-**Outcome:** Payout row created with `pending` status; settles via async backend
+**Роль:** Финансовый менеджер *(`finance_manager`)* *(Владелец тоже)*
+**Что запускает:** Доступный баланс ≥100k UZS и `balance.plan === 'request'`
+**Результат:** Создана строка выплаты со статусом `pending`; асинхронно settled бэкендом
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Payouts (/payouts)"] --> B[Read PayoutsSummaryBanner]
+  A["Сайдбар → Выплаты (/payouts)"] --> B[Прочитать PayoutsSummaryBanner]
   B --> C{balance.plan?}
-  C -->|auto| D["/payouts/request → AutomaticPayoutInfo card (no form)"]
-  C -->|request| E["Click 'Запросить выплату'"]
+  C -->|auto| D["/payouts/request → карточка AutomaticPayoutInfo (без формы)"]
+  C -->|request| E["Клик 'Запросить выплату'"]
   E --> F["/payouts/request"]
-  F --> G["RequestPayoutForm: pick verified bank account + enter amount"]
-  G --> H{"Amount ≥ 100k UZS?"}
-  H -->|no| I["Submit disabled — Tooltip explains threshold"]
-  H -->|yes| J["Submit → toast"]
-  J --> K["New row in History with status 'pending'"]
-  K -.optional.-> L["/payouts/:id — watch StatusTimeline"]
+  F --> G["RequestPayoutForm: выбрать верифицированный счёт + ввести сумму"]
+  G --> H{"Сумма ≥ 100k UZS?"}
+  H -->|нет| I["Submit заблокирован — Tooltip объясняет порог"]
+  H -->|да| J["Submit → тост"]
+  J --> K["Новая строка в Истории со статусом 'pending'"]
+  K -.опционально.-> L["/payouts/:id — наблюдать StatusTimeline"]
 ```
 
-Steps:
-1. Sidebar → **Payouts** (`/payouts`).
-2. Read the summary banner: received-this-month / last / next-expected.
-3. If plan is `auto`, the Request CTA is hidden — `/payouts/request` shows `<AutomaticPayoutInfo>` instead. Stop here.
-4. If plan is `request`, click "Запросить выплату" → `/payouts/request`.
-5. Fill the `<RequestPayoutForm>`: pick a verified bank account, enter amount (Tooltip on submit if <100k UZS).
-6. Submit → toast → row appears in History with `pending` status.
-7. Optional: open `/payouts/:id` to watch the 4-step `<StatusTimeline>` (Created → Processing → Settled → Reconciled).
+Шаги:
+1. Сайдбар → **Выплаты** (`/payouts`).
+2. Прочитать summary-баннер: получено за месяц / последняя / следующая ожидаемая.
+3. Если план `auto`, CTA "Запросить" скрыт — `/payouts/request` показывает `<AutomaticPayoutInfo>`. Остановка.
+4. Если план `request`, клик "Запросить выплату" → `/payouts/request`.
+5. Заполнить `<RequestPayoutForm>`: выбрать верифицированный счёт, ввести сумму (Tooltip на submit при <100k UZS).
+6. Submit → тост → строка появилась в Истории со статусом `pending`.
+7. Опционально: открыть `/payouts/:id` чтобы наблюдать 4-шаговый `<StatusTimeline>` (Created → Processing → Settled → Reconciled).
 
-Routes touched: `/payouts`, `/payouts/request`, `/payouts/:id`
-Permissions required: `payments.write` (Owner + Finance Manager + Operator have `payments.write`; payout-specific gating is currently UI-only)
+Затронутые маршруты: `/payouts`, `/payouts/request`, `/payouts/:id`
+Требуются права: `payments.write` (у Владельца + Финансового менеджера + Оператора есть `payments.write`; гейтинг выплат сейчас только на уровне UI)
 
 ---
 
-### Flow F4 — Confirm or cancel a pending payout
+### Сценарий F4 — Подтвердить или отменить ожидающую выплату
 
-**Role:** finance_manager *(Owner also)*
-**Trigger:** A payout sits in `pending` and needs human approval/rejection
-**Outcome:** Payout transitions to `processing` (confirm) or stays `pending` cancelled (cancel)
+**Роль:** Финансовый менеджер *(`finance_manager`)* *(Владелец тоже)*
+**Что запускает:** Выплата висит в `pending` и требует человеческого одобрения/отказа
+**Результат:** Выплата переходит в `processing` (подтверждение) или остаётся `pending` отменённой
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Payouts"] --> B[Click pending row]
-  B --> C["/payouts/:id — PayoutDetailActionBar shows Confirm + Cancel"]
-  C --> D{Confirm or Cancel?}
-  D -->|Confirm| E["Step 1 AlertDialog: review summary"]
-  E --> F["Step 2: type exact amount + reason ≥20"]
+  A["Сайдбар → Выплаты"] --> B[Клик по pending-строке]
+  B --> C["/payouts/:id — PayoutDetailActionBar показывает Подтвердить + Отменить"]
+  C --> D{Подтвердить или Отменить?}
+  D -->|Подтвердить| E["Шаг 1 AlertDialog: ревизия итогов"]
+  E --> F["Шаг 2: ввести точную сумму + причину ≥20"]
   F --> G["POST /api/payouts/:id/confirm → status: processing"]
-  D -->|Cancel| H["ConfirmDialog: reason ≥20"]
+  D -->|Отменить| H["ConfirmDialog: причина ≥20"]
   H --> I["POST /api/payouts/:id/cancel → cancelled"]
-  G --> J[Banner + StatusTimeline updated]
+  G --> J[Баннер + StatusTimeline обновились]
   I --> J
 ```
 
-Steps:
-1. Sidebar → **Payouts** → click the pending row.
-2. On `/payouts/:id`, the `<PayoutDetailActionBar>` surfaces Confirm + Cancel.
-3. **Confirm:** 2-step `<AlertDialog>` — type the exact amount + reason ≥20 chars. Submit → `POST /api/payouts/:id/confirm`.
-4. **Cancel:** destructive `ConfirmDialog` with reason ≥20 chars. Submit → `POST /api/payouts/:id/cancel`.
-5. Banner reflects new status; timeline marker updates.
+Шаги:
+1. Сайдбар → **Выплаты** → клик по pending-строке.
+2. На `/payouts/:id` `<PayoutDetailActionBar>` показывает Подтвердить + Отменить.
+3. **Подтвердить:** 2-шаговый `<AlertDialog>` — ввести точную сумму + причину ≥20 символов. Submit → `POST /api/payouts/:id/confirm`.
+4. **Отменить:** деструктивный `ConfirmDialog` с причиной ≥20 символов. Submit → `POST /api/payouts/:id/cancel`.
+5. Баннер отражает новый статус; маркер таймлайна обновлён.
 
-Routes touched: `/payouts/:id`
-Permissions required: `payments.destructive` (cancel) / `payments.write` (confirm)
+Затронутые маршруты: `/payouts/:id`
+Требуются права: `payments.destructive` (отмена) / `payments.write` (подтверждение)
 
 ---
 
-## 5. Operator flows
+## 5. Сценарии Оператора
 
-The Operator works front-line: adding students, recording payments, chasing overdues. They have `students.write` and `payments.write` but no `destructive` and no `settings`/`audit` access.
+Оператор работает на передовой: добавляет студентов, фиксирует платежи, гоняет просрочки. У него есть `students.write` и `payments.write`, но нет `destructive` и доступа к `settings`/`audit`.
 
-### Flow OP1 — Add a single student
+### Сценарий OP1 — Добавить одного студента
 
-**Role:** operator *(Owner + Finance Manager + Operator)*
-**Trigger:** New student enrolled
-**Outcome:** Student record exists; appears in Students list
+**Роль:** Оператор *(`operator`)* *(Владелец + Финансовый менеджер + Оператор)*
+**Что запускает:** Зачислен новый студент
+**Результат:** Запись студента создана; появилась в списке студентов
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Students (/students)"] --> B["Click 'Добавить студента'"]
+  A["Сайдбар → Студенты (/students)"] --> B["Клик 'Добавить студента'"]
   B --> C["/students/new"]
-  C --> D["Fill required: studentId, firstName, lastName, departmentId via TreePicker, educationType, enrollmentDate"]
-  D --> E["Submit → toast"]
+  C --> D["Заполнить обязательное: studentId, firstName, lastName, departmentId через TreePicker, educationType, enrollmentDate"]
+  D --> E["Submit → тост"]
   E --> F["/students/:id"]
-  F -.optional.-> G["Schedule tab → apply template OR add custom rows"]
+  F -.опционально.-> G["Вкладка Расписание → применить шаблон ИЛИ добавить строки вручную"]
 ```
 
-Steps:
-1. Sidebar → **Students** (`/students`).
-2. Click "Добавить студента" → `/students/new`.
-3. Fill required fields: studentId, firstName, lastName, departmentId (via `<TreePicker>`), educationType, enrollmentDate.
-4. Submit → toast → redirected to `/students/:id`.
-5. Optional: switch to **Schedule** tab → apply a template OR add custom rows.
+Шаги:
+1. Сайдбар → **Студенты** (`/students`).
+2. Клик "Добавить студента" → `/students/new`.
+3. Заполнить обязательные поля: studentId, firstName, lastName, departmentId (через `<TreePicker>`), educationType, enrollmentDate.
+4. Submit → тост → редирект на `/students/:id`.
+5. Опционально: переключиться на вкладку **Расписание** → применить шаблон ИЛИ добавить строки вручную.
 
-Routes touched: `/students`, `/students/new`, `/students/:id`
-Permissions required: `students.write`
+Затронутые маршруты: `/students`, `/students/new`, `/students/:id`
+Требуются права: `students.write`
 
 ---
 
-### Flow OP2 — Bulk import students from xlsx
+### Сценарий OP2 — Массовый импорт студентов из xlsx
 
-**Role:** operator *(Owner + Finance Manager + Operator)*
-**Trigger:** Term start; multi-hundred student batch from registrar
-**Outcome:** Cleaned batch committed to Students list
+**Роль:** Оператор *(`operator`)* *(Владелец + Финансовый менеджер + Оператор)*
+**Что запускает:** Начало семестра; партия из нескольких сотен студентов от регистратуры
+**Результат:** Очищенная партия закоммичена в список студентов
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Students → Импорт"] --> B["/students/import"]
-  B --> C["Step 1: download xlsx template"]
-  C --> D["Step 1: upload completed file"]
-  D --> E["Step 2: review + correct column mapping"]
-  E --> F["Step 3: server-parsed rows with per-cell errors"]
-  F --> G{All rows clean?}
-  G -->|no| H[Inline-edit OR download error report]
+  A["Сайдбар → Студенты → Импорт"] --> B["/students/import"]
+  B --> C["Шаг 1: скачать xlsx-шаблон"]
+  C --> D["Шаг 1: загрузить заполненный файл"]
+  D --> E["Шаг 2: ревизия + правка маппинга колонок"]
+  E --> F["Шаг 3: серверный парсинг — строки с per-cell ошибками"]
+  F --> G{Все строки чисты?}
+  G -->|нет| H[Inline-правка ИЛИ скачивание error report]
   H --> F
-  G -->|yes| I["Step 4: commit"]
-  I --> J{"committed > 100?"}
-  J -->|yes| K["Reason ≥20 required"]
-  K --> L["Submit → batch created"]
-  J -->|no| L
-  L --> M["/students — new rows visible"]
+  G -->|да| I["Шаг 4: коммит"]
+  I --> J{"commit > 100?"}
+  J -->|да| K["Требуется причина ≥20"]
+  K --> L["Submit → партия создана"]
+  J -->|нет| L
+  L --> M["/students — новые строки видны"]
 ```
 
-Steps (4 internal wizard steps):
-1. Sidebar → **Students** → "Импорт" → `/students/import`.
-2. **Step 1 — Upload** — download xlsx template; upload completed file.
-3. **Step 2 — Map** — auto-detected columns; correct any field-mapping errors.
-4. **Step 3 — Review** — server-parsed rows with per-cell errors (`ImportRow.errors`); inline-edit until clean. Download error report (xlsx).
-5. **Step 4 — Commit** — if committed count >100, reason ≥20 chars required → submit → batch created.
+Шаги (4 внутренних шага мастера):
+1. Сайдбар → **Студенты** → "Импорт" → `/students/import`.
+2. **Шаг 1 — Загрузка** — скачать xlsx-шаблон; загрузить заполненный файл.
+3. **Шаг 2 — Маппинг** — автодетект колонок; исправить ошибки маппинга полей.
+4. **Шаг 3 — Ревизия** — серверный парсинг с per-cell ошибками (`ImportRow.errors`); inline-правка до чистоты. Скачать error report (xlsx).
+5. **Шаг 4 — Коммит** — если коммит >100, требуется причина ≥20 символов → submit → партия создана.
 
-Routes touched: `/students/import`, `/students`
-Permissions required: `students.write`
-Open questions: behavior on duplicate `studentId` against existing records (planted in fixture; flow may differ in production).
+Затронутые маршруты: `/students/import`, `/students`
+Требуются права: `students.write`
+Открытые вопросы: поведение при дубликате `studentId` против существующей записи (в фикстуре посажен; в продакшене может отличаться).
 
 ---
 
-### Flow OP3 — Resolve an overdue payment
+### Сценарий OP3 — Закрыть просроченный платёж
 
-**Role:** operator *(Owner + Finance Manager + Operator)*
-**Trigger:** Overdue alert fires (per `NotificationPreferences.overdueAlertDays`)
-**Outcome:** Payment recorded as paid OR reminder sent OR rescheduled
+**Роль:** Оператор *(`operator`)* *(Владелец + Финансовый менеджер + Оператор)*
+**Что запускает:** Сработал overdue-алерт (по `NotificationPreferences.overdueAlertDays`)
+**Результат:** Платёж зафиксирован как paid ИЛИ отправлено напоминание ИЛИ перенесён срок
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Pending (/payments/pending)"] --> B["Sort / filter by overdue days"]
-  B --> C["Pick row → /students/:id (Schedule tab)"]
-  C --> D{Action?}
-  D -->|Mark paid| E["Record cash / bank-transfer / manual payment"]
-  D -->|Send SMS| F["Click 'Отправить SMS' rate-limited"]
-  D -->|Reschedule| G["Inline-edit dueDate cell — Enter saves, Esc cancels"]
-  E --> H["Confirm via Activity tab — entry with actor + before/after"]
+  A["Сайдбар → Ожидающие (/payments/pending)"] --> B["Сортировка / фильтр по дням просрочки"]
+  B --> C["Взять строку → /students/:id (вкладка Расписание)"]
+  C --> D{Действие?}
+  D -->|Отметить как оплачено| E["Зафиксировать наличные / банк-перевод / другой платёж"]
+  D -->|Отправить SMS| F["Клик 'Отправить SMS' rate-limited"]
+  D -->|Перенести срок| G["Inline-правка ячейки dueDate — Enter сохраняет, Esc отменяет"]
+  E --> H["Подтверждение во вкладке Журнал — запись с актором + before/after"]
   F --> H
   G --> H
 ```
 
-Steps:
-1. Sidebar → **Pending** (`/payments/pending`).
-2. Sort/filter by overdue days; pick a row → `/students/:id` (Schedule tab).
-3. Either:
-   - **Mark paid manually** — record a Cash / Bank transfer / Other payment via the action bar (channel = `cash | manual`).
-   - **Send SMS reminder** — click "Отправить SMS" in the action bar (rate-limited).
-   - **Reschedule** — inline-edit the schedule row's dueDate (Enter to save, Esc to cancel).
-4. Confirm via the **Activity** tab (`student.activity`) — entry appears with actor + before/after.
+Шаги:
+1. Сайдбар → **Ожидающие** (`/payments/pending`).
+2. Сортировка/фильтр по дням просрочки; взять строку → `/students/:id` (вкладка Расписание).
+3. Один из вариантов:
+   - **Отметить как оплачено вручную** — зафиксировать Наличные / Банковский перевод / Другое через action bar (channel = `cash | manual`).
+   - **Отправить SMS-напоминание** — клик "Отправить SMS" в action bar (rate-limited).
+   - **Перенести срок** — inline-правка `dueDate` в строке расписания (Enter сохраняет, Esc отменяет).
+4. Подтверждение через вкладку **Журнал** (`student.activity`) — появится запись с актором + before/after.
 
-Routes touched: `/payments/pending`, `/students/:id`
-Permissions required: `students.write`, `payments.write`
-⚠️ Spec only: SMS Campaigns module is **Coming Soon**; per-student SMS works today.
+Затронутые маршруты: `/payments/pending`, `/students/:id`
+Требуются права: `students.write`, `payments.write`
+⚠️ Только спека: модуль SMS Campaigns — **Coming Soon**; per-student SMS уже работает.
 
 ---
 
-### Flow OP4 — Apply a payment schedule template
+### Сценарий OP4 — Применить шаблон расписания
 
-**Role:** operator *(Owner + Finance Manager + Operator)*
-**Trigger:** New term; tuition schedule needs rolling out
-**Outcome:** ScheduleRows generated for the target cohort
+**Роль:** Оператор *(`operator`)* *(Владелец + Финансовый менеджер + Оператор)*
+**Что запускает:** Новый семестр; нужно раскатить расписание оплат
+**Результат:** ScheduleRows сгенерированы для целевой когорты
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Students → Шаблоны расписания (/students/schedules)"] --> B{Pick OR create?}
-  B -->|Pick| C[Select existing template]
-  B -->|Create| D["New ScheduleTemplate (single OR per-dept amounts)"]
-  C --> E["Apply to: department TreePicker + years + ad-hoc studentIds"]
+  A["Сайдбар → Студенты → Шаблоны расписания (/students/schedules)"] --> B{Выбрать ИЛИ создать?}
+  B -->|Выбрать| C[Существующий шаблон]
+  B -->|Создать| D["Новый ScheduleTemplate (единая сумма ИЛИ суммы по подразделениям)"]
+  C --> E["Применить к: TreePicker подразделений + годы + ad-hoc studentIds"]
   D --> E
-  E --> F["Preview applied count via debounced studentsApi.list"]
-  F --> G["Confirm → ScheduleRows generated per target student"]
+  E --> F["Превью applied-count через debounced studentsApi.list"]
+  F --> G["Подтверждение → ScheduleRows сгенерированы по каждому целевому студенту"]
 ```
 
-Steps:
-1. Sidebar → **Students** → "Шаблоны расписания" (`/students/schedules`).
-2. Pick a template OR create one (`<ScheduleTemplate>`: single amount or per-department amounts).
-3. Apply to: department selection (`<TreePicker>` multi-select with subtree toggle) + years + ad-hoc studentIds.
-4. Preview applied count; confirm → ScheduleRows generated for each target student.
+Шаги:
+1. Сайдбар → **Студенты** → "Шаблоны расписания" (`/students/schedules`).
+2. Выбрать шаблон ИЛИ создать (`<ScheduleTemplate>`: единая сумма или суммы по подразделениям).
+3. Применить к: выбор подразделений (`<TreePicker>` multi-select с переключателем поддерева) + годы + ad-hoc studentIds.
+4. Превью applied-count; подтверждение → ScheduleRows сгенерированы для каждого целевого студента.
 
-Routes touched: `/students/schedules`
-Permissions required: `students.write`
+Затронутые маршруты: `/students/schedules`
+Требуются права: `students.write`
 
 ---
 
-## 6. Viewer flows
+## 6. Сценарии Наблюдателя
 
-Viewer is read-only across the resources they can access (`students`, `payments`, `reports`, `staff`). No write, no destructive, no `settings`, no `audit`.
+Наблюдатель — только чтение по ресурсам, к которым у него есть доступ (`students`, `payments`, `reports`, `staff`). Без write, без destructive, без `settings`, без `audit`.
 
-### Flow V1 — Daily morning check
+### Сценарий V1 — Утренняя сверка
 
-**Role:** viewer
-**Trigger:** Start of business day
-**Outcome:** Awareness of yesterday's revenue, pending balance, overdue queue
+**Роль:** Наблюдатель *(`viewer`)*
+**Что запускает:** Начало рабочего дня
+**Результат:** Понимание вчерашней выручки, ожидающего баланса, очереди просрочек
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Dashboard (/)"] --> B[Read greeting + 4 KPIs + revenue chart + status donut + recent tx + unpaid students]
-  B --> C["Sidebar → Reports → Summary (/reports/summary)"]
-  C --> D["Set range to 'Сегодня' or 'Вчера'"]
-  D --> E[Review channel mix]
-  E --> F["Sidebar → Pending (/payments/pending)"]
-  F --> G[Scan for new overdues]
+  A["Сайдбар → Дашборд (/)"] --> B[Прочитать приветствие + 4 KPI + график выручки + donut статусов + recent tx + unpaid students]
+  B --> C["Сайдбар → Отчёты → Сводка (/reports/summary)"]
+  C --> D["Выставить диапазон 'Сегодня' или 'Вчера'"]
+  D --> E[Посмотреть mix каналов]
+  E --> F["Сайдбар → Ожидающие (/payments/pending)"]
+  F --> G[Сканировать новые просрочки]
 ```
 
-Steps:
-1. Sidebar → **Dashboard** (`/`) — read greeting + 4 KPIs + revenue chart + payment status donut + recent transactions + unpaid students.
-2. Sidebar → **Reports** → **Summary** (`/reports/summary`) — set range to "Сегодня" or "Вчера" → review channel mix.
-3. Sidebar → **Pending** (`/payments/pending`) — scan for new overdues.
+Шаги:
+1. Сайдбар → **Дашборд** (`/`) — прочитать приветствие + 4 KPI + график выручки + donut статусов + recent tx + unpaid students.
+2. Сайдбар → **Отчёты** → **Сводка** (`/reports/summary`) — выставить диапазон "Сегодня" или "Вчера" → посмотреть mix каналов.
+3. Сайдбар → **Ожидающие** (`/payments/pending`) — сканировать новые просрочки.
 
-Routes touched: `/`, `/reports/summary`, `/payments/pending`
-Permissions required: `students.read`, `payments.read`, `reports.read`
+Затронутые маршруты: `/`, `/reports/summary`, `/payments/pending`
+Требуются права: `students.read`, `payments.read`, `reports.read`
 
 ---
 
-### Flow V2 — Look up a student's payment history
+### Сценарий V2 — Поиск истории платежей студента
 
-**Role:** viewer *(any role with `students.read`)*
-**Trigger:** Parent inquiry; registrar question
-**Outcome:** Visibility into a specific student's schedule + transactions
+**Роль:** Наблюдатель *(`viewer`)* *(любая роль с `students.read`)*
+**Что запускает:** Запрос родителя; вопрос регистратуры
+**Результат:** Видимость расписания + транзакций конкретного студента
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Students (/students)"] --> B["Search by name / ID / phone"]
-  B --> C["Click row → /students/:id"]
-  C --> D["Schedule tab — due / paid / overdue lines"]
-  D --> E[Transactions tab — actual payments]
-  E --> F[Activity tab — audit trail]
+  A["Сайдбар → Студенты (/students)"] --> B["Поиск по ФИО / ID / телефону"]
+  B --> C["Клик по строке → /students/:id"]
+  C --> D["Вкладка Расписание — строки due / paid / overdue"]
+  D --> E[Вкладка Транзакции — реальные платежи]
+  E --> F[Вкладка Журнал — аудит-трейл]
 ```
 
-Steps:
-1. Sidebar → **Students** (`/students`) → search by name / ID / phone.
-2. Click row → `/students/:id`.
-3. Read the **Schedule** tab for due / paid / overdue lines.
-4. Switch to **Transactions** tab to see actual payments (channel, amount, status).
-5. Switch to **Activity** tab for the audit trail of who changed what.
+Шаги:
+1. Сайдбар → **Студенты** (`/students`) → поиск по ФИО / ID / телефону.
+2. Клик по строке → `/students/:id`.
+3. Прочитать вкладку **Расписание** — строки due / paid / overdue.
+4. Переключиться на **Транзакции** — реальные платежи (канал, сумма, статус).
+5. Переключиться на **Журнал** — аудит-трейл кто что менял.
 
-Routes touched: `/students`, `/students/:id`
-Permissions required: `students.read`
+Затронутые маршруты: `/students`, `/students/:id`
+Требуются права: `students.read`
 
 ---
 
-### Flow V3 — Pull a report for a stakeholder
+### Сценарий V3 — Сформировать отчёт для руководства
 
-**Role:** viewer
-**Trigger:** Director asks for a department-level breakdown
-**Outcome:** Report visible on screen; export request submitted (if Reports.write enforced)
+**Роль:** Наблюдатель *(`viewer`)*
+**Что запускает:** Директор просит разбивку по подразделениям
+**Результат:** Отчёт виден на экране; запрос на экспорт отправлен (если `reports.write` закреплён)
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Reports → Summary (/reports/summary)"] --> B[Set date range]
-  B --> C[Read department donut + per-day table]
+  A["Сайдбар → Отчёты → Сводка (/reports/summary)"] --> B[Выставить диапазон дат]
+  B --> C[Прочитать donut подразделений + by-day таблицу]
   C --> D["/reports/export"]
-  D --> E{Viewer has reports.write?}
-  E -->|spec: no| F[Backend will reject POST when wired up]
-  E -->|today by URL| G[Form reachable, submit will fail]
+  D --> E{У Наблюдателя есть reports.write?}
+  E -->|по спеке: нет| F[Бэкенд отклонит POST когда будет закреплено]
+  E -->|сегодня по URL| G[Форма достижима, submit упадёт]
 ```
 
-Steps:
-1. Sidebar → **Reports** → **Summary** (`/reports/summary`).
-2. Set date range; read department donut + per-day table.
-3. (Spec) Export tab requires `reports.write` — Viewer is `read` only.
-4. ⚠️ Today the Export tab is reachable by URL for Viewer; backend will reject the POST when wired up.
+Шаги:
+1. Сайдбар → **Отчёты** → **Сводка** (`/reports/summary`).
+2. Выставить диапазон дат; прочитать donut подразделений + by-day таблицу.
+3. (Спека) вкладка **Экспорт** требует `reports.write` — у Наблюдателя только `read`.
+4. ⚠️ Сегодня вкладка Экспорт достижима по URL для Наблюдателя; бэкенд отклонит POST когда это будет закреплено.
 
-Routes touched: `/reports/summary`, `/reports/export`
-Permissions required: `reports.read`
-⚠️ Spec only: write-side `/reports/export` enforcement.
-
----
-
-## 7. Cross-cutting interactions (any role)
-
-### Switch language
-
-1. User menu (top-right) → "Язык" / "Til" → select RU / UZ → page reloads in the chosen locale (`User.locale` updated).
-
-### Switch theme
-
-1. Top bar → theme toggle → light / dark / system.
-
-### Sign out
-
-1. User menu → "Выйти" → `signOut({ reason: 'manual' })` → redirected to `/sign-in`.
-
-### Open a Coming-Soon feature
-
-See [Flow S4](#flow-s4--open-a-coming-soon-feature).
-
-### Hit `/system/preview/*`
-
-QA-only; not part of any user flow. See [INFORMATION_ARCHITECTURE.md §3](./INFORMATION_ARCHITECTURE.md).
+Затронутые маршруты: `/reports/summary`, `/reports/export`
+Требуются права: `reports.read`
+⚠️ Только спека: закрепление write-стороны `/reports/export`.
 
 ---
 
-## 8. Maintenance contract
+## 7. Сквозные взаимодействия (любая роль)
 
-Add a flow here when:
-- A new module ships and a role's job-to-be-done changes.
-- A role gains/loses a capability that opens up a new workflow.
-- A flow that was Spec-only (`⚠️`) gains its enforcement and becomes real.
+### Переключение языка
 
-Remove a flow when:
-- The feature is removed.
-- The flow no longer matches what's in [src/router.tsx](../src/router.tsx) or `ROLE_PERMISSIONS`.
+1. Меню пользователя (правый верх) → "Язык" / "Til" → выбрать RU / UZ → страница перезагружается на выбранной локали (`User.locale` обновлён).
 
-Cross-checks before merging:
-1. Every step in every flow points to a route that exists in [src/router.tsx](../src/router.tsx).
-2. Every "Permissions required" line cites a real `(resource, action)` pair from `ROLE_PERMISSIONS`.
-3. No flow uses a status name not in [src/types/domain.ts](../src/types/domain.ts).
-4. The IA tree in [INFORMATION_ARCHITECTURE.md §3](./INFORMATION_ARCHITECTURE.md) has not gained or lost routes that aren't reflected here.
+### Переключение темы
+
+1. Топбар → переключатель темы → светлая / тёмная / системная.
+
+### Выход
+
+1. Меню пользователя → "Выйти" → `signOut({ reason: 'manual' })` → редирект на `/sign-in`.
+
+### Открытие Coming Soon фичи
+
+См. [Сценарий S4](#сценарий-s4--открыть-coming-soon-фичу).
+
+### Попадание на `/system/preview/*`
+
+Только для QA; не часть пользовательского сценария. См. [INFORMATION_ARCHITECTURE.md §3](./INFORMATION_ARCHITECTURE.md).
+
+---
+
+## 8. Регламент сопровождения
+
+Добавляйте сценарий сюда, когда:
+- Выходит новый модуль и задача роли меняется.
+- Роль получает/теряет возможность, открывающую новый сценарий.
+- Сценарий со статусом "Только спека" (`⚠️`) закрепляется в рантайме.
+
+Удаляйте сценарий, когда:
+- Фича удалена.
+- Сценарий больше не соответствует [src/router.tsx](../src/router.tsx) или `ROLE_PERMISSIONS`.
+
+Проверки перед мерджем:
+1. Каждый шаг каждого сценария ссылается на маршрут, который существует в [src/router.tsx](../src/router.tsx).
+2. Каждая строка "Требуются права" цитирует реальную пару `(resource, action)` из `ROLE_PERMISSIONS`.
+3. Ни один сценарий не использует имя статуса, которого нет в [src/types/domain.ts](../src/types/domain.ts).
+4. Дерево IA в [INFORMATION_ARCHITECTURE.md §3](./INFORMATION_ARCHITECTURE.md) не приобрело и не потеряло маршруты, которые не отражены здесь.
