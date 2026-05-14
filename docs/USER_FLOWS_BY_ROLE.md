@@ -130,7 +130,7 @@ Permissions required: none
 ```mermaid
 flowchart TD
   A[Active session in AppShell] --> B[useIdleTimeout ticks]
-  B --> C{idle > timeout?}
+  B --> C{"idle > timeout?"}
   C -->|no| A
   C -->|yes| D["signOut reason='session_expired'"]
   D --> E["/sign-in?expired=1"]
@@ -151,10 +151,10 @@ flowchart TD
   A[Click locked sidebar item OR embedded CTA] --> B["/locked/:feature"]
   B --> C[resolveFeature slug]
   C --> D{Slug in FEATURE_REGISTRY?}
-  D -->|yes| E[Render title + bullets + screenshot + NotifyMe form + mailto:]
-  D -->|no| F[Generic 'Coming Soon' fallback]
+  D -->|yes| E["Render title + bullets + screenshot + NotifyMe form + mailto:"]
+  D -->|no| F["Generic 'Coming Soon' fallback"]
   E -.optional.-> G[Submit NotifyMe email]
-  E -.optional.-> H[Open mailto: to sales]
+  E -.optional.-> H["Open mailto: to sales"]
 ```
 
 Slug → content map: [src/features/coming-soon/data/featureContent.ts](../src/features/coming-soon/data/featureContent.ts) (`FEATURE_REGISTRY`).
@@ -184,11 +184,11 @@ flowchart TD
   F --> G["/onboarding/5 — Invite staff (optional)"]
   G --> H["Finish — confetti + onboardingComplete=true"]
   H --> I["/"]
-  C -.Skip Setup.-> J[Confirm 'Skip setup?']
-  D -.Skip Setup.-> J
-  E -.Skip Setup.-> J
-  F -.Skip Setup.-> J
-  G -.Skip Setup.-> J
+  C -. Skip Setup .-> J["Confirm 'Skip setup?'"]
+  D -. Skip Setup .-> J
+  E -. Skip Setup .-> J
+  F -. Skip Setup .-> J
+  G -. Skip Setup .-> J
   J --> I
 ```
 
@@ -215,14 +215,14 @@ Open questions: invite email body content (PRD-only).
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Staff (/staff)"] --> B[Click 'Пригласить сотрудника']
+  A["Sidebar → Staff (/staff)"] --> B["Click 'Пригласить сотрудника'"]
   B --> C[Invite dialog opens]
   C --> D["Fill name + email + role from STAFF_INVITABLE_ROLES (finance_manager / operator / viewer)"]
-  D --> E[Optional: assign departments]
+  D --> E["Optional: assign departments"]
   E --> F[Preview ROLE_PERMISSIONS matrix]
   F --> G[Submit]
   G --> H{Success?}
-  H -->|yes| I[Toast 'Приглашение отправлено' + row with 'pending' badge]
+  H -->|yes| I["Toast 'Приглашение отправлено' + row with 'pending' badge"]
   H -->|no| J[Inline error]
 ```
 
@@ -286,7 +286,7 @@ Permissions required: `settings.write` (per spec: Owner only)
 ```mermaid
 flowchart TD
   A["Sidebar → Settings (/settings)"] --> B["Audit tab (/settings/audit)"]
-  B --> C[Filter by actor / action / date range]
+  B --> C["Filter by actor / action / date range"]
   C --> D[Inspect AUDIT_ACTIONS events]
   D --> E{Suspicious?}
   E -->|yes| F["/staff/:id"]
@@ -315,10 +315,10 @@ Permissions required: `audit.read`, `staff.write` (per spec: Owner only)
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Settings → Billing (/settings/billing)"] --> B[Compare current plan vs starter / business / enterprise]
+  A["Sidebar → Settings → Billing (/settings/billing)"] --> B["Compare current plan vs starter / business / enterprise"]
   B --> C[Click upgrade CTA]
   C --> D["/locked/billing-upgrade"]
-  D --> E[mailto: sales — Coming Soon in v1]
+  D --> E["mailto: sales — Coming Soon in v1"]
 ```
 
 Steps:
@@ -348,8 +348,8 @@ flowchart TD
   C --> D[Set DateRangePicker to month]
   D --> E[Inspect channel chart + dept donut + by-day table]
   E --> F["Switch to Export tab (/reports/export)"]
-  F --> G[Pick dataType + format + grouping → submit]
-  G --> H[Inline polling 'Готовим экспорт… ~N сек']
+  F --> G["Pick dataType + format + grouping → submit"]
+  G --> H["Inline polling 'Готовим экспорт… ~N сек'"]
   H --> I[Download from RecentExportsList when ready]
   I --> J["Sidebar → Payouts (/payouts)"]
   J --> K[Confirm settled payouts match export totals]
@@ -376,14 +376,14 @@ Permissions required: `reports.read`, `reports.write` (export creation), `paymen
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Transactions (/payments/transactions)"] --> B[Search / find offending row]
+  A["Sidebar → Transactions (/payments/transactions)"] --> B["Search / find offending row"]
   B --> C["/payments/transactions/:id"]
-  C --> D[Click 'Возврат']
-  D --> E[Refund dialog: amount + REFUND_REASONS + note]
+  C --> D["Click 'Возврат'"]
+  D --> E["Refund dialog: amount + REFUND_REASONS + note"]
   E --> F[Submit]
   F --> G["Row added to /payments/refunds with status 'pending'"]
-  G -.async backend.-> H[Status flips: pending → approved → completed]
-  H --> I[Original transaction shows 'refunded']
+  G -. async backend .-> H["Status flips: pending → approved → completed"]
+  H --> I["Original transaction shows 'refunded'"]
 ```
 
 Steps:
@@ -409,13 +409,13 @@ flowchart TD
   A["Sidebar → Payouts (/payouts)"] --> B[Read PayoutsSummaryBanner]
   B --> C{balance.plan?}
   C -->|auto| D["/payouts/request → AutomaticPayoutInfo card (no form)"]
-  C -->|request| E[Click 'Запросить выплату']
+  C -->|request| E["Click 'Запросить выплату'"]
   E --> F["/payouts/request"]
-  F --> G[RequestPayoutForm: pick verified bank account + enter amount]
-  G --> H{Amount ≥ 100k UZS?}
-  H -->|no| I[Submit disabled — Tooltip explains threshold]
-  H -->|yes| J[Submit → toast]
-  J --> K[New row in History with status 'pending']
+  F --> G["RequestPayoutForm: pick verified bank account + enter amount"]
+  G --> H{"Amount ≥ 100k UZS?"}
+  H -->|no| I["Submit disabled — Tooltip explains threshold"]
+  H -->|yes| J["Submit → toast"]
+  J --> K["New row in History with status 'pending'"]
   K -.optional.-> L["/payouts/:id — watch StatusTimeline"]
 ```
 
@@ -444,10 +444,10 @@ flowchart TD
   A["Sidebar → Payouts"] --> B[Click pending row]
   B --> C["/payouts/:id — PayoutDetailActionBar shows Confirm + Cancel"]
   C --> D{Confirm or Cancel?}
-  D -->|Confirm| E[Step 1 AlertDialog: review summary]
+  D -->|Confirm| E["Step 1 AlertDialog: review summary"]
   E --> F["Step 2: type exact amount + reason ≥20"]
   F --> G["POST /api/payouts/:id/confirm → status: processing"]
-  D -->|Cancel| H[ConfirmDialog: reason ≥20]
+  D -->|Cancel| H["ConfirmDialog: reason ≥20"]
   H --> I["POST /api/payouts/:id/cancel → cancelled"]
   G --> J[Banner + StatusTimeline updated]
   I --> J
@@ -477,12 +477,12 @@ The Operator works front-line: adding students, recording payments, chasing over
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Students (/students)"] --> B[Click 'Добавить студента']
+  A["Sidebar → Students (/students)"] --> B["Click 'Добавить студента'"]
   B --> C["/students/new"]
-  C --> D[Fill required: studentId, firstName, lastName, departmentId via TreePicker, educationType, enrollmentDate]
-  D --> E[Submit → toast]
+  C --> D["Fill required: studentId, firstName, lastName, departmentId via TreePicker, educationType, enrollmentDate"]
+  D --> E["Submit → toast"]
   E --> F["/students/:id"]
-  F -.optional.-> G[Schedule tab → apply template OR add custom rows]
+  F -.optional.-> G["Schedule tab → apply template OR add custom rows"]
 ```
 
 Steps:
@@ -506,19 +506,19 @@ Permissions required: `students.write`
 ```mermaid
 flowchart TD
   A["Sidebar → Students → Импорт"] --> B["/students/import"]
-  B --> C[Step 1: download xlsx template]
-  C --> D[Step 1: upload completed file]
-  D --> E[Step 2: review + correct column mapping]
-  E --> F[Step 3: server-parsed rows with per-cell errors]
+  B --> C["Step 1: download xlsx template"]
+  C --> D["Step 1: upload completed file"]
+  D --> E["Step 2: review + correct column mapping"]
+  E --> F["Step 3: server-parsed rows with per-cell errors"]
   F --> G{All rows clean?}
   G -->|no| H[Inline-edit OR download error report]
   H --> F
-  G -->|yes| I[Step 4: commit]
-  I --> J{committed > 100?}
-  J -->|yes| K[Reason ≥20 required]
-  K --> L[Submit → batch created]
+  G -->|yes| I["Step 4: commit"]
+  I --> J{"committed > 100?"}
+  J -->|yes| K["Reason ≥20 required"]
+  K --> L["Submit → batch created"]
   J -->|no| L
-  L --> M[/students — new rows visible]
+  L --> M["/students — new rows visible"]
 ```
 
 Steps (4 internal wizard steps):
@@ -542,13 +542,13 @@ Open questions: behavior on duplicate `studentId` against existing records (plan
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Pending (/payments/pending)"] --> B[Sort / filter by overdue days]
+  A["Sidebar → Pending (/payments/pending)"] --> B["Sort / filter by overdue days"]
   B --> C["Pick row → /students/:id (Schedule tab)"]
   C --> D{Action?}
-  D -->|Mark paid| E[Record cash / bank-transfer / manual payment]
-  D -->|Send SMS| F[Click 'Отправить SMS' rate-limited]
-  D -->|Reschedule| G[Inline-edit dueDate cell — Enter saves, Esc cancels]
-  E --> H[Confirm via Activity tab — entry with actor + before/after]
+  D -->|Mark paid| E["Record cash / bank-transfer / manual payment"]
+  D -->|Send SMS| F["Click 'Отправить SMS' rate-limited"]
+  D -->|Reschedule| G["Inline-edit dueDate cell — Enter saves, Esc cancels"]
+  E --> H["Confirm via Activity tab — entry with actor + before/after"]
   F --> H
   G --> H
 ```
@@ -579,10 +579,10 @@ flowchart TD
   A["Sidebar → Students → Шаблоны расписания (/students/schedules)"] --> B{Pick OR create?}
   B -->|Pick| C[Select existing template]
   B -->|Create| D["New ScheduleTemplate (single OR per-dept amounts)"]
-  C --> E[Apply to: department TreePicker + years + ad-hoc studentIds]
+  C --> E["Apply to: department TreePicker + years + ad-hoc studentIds"]
   D --> E
-  E --> F[Preview applied count via debounced studentsApi.list]
-  F --> G[Confirm → ScheduleRows generated per target student]
+  E --> F["Preview applied count via debounced studentsApi.list"]
+  F --> G["Confirm → ScheduleRows generated per target student"]
 ```
 
 Steps:
@@ -610,7 +610,7 @@ Viewer is read-only across the resources they can access (`students`, `payments`
 flowchart TD
   A["Sidebar → Dashboard (/)"] --> B[Read greeting + 4 KPIs + revenue chart + status donut + recent tx + unpaid students]
   B --> C["Sidebar → Reports → Summary (/reports/summary)"]
-  C --> D[Set range to 'Сегодня' or 'Вчера']
+  C --> D["Set range to 'Сегодня' or 'Вчера'"]
   D --> E[Review channel mix]
   E --> F["Sidebar → Pending (/payments/pending)"]
   F --> G[Scan for new overdues]
@@ -634,9 +634,9 @@ Permissions required: `students.read`, `payments.read`, `reports.read`
 
 ```mermaid
 flowchart TD
-  A["Sidebar → Students (/students)"] --> B[Search by name / ID / phone]
+  A["Sidebar → Students (/students)"] --> B["Search by name / ID / phone"]
   B --> C["Click row → /students/:id"]
-  C --> D[Schedule tab — due / paid / overdue lines]
+  C --> D["Schedule tab — due / paid / overdue lines"]
   D --> E[Transactions tab — actual payments]
   E --> F[Activity tab — audit trail]
 ```
