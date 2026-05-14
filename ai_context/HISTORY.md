@@ -4,6 +4,29 @@ Append-only log of major changes. Most recent on top.
 
 ---
 
+## 2026-05-14 — Information architecture + role-flow documentation added
+
+**Summary.** User asked for "a complete user flow of all roles by features and clear information architecture of structure of the app." No such doc existed — IA had to be reconstructed from [`src/router.tsx`](../src/router.tsx) + [`src/components/layout/Sidebar.tsx`](../src/components/layout/Sidebar.tsx) + [`src/types/domain.ts`](../src/types/domain.ts), and role flows had to be derived from `ROLE_PERMISSIONS` + per-component gating. Two new canonical reference docs created plus orchestration files updated.
+
+**Files created.**
+- [`docs/INFORMATION_ARCHITECTURE.md`](../docs/INFORMATION_ARCHITECTURE.md) (266 lines · ~2 200 words) — full route tree (48 router paths), 6-section sidebar inventory with i18n keys + lucide icons, per-route role visibility matrix, verbatim `ROLE_PERMISSIONS` table, 9-feature Coming Soon registry, maintenance contract.
+- [`docs/USER_FLOWS_BY_ROLE.md`](../docs/USER_FLOWS_BY_ROLE.md) (457 lines · ~2 600 words) — 4 shared flows + 5 Owner + 4 Finance Manager + 4 Operator + 3 Viewer flows. Each flow lists routes touched, permission row from `ROLE_PERMISSIONS`, and `⚠️ Spec only` markers where needed.
+
+**Files modified.**
+- [`CLAUDE.md`](../CLAUDE.md) — "Sources of Truth" table gained two rows pointing at the new docs.
+- [`README.md`](../README.md) — new "Architecture & user flows" section between Design discipline and Power-user surfaces.
+- [`docs/product_states.md`](../docs/product_states.md) — "Outstanding follow-ups": the existing "Sidebar role-aware filtering registry" line now cross-refs IA §4; new line added documenting the IA + flows docs as the canonical role-visibility source; new line documenting the missing PRD markdown (only the binary `.docx` exists).
+
+**Critical findings surfaced in the docs.**
+1. **No route-level `<RoleGuard>` exists.** `ROLE_PERMISSIONS` is design intent only; every authenticated user can navigate to every authenticated route by URL. Permission gating is component-level only (e.g. Sessions tab on `/staff/:id` is Owner-or-self via `showSessionsTab` at [StaffDetailPage.tsx:97-99](../src/features/staff/pages/StaffDetailPage.tsx); Delete on `/students/:id` is Owner-only via `isOwner` at [StudentDetailActionBar.tsx:25](../src/features/students/components/profile/StudentDetailActionBar.tsx)). Documented in IA §1 with 🟡 cells throughout the visibility matrix marking every divergence.
+2. **Finance Manager UI vs spec divergence on Staff actions** — `PERMISSIONED_ROLES = ['owner', 'finance_manager']` in both [StaffRowKebab.tsx:38](../src/features/staff/components/list/StaffRowKebab.tsx) and [StaffDetailKebab.tsx:48](../src/features/staff/components/detail/StaffDetailKebab.tsx) lets Finance Manager invite/edit staff today, but `ROLE_PERMISSIONS.finance_manager.staff.write = false`. Documented as footnote ¹ in IA §4 — needs reconciliation.
+3. **Onboarding is Owner-only in practice** — DEV fixtures in [src/lib/auth.ts:69-98](../src/lib/auth.ts) confirm only `owner@unipay.dev` ships with `onboardingComplete: false`.
+4. **PRD markdown referenced in CLAUDE.md doesn't exist** — only `UNIPAY_Dashboard_UISpec_v1.docx` (binary) at repo root. Both docs derive content from code + product_states.md instead. Logged as a separate prerequisite.
+
+**Verifications.** 16 cited file paths all resolve; all i18n key prefixes (`nav.section.*`, `organization.tabs.*`, `settings.tabs.*`, `reports.tabs.*`, `staff.detail.tabs.*`, `students.detail.tabs.*`, `comingSoon.badge`, `onboarding.sidebarLockedTooltip`) found in [ru.json](../src/lib/i18n/locales/ru.json); cited line numbers all resolve to the expected code; `grep -oE 'path="[^"]*"' src/router.tsx` returns 48, matching the IA tree; role names + status names cited in docs all match [`src/types/domain.ts`](../src/types/domain.ts) (no invented values). §0.9 audit grep on `→` matches in the new docs are markdown-prose only — STYLE_DISCIPLINE audit is scoped to `src/`, so docs are unaffected.
+
+---
+
 ## 2026-05-12 — Post-P12 sidebar polish for Coming Soon nav items
 
 **Summary.** Iterative visual refinement of the Coming Soon nav items in [`src/components/layout/Sidebar.tsx`](../src/components/layout/Sidebar.tsx), driven by user feedback on the rendered result after the P11 ship. No new functionality — purely visual rhythm + color tokens. Four passes converged on the final shape below.
