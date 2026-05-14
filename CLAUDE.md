@@ -26,6 +26,8 @@ Acting as a **senior frontend engineer + product designer with 15+ years of expe
 |---|---|
 | Design discipline (color, typography, layout, detail-page, tables, mobile, state coverage, forbidden patterns) | [`STYLE_DISCIPLINE.md`](./STYLE_DISCIPLINE.md) |
 | Product spec (PRD): screens, fields, states, interactions | [`docs/UNIPAY_Dashboard_UISpec.md`](./docs/UNIPAY_Dashboard_UISpec.md) |
+| Information architecture (full route tree, sidebar, role visibility matrix) | [`docs/INFORMATION_ARCHITECTURE.md`](./docs/INFORMATION_ARCHITECTURE.md) |
+| User flows by role (canonical end-to-end workflows for Owner / Finance Manager / Operator / Viewer) | [`docs/USER_FLOWS_BY_ROLE.md`](./docs/USER_FLOWS_BY_ROLE.md) |
 | Domain models, statuses, roles, channels | [`src/types/domain.ts`](./src/types/domain.ts) |
 | Build sequence (13 Claude Code prompts) | [`docs/CLAUDE_CODE_PROMPTS.md`](./docs/CLAUDE_CODE_PROMPTS.md) |
 | Decisions log (deviations from STYLE_DISCIPLINE) | [`docs/DECISIONS.md`](./docs/DECISIONS.md) |

@@ -98,6 +98,13 @@ Section index:
 
 Violations of §0.9 block merge. Run `npm run audit:discipline` before pushing.
 
+## Architecture & user flows
+
+- [`docs/INFORMATION_ARCHITECTURE.md`](docs/INFORMATION_ARCHITECTURE.md) — full route tree, sidebar inventory, role visibility matrix, and the spec-vs-runtime caveat for permission gating.
+- [`docs/USER_FLOWS_BY_ROLE.md`](docs/USER_FLOWS_BY_ROLE.md) — canonical end-to-end workflows for Owner / Finance Manager / Operator / Viewer (onboarding, refunds, payouts, imports, audits…).
+
+Read these together when answering "what can role X do, in what order, across which screens?"
+
 ## Power-user surfaces
 
 - `⌘K` / `Ctrl+K` — command palette
